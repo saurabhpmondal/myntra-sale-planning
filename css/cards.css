@@ -1,0 +1,206 @@
+/* ==========================================
+   CARDS.CSS
+   KPI Cards / Summary Cards
+========================================== */
+
+/* ==========================================
+   KPI Section
+========================================== */
+
+.kpi-section {
+  width: 100%;
+  margin-top: var(--space-16);
+
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-14);
+}
+
+/* ==========================================
+   KPI Card
+========================================== */
+
+.kpi-card {
+  min-height: 108px;
+  padding: var(--space-14);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-10);
+
+  position: relative;
+  overflow: hidden;
+
+  transition: var(--transition-fast);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+/* Accent Top Strip */
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--primary);
+}
+
+/* ==========================================
+   KPI Label / Value
+========================================== */
+
+.kpi-label {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: var(--fw-700);
+  color: var(--text-main);
+  line-height: 1.1;
+  letter-spacing: -0.4px;
+}
+
+.kpi-sub {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Card Color Variants
+========================================== */
+
+.kpi-card:nth-child(1)::before {
+  background: var(--revenue);
+}
+
+.kpi-card:nth-child(2)::before {
+  background: var(--units);
+}
+
+.kpi-card:nth-child(3)::before {
+  background: var(--returns);
+}
+
+.kpi-card:nth-child(4)::before {
+  background: var(--sjit);
+}
+
+.kpi-card:nth-child(5)::before {
+  background: var(--sor);
+}
+
+.kpi-card:nth-child(6)::before,
+.growth-card::before {
+  background: var(--growth);
+}
+
+/* ==========================================
+   Growth Status Helpers
+========================================== */
+
+.kpi-value.up {
+  color: var(--success);
+}
+
+.kpi-value.flat {
+  color: var(--warning);
+}
+
+.kpi-value.down {
+  color: var(--danger);
+}
+
+/* ==========================================
+   Mini Summary Card (future use)
+========================================== */
+
+.summary-card {
+  padding: var(--space-14);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.summary-title {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.summary-value {
+  margin-top: var(--space-8);
+  font-size: var(--font-xl);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Responsive Large Tablet
+========================================== */
+
+@media (max-width: 1280px) {
+  .kpi-section {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==========================================
+   Tablet
+========================================== */
+
+@media (max-width: 900px) {
+  .kpi-section {
+    gap: var(--space-12);
+  }
+
+  .kpi-card {
+    min-height: 100px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+  }
+}
+
+/* ==========================================
+   Mobile
+========================================== */
+
+@media (max-width: 768px) {
+  .kpi-section {
+    margin-top: var(--space-12);
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-10);
+  }
+
+  .kpi-card {
+    min-height: 94px;
+    padding: var(--space-12);
+    border-radius: var(--radius-md);
+  }
+
+  .kpi-label {
+    font-size: var(--font-xs);
+  }
+
+  .kpi-value {
+    font-size: 20px;
+  }
+}
+
+/* ==========================================
+   Small Mobile
+========================================== */
+
+@media (max-width: 420px) {
+  .kpi-section {
+    grid-template-columns: 1fr;
+  }
+}
