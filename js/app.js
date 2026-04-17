@@ -1,7 +1,6 @@
 /* ==========================================
    APP.JS
-   Main Application Bootstrap
-   Final UI Test Build Controller
+   Main Bootstrap
 ========================================== */
 
 import { initRouter } from "./core/router.js";
@@ -18,7 +17,12 @@ import {
 
 import { initSearchEngine } from "./filters/search.js";
 
-import { renderDashboard } from "./reports/dashboard.js";
+/* ==========================================
+   REPORTS
+========================================== */
+
+import { renderDashboard } from "./reports/dashboard/index.js";
+
 import { renderSalesReport } from "./reports/sales.js";
 import { renderTrafficReport } from "./reports/traffic.js";
 import { renderProductsReport } from "./reports/products.js";
@@ -37,7 +41,7 @@ document.addEventListener(
 );
 
 /* ==========================================
-   APP START
+   START APP
 ========================================== */
 
 async function initApp() {
@@ -59,16 +63,19 @@ async function initApp() {
 }
 
 /* ==========================================
-   MASTER RENDERER
+   MASTER RENDER
 ========================================== */
 
 function renderAllReports() {
   renderDashboard();
+
   renderSalesReport();
   renderTrafficReport();
   renderProductsReport();
   renderInventoryReport();
+
   renderSjitPlanning();
   renderSorPlanning();
+
   renderExportCenter();
 }
