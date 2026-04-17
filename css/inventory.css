@@ -1,11 +1,6 @@
 /* ==========================================
    INVENTORY.CSS
-   Inventory Tab Only
-   Fully Isolated Styles
-========================================== */
-
-/* ==========================================
-   Root
+   Inventory tab styling
 ========================================== */
 
 #inventory {
@@ -13,214 +8,96 @@
 }
 
 /* ==========================================
-   Layout
-========================================== */
-
-#inventory .inventory-grid {
-  display: grid;
-  grid-template-columns: 1.45fr 1fr;
-  gap: var(--space-16);
-}
-
-#inventory .inventory-stack {
-  display: grid;
-  gap: var(--space-16);
-}
-
-/* ==========================================
-   Cards
-========================================== */
-
-#inventory .panel-card {
-  min-height: 180px;
-}
-
-#inventory .panel-card.large {
-  min-height: 440px;
-}
-
-/* ==========================================
-   Stock Summary Area
-========================================== */
-
-.inventory-chart-wrap {
-  width: 100%;
-  min-height: 360px;
-
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    #f8fafc 100%
-  );
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-  font-size: var(--font-sm);
-}
-
-/* ==========================================
-   Inventory Metrics
+   OVERVIEW
 ========================================== */
 
 .inventory-metric-list {
   display: grid;
-  gap: var(--space-10);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 
 .inventory-metric-item {
-  padding: var(--space-12);
+  background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-soft);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
+  padding: 16px;
 }
 
 .inventory-metric-label {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .inventory-metric-value {
-  font-size: var(--font-md);
-  font-weight: var(--fw-700);
+  margin-top: 8px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 /* ==========================================
-   Stock Health Status
-========================================== */
-
-.inventory-good {
-  color: var(--success);
-}
-
-.inventory-mid {
-  color: var(--warning);
-}
-
-.inventory-low {
-  color: var(--danger);
-}
-
-/* ==========================================
-   Insight Tiles
+   HEALTH TILES
 ========================================== */
 
 .inventory-tiles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-12);
+  gap: 12px;
 }
 
 .inventory-tile {
-  padding: var(--space-12);
+  background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-card);
+  padding: 16px;
 }
 
 .inventory-tile-label {
-  font-size: var(--font-xs);
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .inventory-tile-value {
-  margin-top: var(--space-8);
-  font-size: var(--font-lg);
-  font-weight: var(--fw-700);
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 800;
 }
 
 /* ==========================================
-   Title
+   TABLE
 ========================================== */
 
-#inventory .panel-title {
-  padding-bottom: var(--space-10);
-  margin-bottom: var(--space-14);
-  border-bottom: 1px solid var(--border);
+#inventoryTable {
+  width: 100%;
 }
 
 /* ==========================================
-   Toolbar
+   PANEL HEIGHT
 ========================================== */
 
-.inventory-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-10);
-  flex-wrap: wrap;
-
-  margin-bottom: var(--space-12);
+#inventory .panel-card {
+  min-height: 220px;
 }
 
 /* ==========================================
-   Loading
-========================================== */
-
-.inventory-loading {
-  min-height: 240px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-}
-
-/* ==========================================
-   Responsive
+   RESPONSIVE
 ========================================== */
 
 @media (max-width: 1200px) {
-  #inventory .inventory-grid {
-    grid-template-columns: 1fr;
-  }
-
-  #inventory .panel-card.large {
-    min-height: 360px;
-  }
-
-  .inventory-chart-wrap {
-    min-height: 280px;
+  .inventory-metric-list {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  #inventory .inventory-grid,
-  #inventory .inventory-stack {
-    gap: var(--space-12);
-  }
-
-  .inventory-tiles {
+@media (max-width: 640px) {
+  .inventory-metric-list {
     grid-template-columns: 1fr;
   }
 
-  #inventory .panel-card.large {
-    min-height: 280px;
-  }
-
-  .inventory-chart-wrap {
-    min-height: 220px;
-  }
-
-  .inventory-metric-item,
-  .inventory-tile {
-    padding: var(--space-10);
-  }
-}
-
-@media (max-width: 480px) {
-  .inventory-metric-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .inventory-metric-value,
+  .inventory-tile-value {
+    font-size: 18px;
   }
 }
