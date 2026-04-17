@@ -1,11 +1,6 @@
 /* ==========================================
    TRAFFIC.CSS
-   Traffic Tab Only
-   Fully Isolated Styles
-========================================== */
-
-/* ==========================================
-   Root
+   Traffic tab styling
 ========================================== */
 
 #traffic {
@@ -13,213 +8,64 @@
 }
 
 /* ==========================================
-   Layout
-========================================== */
-
-#traffic .traffic-grid {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: var(--space-16);
-}
-
-#traffic .traffic-stack {
-  display: grid;
-  gap: var(--space-16);
-}
-
-/* ==========================================
-   Cards
-========================================== */
-
-#traffic .panel-card {
-  min-height: 180px;
-}
-
-#traffic .panel-card.large {
-  min-height: 420px;
-}
-
-/* ==========================================
-   Funnel Area
-========================================== */
-
-.traffic-funnel-wrap {
-  width: 100%;
-  min-height: 340px;
-
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    #f8fafc 100%
-  );
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-  font-size: var(--font-sm);
-}
-
-/* ==========================================
-   KPI Blocks
+   KPI GRID
 ========================================== */
 
 .traffic-kpi-list {
   display: grid;
-  gap: var(--space-10);
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
 }
 
 .traffic-kpi-item {
-  padding: var(--space-12);
+  background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-soft);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
+  padding: 14px;
 }
 
 .traffic-kpi-label {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .traffic-kpi-value {
-  font-size: var(--font-md);
-  font-weight: var(--fw-700);
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-main);
 }
 
 /* ==========================================
-   Conversion Status
+   PANELS
 ========================================== */
 
-.traffic-good {
-  color: var(--success);
+#trafficTopStyles,
+#trafficBrandTable {
+  width: 100%;
 }
 
-.traffic-mid {
-  color: var(--warning);
-}
-
-.traffic-low {
-  color: var(--danger);
+#traffic .panel-card {
+  min-height: 220px;
 }
 
 /* ==========================================
-   Highlight Tiles
-========================================== */
-
-.traffic-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-12);
-}
-
-.traffic-tile {
-  padding: var(--space-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-}
-
-.traffic-tile-label {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-}
-
-.traffic-tile-value {
-  margin-top: var(--space-8);
-  font-size: var(--font-lg);
-  font-weight: var(--fw-700);
-}
-
-/* ==========================================
-   Title Styling
-========================================== */
-
-#traffic .panel-title {
-  padding-bottom: var(--space-10);
-  margin-bottom: var(--space-14);
-  border-bottom: 1px solid var(--border);
-}
-
-/* ==========================================
-   Toolbar
-========================================== */
-
-.traffic-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-10);
-  flex-wrap: wrap;
-
-  margin-bottom: var(--space-12);
-}
-
-/* ==========================================
-   Loading
-========================================== */
-
-.traffic-loading {
-  min-height: 240px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-}
-
-/* ==========================================
-   Responsive
+   RESPONSIVE
 ========================================== */
 
 @media (max-width: 1200px) {
-  #traffic .traffic-grid {
-    grid-template-columns: 1fr;
-  }
-
-  #traffic .panel-card.large {
-    min-height: 360px;
-  }
-
-  .traffic-funnel-wrap {
-    min-height: 280px;
+  .traffic-kpi-list {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  #traffic .traffic-grid,
-  #traffic .traffic-stack {
-    gap: var(--space-12);
-  }
-
-  .traffic-tiles {
+@media (max-width: 640px) {
+  .traffic-kpi-list {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  #traffic .panel-card.large {
-    min-height: 280px;
-  }
-
-  .traffic-funnel-wrap {
-    min-height: 220px;
-  }
-
-  .traffic-kpi-item,
-  .traffic-tile {
-    padding: var(--space-10);
-  }
-}
-
-@media (max-width: 480px) {
-  .traffic-tiles {
-    grid-template-columns: 1fr;
+  .traffic-kpi-value {
+    font-size: 18px;
   }
 }
