@@ -1,0 +1,252 @@
+/* ==========================================
+   FILTERS.CSS
+   Shared Filter UI / Dropdown / Search Helpers
+========================================== */
+
+/* ==========================================
+   Generic Filter Row
+========================================== */
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+}
+
+.filter-row.tight {
+  gap: var(--space-8);
+}
+
+.filter-row.spread {
+  justify-content: space-between;
+}
+
+/* ==========================================
+   Filter Group
+========================================== */
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 140px;
+}
+
+.filter-label {
+  font-size: var(--font-xs);
+  font-weight: var(--fw-600);
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+/* ==========================================
+   Generic Controls
+========================================== */
+
+.filter-control,
+.filter-input,
+.filter-select {
+  height: 40px;
+  min-width: 130px;
+
+  padding: 0 var(--space-12);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+
+  color: var(--text-main);
+  font-size: var(--font-sm);
+
+  transition: var(--transition-fast);
+}
+
+.filter-control:hover,
+.filter-input:hover,
+.filter-select:hover {
+  border-color: var(--border-strong);
+}
+
+.filter-control:focus,
+.filter-input:focus,
+.filter-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* ==========================================
+   Width Variants
+========================================== */
+
+.filter-sm {
+  min-width: 100px;
+}
+
+.filter-md {
+  min-width: 140px;
+}
+
+.filter-lg {
+  min-width: 190px;
+}
+
+.filter-fluid {
+  min-width: 0;
+  width: 100%;
+}
+
+/* ==========================================
+   Search Suggestions (Future Ready)
+========================================== */
+
+.search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+
+  max-height: 320px;
+  overflow-y: auto;
+
+  z-index: 100;
+}
+
+.search-suggestions.hidden {
+  display: none;
+}
+
+.search-item {
+  padding: var(--space-10) var(--space-12);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover {
+  background: var(--bg-hover);
+}
+
+.search-item-title {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+  color: var(--text-main);
+}
+
+.search-item-sub {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================
+   Filter Action Buttons
+========================================== */
+
+.filter-btn {
+  height: 40px;
+  padding: 0 var(--space-14);
+
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+  color: var(--text-main);
+
+  transition: var(--transition-fast);
+}
+
+.filter-btn:hover {
+  background: var(--bg-hover);
+}
+
+.filter-btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.filter-btn.primary:hover {
+  background: var(--primary-dark);
+}
+
+.filter-btn.ghost {
+  background: transparent;
+}
+
+/* ==========================================
+   Active Filter Pills
+========================================== */
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+
+  padding: 6px 10px;
+
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+
+  font-size: var(--font-xs);
+  font-weight: var(--fw-600);
+}
+
+.filter-pill .close {
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.filter-pill .close:hover {
+  opacity: 1;
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 768px) {
+  .filter-row {
+    gap: var(--space-8);
+  }
+
+  .filter-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filter-control,
+  .filter-input,
+  .filter-select,
+  .filter-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .search-suggestions {
+    max-height: 260px;
+  }
+}
