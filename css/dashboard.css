@@ -1,11 +1,6 @@
 /* ==========================================
    DASHBOARD.CSS
-   Dashboard Tab Only
-   Isolated styles - no cross tab impact
-========================================== */
-
-/* ==========================================
-   Dashboard Root
+   Dashboard specific styling
 ========================================== */
 
 #dashboard {
@@ -13,217 +8,100 @@
 }
 
 /* ==========================================
-   Main Grid
+   DAILY CHART PANEL
 ========================================== */
 
-#dashboard .panel-grid {
-  align-items: start;
+#dashboardDailyChart {
+  margin-bottom: 18px;
 }
 
 /* ==========================================
-   Sales Chart Card
+   BRAND SUMMARY
 ========================================== */
 
-#dashboard .panel-card.large {
-  min-height: 460px;
-}
-
-.dashboard-chart-wrap {
-  width: 100%;
-  height: 380px;
-
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    #f8fafc 100%
-  );
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-  font-size: var(--font-sm);
-}
-
-/* ==========================================
-   Summary Blocks
-========================================== */
-
-.dashboard-summary-list {
+#dashboardBrandSummary {
   display: grid;
-  gap: var(--space-10);
-}
-
-.dashboard-summary-item {
-  padding: var(--space-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-soft);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-10);
-}
-
-.dashboard-summary-name {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
-  color: var(--text-main);
-}
-
-.dashboard-summary-value {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-700);
-  color: var(--text-main);
-}
-
-.dashboard-summary-sub {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
-}
-
-/* ==========================================
-   Brand Analysis
-========================================== */
-
-.dashboard-brand-list {
-  display: grid;
-  gap: var(--space-10);
+  gap: 2px;
 }
 
 .dashboard-brand-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-10);
-
-  padding: var(--space-10);
-  border-bottom: 1px solid var(--border);
-}
-
-.dashboard-brand-row:last-child {
-  border-bottom: none;
+  padding: 12px 0;
 }
 
 .dashboard-brand-name {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .dashboard-brand-metric {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-700);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
 }
 
 /* ==========================================
-   PO Type Analysis
+   PO TYPE
 ========================================== */
 
-.dashboard-po-grid {
+#dashboardPoSummary {
   display: grid;
-  gap: var(--space-10);
+  gap: 10px;
 }
 
 .dashboard-po-card {
-  padding: var(--space-12);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
+  transition: var(--transition-fast);
+}
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.dashboard-po-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .dashboard-po-name {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 700;
 }
 
 .dashboard-po-value {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-700);
-}
-
-.dashboard-po-card.sjit {
-  border-left: 4px solid var(--sjit);
-}
-
-.dashboard-po-card.ppmp {
-  border-left: 4px solid var(--primary);
-}
-
-.dashboard-po-card.sor {
-  border-left: 4px solid var(--sor);
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 6px;
+  color: var(--text-main);
 }
 
 /* ==========================================
-   Panel Title Enhancements
+   KPI MICRO TWEAKS
 ========================================== */
 
-#dashboard .panel-title {
-  padding-bottom: var(--space-10);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: var(--space-14);
+#dashboard .kpi-card {
+  position: relative;
+  overflow: hidden;
+}
+
+#dashboard .kpi-card::after {
+  content: "";
+  position: absolute;
+  right: -18px;
+  top: -18px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.05);
 }
 
 /* ==========================================
-   Loading State
+   RESPONSIVE
 ========================================== */
 
-.dashboard-loading {
-  min-height: 260px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-  font-size: var(--font-sm);
-}
-
-/* ==========================================
-   Responsive
-========================================== */
-
-@media (max-width: 1200px) {
-  #dashboard .panel-card.large {
-    min-height: 380px;
+@media (max-width: 640px) {
+  .dashboard-po-value {
+    font-size: 20px;
   }
 
-  .dashboard-chart-wrap {
-    height: 300px;
-  }
-}
-
-@media (max-width: 768px) {
-  #dashboard .panel-card.large {
-    min-height: 300px;
-  }
-
-  .dashboard-chart-wrap {
-    height: 220px;
-  }
-
-  .dashboard-brand-row,
-  .dashboard-po-card,
-  .dashboard-summary-item {
-    padding: var(--space-10);
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-brand-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-
-  .dashboard-po-card,
-  .dashboard-summary-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .dashboard-brand-name,
+  .dashboard-brand-metric {
+    font-size: 13px;
   }
 }
