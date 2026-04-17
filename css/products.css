@@ -1,0 +1,244 @@
+/* ==========================================
+   PRODUCTS.CSS
+   Products Tab Only
+   Fully Isolated Styles
+========================================== */
+
+/* ==========================================
+   Root
+========================================== */
+
+#products {
+  width: 100%;
+}
+
+/* ==========================================
+   Layout
+========================================== */
+
+#products .products-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-16);
+}
+
+#products .products-stack {
+  display: grid;
+  gap: var(--space-16);
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+#products .panel-card {
+  min-height: 180px;
+}
+
+#products .panel-card.large {
+  min-height: 440px;
+}
+
+/* ==========================================
+   Search Result / Detail Area
+========================================== */
+
+.products-detail-wrap {
+  width: 100%;
+  min-height: 360px;
+
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f8fafc 100%
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+/* ==========================================
+   Product Summary Rows
+========================================== */
+
+.products-summary-list {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.products-summary-item {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.products-summary-label {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+}
+
+.products-summary-value {
+  font-size: var(--font-md);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Search Suggestions (Products Tab Specific)
+========================================== */
+
+.products-search-results {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.products-result-item {
+  padding: var(--space-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.products-result-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.products-result-title {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-700);
+}
+
+.products-result-sub {
+  margin-top: 2px;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Health Badges
+========================================== */
+
+.products-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 24px;
+  padding: 0 8px;
+
+  border-radius: 999px;
+  font-size: var(--font-xs);
+  font-weight: var(--fw-700);
+}
+
+.products-badge.good {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.products-badge.mid {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.products-badge.bad {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ==========================================
+   Title
+========================================== */
+
+#products .panel-title {
+  padding-bottom: var(--space-10);
+  margin-bottom: var(--space-14);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ==========================================
+   Toolbar
+========================================== */
+
+.products-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+
+  margin-bottom: var(--space-12);
+}
+
+/* ==========================================
+   Loading
+========================================== */
+
+.products-loading {
+  min-height: 240px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 1200px) {
+  #products .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #products .panel-card.large {
+    min-height: 360px;
+  }
+
+  .products-detail-wrap {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  #products .products-grid,
+  #products .products-stack {
+    gap: var(--space-12);
+  }
+
+  #products .panel-card.large {
+    min-height: 280px;
+  }
+
+  .products-detail-wrap {
+    min-height: 220px;
+  }
+
+  .products-summary-item,
+  .products-result-item {
+    padding: var(--space-10);
+  }
+}
+
+@media (max-width: 480px) {
+  .products-summary-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
