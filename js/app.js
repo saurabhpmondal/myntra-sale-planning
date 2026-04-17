@@ -1,6 +1,6 @@
 /* ==========================================
    APP.JS
-   Main Bootstrap
+   Safe Recovery Bootstrap
 ========================================== */
 
 import { initRouter } from "./core/router.js";
@@ -18,11 +18,10 @@ import {
 import { initSearchEngine } from "./filters/search.js";
 
 /* ==========================================
-   REPORTS
+   REPORT IMPORTS
 ========================================== */
 
 import { renderDashboard } from "./reports/dashboard/index.js";
-
 import { renderSalesReport } from "./reports/sales.js";
 import { renderTrafficReport } from "./reports/traffic.js";
 import { renderProductsReport } from "./reports/products.js";
@@ -32,7 +31,7 @@ import { renderSorPlanning } from "./reports/sor.js";
 import { renderExportCenter } from "./reports/export.js";
 
 /* ==========================================
-   INIT
+   START
 ========================================== */
 
 document.addEventListener(
@@ -40,42 +39,107 @@ document.addEventListener(
   initApp
 );
 
-/* ==========================================
-   START APP
-========================================== */
-
 async function initApp() {
-  initErrorHandler();
-  initRouter();
-  initEvents();
-  initSearchEngine();
+  try {
+    initErrorHandler();
+  } catch (e) {}
 
-  subscribe(() => {
-    renderAllReports();
-  });
+  try {
+    initRouter();
+  } catch (e) {}
 
-  await bootstrapAppData();
+  try {
+    initEvents();
+  } catch (e) {}
 
-  populateMonthFilterFromData();
-  populateAllFilters();
+  try {
+    initSearchEngine();
+  } catch (e) {}
+
+  try {
+    subscribe(() => {
+      renderAllReports();
+    });
+  } catch (e) {}
+
+  /* ===============================
+     CRITICAL DATA LOAD
+  =============================== */
+
+  try {
+    await bootstrapAppData();
+  } catch (error) {
+    console.error(
+      "Data bootstrap failed",
+      error
+    );
+
+    showBootError();
+    return;
+  }
+
+  /* ===============================
+     FILTERS
+  =============================== */
+
+  try {
+    populateMonthFilterFromData();
+  } catch (e) {}
+
+  try {
+    populateAllFilters();
+  } catch (e) {}
+
+  /* ===============================
+     RENDER
+  =============================== */
 
   renderAllReports();
 }
 
 /* ==========================================
-   MASTER RENDER
+   SAFE RENDER ALL
 ========================================== */
 
 function renderAllReports() {
-  renderDashboard();
+  safe(renderDashboard);
+  safe(renderSalesReport);
+  safe(renderTrafficReport);
+  safe(renderProductsReport);
+  safe(renderInventoryReport);
+  safe(renderSjitPlanning);
+  safe(renderSorPlanning);
+  safe(renderExportCenter);
+}
 
-  renderSalesReport();
-  renderTrafficReport();
-  renderProductsReport();
-  renderInventoryReport();
+function safe(fn) {
+  try {
+    fn();
+  } catch (error) {
+    console.error(
+      "Render failed:",
+      fn.name,
+      error
+    );
+  }
+}
 
-  renderSjitPlanning();
-  renderSorPlanning();
+/* ==========================================
+   UI ERROR
+========================================== */
 
-  renderExportCenter();
+function showBootError() {
+  const box =
+    document.getElementById(
+      "dashboardDailyChart"
+    );
+
+  if (!box) return;
+
+  box.innerHTML = `
+    <div class="placeholder-box large">
+      Data loading failed.
+      Check file paths / sheet access.
+    </div>
+  `;
 }
