@@ -1,0 +1,225 @@
+/* ==========================================
+   TRAFFIC.CSS
+   Traffic Tab Only
+   Fully Isolated Styles
+========================================== */
+
+/* ==========================================
+   Root
+========================================== */
+
+#traffic {
+  width: 100%;
+}
+
+/* ==========================================
+   Layout
+========================================== */
+
+#traffic .traffic-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: var(--space-16);
+}
+
+#traffic .traffic-stack {
+  display: grid;
+  gap: var(--space-16);
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+#traffic .panel-card {
+  min-height: 180px;
+}
+
+#traffic .panel-card.large {
+  min-height: 420px;
+}
+
+/* ==========================================
+   Funnel Area
+========================================== */
+
+.traffic-funnel-wrap {
+  width: 100%;
+  min-height: 340px;
+
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f8fafc 100%
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+/* ==========================================
+   KPI Blocks
+========================================== */
+
+.traffic-kpi-list {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.traffic-kpi-item {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.traffic-kpi-label {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+}
+
+.traffic-kpi-value {
+  font-size: var(--font-md);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Conversion Status
+========================================== */
+
+.traffic-good {
+  color: var(--success);
+}
+
+.traffic-mid {
+  color: var(--warning);
+}
+
+.traffic-low {
+  color: var(--danger);
+}
+
+/* ==========================================
+   Highlight Tiles
+========================================== */
+
+.traffic-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-12);
+}
+
+.traffic-tile {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+.traffic-tile-label {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.traffic-tile-value {
+  margin-top: var(--space-8);
+  font-size: var(--font-lg);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Title Styling
+========================================== */
+
+#traffic .panel-title {
+  padding-bottom: var(--space-10);
+  margin-bottom: var(--space-14);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ==========================================
+   Toolbar
+========================================== */
+
+.traffic-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+
+  margin-bottom: var(--space-12);
+}
+
+/* ==========================================
+   Loading
+========================================== */
+
+.traffic-loading {
+  min-height: 240px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 1200px) {
+  #traffic .traffic-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #traffic .panel-card.large {
+    min-height: 360px;
+  }
+
+  .traffic-funnel-wrap {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  #traffic .traffic-grid,
+  #traffic .traffic-stack {
+    gap: var(--space-12);
+  }
+
+  .traffic-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  #traffic .panel-card.large {
+    min-height: 280px;
+  }
+
+  .traffic-funnel-wrap {
+    min-height: 220px;
+  }
+
+  .traffic-kpi-item,
+  .traffic-tile {
+    padding: var(--space-10);
+  }
+}
+
+@media (max-width: 480px) {
+  .traffic-tiles {
+    grid-template-columns: 1fr;
+  }
+}
