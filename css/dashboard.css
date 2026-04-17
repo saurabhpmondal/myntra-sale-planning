@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD.CSS
-   Dashboard specific styling
+   Precision Layout Fix
 ========================================== */
 
 #dashboard {
@@ -8,100 +8,162 @@
 }
 
 /* ==========================================
-   DAILY CHART PANEL
+   GRID SPACING
+========================================== */
+
+#dashboard .two-col-grid {
+  align-items: stretch;
+  margin-top: 18px;
+}
+
+#dashboard .panel-card {
+  height: 100%;
+}
+
+#dashboard .panel-card .table-wrap {
+  width: 100%;
+}
+
+/* ==========================================
+   KPI
+========================================== */
+
+#dashboard .kpi-card {
+  min-height: 110px;
+}
+
+/* ==========================================
+   CHART
 ========================================== */
 
 #dashboardDailyChart {
+  min-height: 380px;
+}
+
+.chart-shell {
+  width: 100%;
+}
+
+.chart-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 18px;
+  gap: 12px;
 }
 
-/* ==========================================
-   BRAND SUMMARY
-========================================== */
-
-#dashboardBrandSummary {
-  display: grid;
-  gap: 2px;
-}
-
-.dashboard-brand-row {
-  padding: 12px 0;
-}
-
-.dashboard-brand-name {
-  font-size: 14px;
-  font-weight: 700;
+.chart-head {
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text-main);
 }
 
-.dashboard-brand-metric {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--primary);
-}
-
-/* ==========================================
-   PO TYPE
-========================================== */
-
-#dashboardPoSummary {
-  display: grid;
-  gap: 10px;
-}
-
-.dashboard-po-card {
-  transition: var(--transition-fast);
-}
-
-.dashboard-po-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.dashboard-po-name {
+.chart-total {
   font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+
+  height: 260px;
+  padding-top: 10px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.chart-col {
+  min-width: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-bar {
+  width: 22px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(
+    to top,
+    #2563eb,
+    #60a5fa
+  );
+  transition: 0.2s ease;
+}
+
+.chart-bar:hover {
+  opacity: 0.88;
+}
+
+.chart-label {
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 700;
 }
 
-.dashboard-po-value {
-  font-size: 24px;
-  font-weight: 800;
-  margin-top: 6px;
-  color: var(--text-main);
+/* ==========================================
+   TABLES
+========================================== */
+
+#dashboard .data-table {
+  min-width: 100%;
+}
+
+#dashboard .data-table th,
+#dashboard .data-table td {
+  white-space: nowrap;
+}
+
+#dashboard .panel-title {
+  margin-bottom: 14px;
 }
 
 /* ==========================================
-   KPI MICRO TWEAKS
+   FULL WIDTH LAST PANEL
 ========================================== */
 
-#dashboard .kpi-card {
-  position: relative;
-  overflow: hidden;
-}
-
-#dashboard .kpi-card::after {
-  content: "";
-  position: absolute;
-  right: -18px;
-  top: -18px;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: rgba(37, 99, 235, 0.05);
+#dashboardStockCover {
+  width: 100%;
 }
 
 /* ==========================================
-   RESPONSIVE
+   MOBILE
 ========================================== */
 
-@media (max-width: 640px) {
-  .dashboard-po-value {
-    font-size: 20px;
+@media (max-width: 900px) {
+  .chart-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .dashboard-brand-name,
-  .dashboard-brand-metric {
-    font-size: 13px;
+  #dashboardDailyChart {
+    min-height: 340px;
+  }
+}
+
+@media (max-width: 640px) {
+  #dashboardDailyChart {
+    min-height: 320px;
+  }
+
+  .chart-bars {
+    gap: 6px;
+    height: 220px;
+  }
+
+  .chart-col {
+    min-width: 22px;
+  }
+
+  .chart-bar {
+    width: 18px;
+  }
+
+  .chart-label {
+    font-size: 10px;
   }
 }
