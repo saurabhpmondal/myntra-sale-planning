@@ -1,11 +1,6 @@
 /* ==========================================
    PRODUCTS.CSS
-   Products Tab Only
-   Fully Isolated Styles
-========================================== */
-
-/* ==========================================
-   Root
+   Products / Search Detail tab styling
 ========================================== */
 
 #products {
@@ -13,232 +8,91 @@
 }
 
 /* ==========================================
-   Layout
-========================================== */
-
-#products .products-grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: var(--space-16);
-}
-
-#products .products-stack {
-  display: grid;
-  gap: var(--space-16);
-}
-
-/* ==========================================
-   Cards
-========================================== */
-
-#products .panel-card {
-  min-height: 180px;
-}
-
-#products .panel-card.large {
-  min-height: 440px;
-}
-
-/* ==========================================
-   Search Result / Detail Area
-========================================== */
-
-.products-detail-wrap {
-  width: 100%;
-  min-height: 360px;
-
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    to bottom,
-    #ffffff 0%,
-    #f8fafc 100%
-  );
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-  font-size: var(--font-sm);
-}
-
-/* ==========================================
-   Product Summary Rows
+   DETAIL GRID
 ========================================== */
 
 .products-summary-list {
   display: grid;
-  gap: var(--space-10);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 
 .products-summary-item {
-  padding: var(--space-12);
+  background: var(--bg-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-soft);
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-12);
+  padding: 14px;
 }
 
 .products-summary-label {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-600);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .products-summary-value {
-  font-size: var(--font-md);
-  font-weight: var(--fw-700);
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-main);
+  word-break: break-word;
 }
 
 /* ==========================================
-   Search Suggestions (Products Tab Specific)
+   MATCHES
 ========================================== */
 
-.products-search-results {
+#productsMatches {
   display: grid;
-  gap: var(--space-8);
+  gap: 2px;
 }
 
 .products-result-item {
-  padding: var(--space-10);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  cursor: pointer;
   transition: var(--transition-fast);
 }
 
 .products-result-item:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
+  background: var(--bg-soft);
+  border-radius: 12px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .products-result-title {
-  font-size: var(--font-sm);
-  font-weight: var(--fw-700);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .products-result-sub {
-  margin-top: 2px;
-  font-size: var(--font-xs);
+  margin-top: 4px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 /* ==========================================
-   Health Badges
+   PANEL HEIGHTS
 ========================================== */
 
-.products-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-height: 24px;
-  padding: 0 8px;
-
-  border-radius: 999px;
-  font-size: var(--font-xs);
-  font-weight: var(--fw-700);
-}
-
-.products-badge.good {
-  background: var(--success-soft);
-  color: var(--success);
-}
-
-.products-badge.mid {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-
-.products-badge.bad {
-  background: var(--danger-soft);
-  color: var(--danger);
+#products .panel-card {
+  min-height: 220px;
 }
 
 /* ==========================================
-   Title
-========================================== */
-
-#products .panel-title {
-  padding-bottom: var(--space-10);
-  margin-bottom: var(--space-14);
-  border-bottom: 1px solid var(--border);
-}
-
-/* ==========================================
-   Toolbar
-========================================== */
-
-.products-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-10);
-  flex-wrap: wrap;
-
-  margin-bottom: var(--space-12);
-}
-
-/* ==========================================
-   Loading
-========================================== */
-
-.products-loading {
-  min-height: 240px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--text-muted);
-}
-
-/* ==========================================
-   Responsive
+   RESPONSIVE
 ========================================== */
 
 @media (max-width: 1200px) {
-  #products .products-grid {
+  .products-summary-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .products-summary-list {
     grid-template-columns: 1fr;
   }
 
-  #products .panel-card.large {
-    min-height: 360px;
-  }
-
-  .products-detail-wrap {
-    min-height: 280px;
-  }
-}
-
-@media (max-width: 768px) {
-  #products .products-grid,
-  #products .products-stack {
-    gap: var(--space-12);
-  }
-
-  #products .panel-card.large {
-    min-height: 280px;
-  }
-
-  .products-detail-wrap {
-    min-height: 220px;
-  }
-
-  .products-summary-item,
-  .products-result-item {
-    padding: var(--space-10);
-  }
-}
-
-@media (max-width: 480px) {
-  .products-summary-item {
-    flex-direction: column;
-    align-items: flex-start;
+  .products-summary-value {
+    font-size: 16px;
   }
 }
