@@ -1,0 +1,202 @@
+/* ==========================================
+   BASE.CSS
+   Global Base Styles
+========================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-md);
+  font-weight: var(--fw-400);
+  line-height: 1.45;
+  color: var(--text-main);
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+/* Root App */
+#app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ==========================================
+   Typography
+========================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text-main);
+  font-weight: var(--fw-700);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--font-2xl);
+}
+
+h2 {
+  font-size: var(--font-xl);
+}
+
+h3 {
+  font-size: var(--font-lg);
+}
+
+small {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+strong {
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Inputs / Selects / Buttons
+========================================== */
+
+input,
+select,
+textarea {
+  width: 100%;
+  color: var(--text-main);
+}
+
+button {
+  user-select: none;
+  transition: var(--transition-fast);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   Generic Card
+========================================== */
+
+.panel-card,
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================
+   Generic Titles
+========================================== */
+
+.panel-title {
+  font-size: var(--font-md);
+  font-weight: var(--fw-700);
+  color: var(--text-main);
+}
+
+/* ==========================================
+   Placeholder Blocks
+========================================== */
+
+.placeholder-box {
+  min-height: 220px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  text-align: center;
+}
+
+.placeholder-box.small {
+  min-height: 120px;
+}
+
+.placeholder-box.large {
+  min-height: 360px;
+}
+
+/* ==========================================
+   Utilities
+========================================== */
+
+.text-right {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* ==========================================
+   Scrollbar
+========================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #eef2f7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c7d2e0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #aeb8c5;
+}
+
+/* ==========================================
+   Selection
+========================================== */
+
+::selection {
+  background: var(--primary-soft);
+  color: var(--text-main);
+}
+
+/* ==========================================
+   Mobile
+========================================== */
+
+@media (max-width: 768px) {
+  body {
+    font-size: var(--font-sm);
+  }
+
+  .placeholder-box {
+    min-height: 180px;
+    padding: var(--space-12);
+  }
+}
