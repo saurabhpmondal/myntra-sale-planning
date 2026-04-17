@@ -1,0 +1,226 @@
+/* ==========================================
+   SJIT-PLANNING.CSS
+   SJIT Planning Tab Only
+   Fully Isolated Styles
+========================================== */
+
+/* ==========================================
+   Root
+========================================== */
+
+#sjit {
+  width: 100%;
+}
+
+/* ==========================================
+   Layout
+========================================== */
+
+#sjit .sjit-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: var(--space-16);
+}
+
+#sjit .sjit-stack {
+  display: grid;
+  gap: var(--space-16);
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+#sjit .panel-card {
+  min-height: 180px;
+}
+
+#sjit .panel-card.large {
+  min-height: 440px;
+}
+
+/* ==========================================
+   Planner Chart / Placeholder
+========================================== */
+
+.sjit-chart-wrap {
+  width: 100%;
+  min-height: 360px;
+
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f8fafc 100%
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+/* ==========================================
+   Planner Metrics
+========================================== */
+
+.sjit-metric-list {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.sjit-metric-item {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.sjit-metric-label {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+}
+
+.sjit-metric-value {
+  font-size: var(--font-md);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Planning Status
+========================================== */
+
+.sjit-ok {
+  color: var(--success);
+}
+
+.sjit-watch {
+  color: var(--warning);
+}
+
+.sjit-urgent {
+  color: var(--danger);
+}
+
+/* ==========================================
+   Action Tiles
+========================================== */
+
+.sjit-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-12);
+}
+
+.sjit-tile {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+
+.sjit-tile-label {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.sjit-tile-value {
+  margin-top: var(--space-8);
+  font-size: var(--font-lg);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Title
+========================================== */
+
+#sjit .panel-title {
+  padding-bottom: var(--space-10);
+  margin-bottom: var(--space-14);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ==========================================
+   Toolbar
+========================================== */
+
+.sjit-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+
+  margin-bottom: var(--space-12);
+}
+
+/* ==========================================
+   Loading
+========================================== */
+
+.sjit-loading {
+  min-height: 240px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 1200px) {
+  #sjit .sjit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #sjit .panel-card.large {
+    min-height: 360px;
+  }
+
+  .sjit-chart-wrap {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  #sjit .sjit-grid,
+  #sjit .sjit-stack {
+    gap: var(--space-12);
+  }
+
+  .sjit-tiles {
+    grid-template-columns: 1fr;
+  }
+
+  #sjit .panel-card.large {
+    min-height: 280px;
+  }
+
+  .sjit-chart-wrap {
+    min-height: 220px;
+  }
+
+  .sjit-metric-item,
+  .sjit-tile {
+    padding: var(--space-10);
+  }
+}
+
+@media (max-width: 480px) {
+  .sjit-metric-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
