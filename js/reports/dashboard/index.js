@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / INDEX.JS
-   Safe Modular Dashboard Controller
+   Ultra Safe Modular Controller
 ========================================== */
 
 import { renderKpis } from "./kpi.js";
@@ -11,30 +11,61 @@ import { renderPriceRangeTable } from "./price.js";
 import { renderErpStatusTable } from "./erp.js";
 import { renderStockCoverTable } from "./cover.js";
 
+/* ==========================================
+   PUBLIC
+========================================== */
+
 export function renderDashboard() {
-  safe(renderKpis);
-  safe(renderChart);
+  run(
+    renderKpis,
+    "kpi"
+  );
 
-  safe(renderBrandTable);
-  safe(renderPoTypeTable);
+  run(
+    renderChart,
+    "chart"
+  );
 
-  safe(renderPriceRangeTable);
-  safe(renderErpStatusTable);
+  run(
+    renderBrandTable,
+    "brand"
+  );
 
-  safe(renderStockCoverTable);
+  run(
+    renderPoTypeTable,
+    "po"
+  );
+
+  run(
+    renderPriceRangeTable,
+    "price"
+  );
+
+  run(
+    renderErpStatusTable,
+    "erp"
+  );
+
+  run(
+    renderStockCoverTable,
+    "cover"
+  );
 }
 
 /* ==========================================
-   SAFE RUNNER
+   SAFE EXEC
 ========================================== */
 
-function safe(fn) {
+function run(
+  fn,
+  name
+) {
   try {
     fn();
   } catch (error) {
     console.error(
-      "Dashboard module failed:",
-      fn.name,
+      "Dashboard block failed:",
+      name,
       error
     );
   }
