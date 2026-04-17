@@ -1,0 +1,177 @@
+/* ==========================================
+   TABS.CSS
+   Top Navigation Tabs
+========================================== */
+
+.tab-bar {
+  width: 100%;
+  margin-top: var(--space-16);
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+
+  padding: var(--space-10);
+
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  position: sticky;
+  top: calc(var(--header-height) + 20px);
+  z-index: 40;
+
+  scrollbar-width: thin;
+}
+
+/* ==========================================
+   Tab Buttons
+========================================== */
+
+.tab-btn {
+  height: 42px;
+  flex: 0 0 auto;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+
+  padding: 0 var(--space-14);
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  background: transparent;
+  color: var(--text-muted);
+
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+  white-space: nowrap;
+
+  transition: var(--transition-fast);
+}
+
+/* Hover */
+.tab-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+/* Active */
+.tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.18);
+}
+
+/* Press */
+.tab-btn:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================
+   Optional Status Variants
+========================================== */
+
+.tab-btn.success.active {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.tab-btn.warning.active {
+  background: var(--warning);
+  border-color: var(--warning);
+}
+
+.tab-btn.danger.active {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+/* ==========================================
+   Scrollbar
+========================================== */
+
+.tab-bar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tab-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-bar::-webkit-scrollbar-thumb {
+  background: #d7deea;
+  border-radius: 999px;
+}
+
+.tab-bar::-webkit-scrollbar-thumb:hover {
+  background: #bcc7d6;
+}
+
+/* ==========================================
+   Tab Panel Helpers
+========================================== */
+
+.tab-panel {
+  margin-top: var(--space-16);
+}
+
+.tab-panel.hidden {
+  display: none !important;
+}
+
+/* ==========================================
+   Responsive Tablet
+========================================== */
+
+@media (max-width: 1024px) {
+  .tab-bar {
+    gap: var(--space-8);
+    padding: var(--space-8);
+  }
+
+  .tab-btn {
+    height: 40px;
+    padding: 0 var(--space-12);
+  }
+}
+
+/* ==========================================
+   Mobile
+========================================== */
+
+@media (max-width: 768px) {
+  .tab-bar {
+    margin-top: var(--space-12);
+    border-radius: var(--radius-lg);
+    top: 160px;
+  }
+
+  .tab-btn {
+    height: 38px;
+    font-size: var(--font-xs);
+    padding: 0 var(--space-12);
+    gap: var(--space-6);
+  }
+
+  .tab-panel {
+    margin-top: var(--space-12);
+  }
+}
+
+/* ==========================================
+   Small Mobile
+========================================== */
+
+@media (max-width: 480px) {
+  .tab-btn {
+    padding: 0 var(--space-10);
+  }
+}
