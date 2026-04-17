@@ -1,1 +1,219 @@
-test
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MYNTRA SALES & PLANNING</title>
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/header.css" />
+  <link rel="stylesheet" href="css/filters.css" />
+  <link rel="stylesheet" href="css/tabs.css" />
+  <link rel="stylesheet" href="css/cards.css" />
+  <link rel="stylesheet" href="css/tables.css" />
+  <link rel="stylesheet" href="css/mobile.css" />
+
+  <!-- Tab CSS -->
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/sales.css" />
+  <link rel="stylesheet" href="css/traffic.css" />
+  <link rel="stylesheet" href="css/products.css" />
+  <link rel="stylesheet" href="css/inventory.css" />
+  <link rel="stylesheet" href="css/sjit-planning.css" />
+  <link rel="stylesheet" href="css/sor-planning.css" />
+  <link rel="stylesheet" href="css/export-center.css" />
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ================= HEADER ================= -->
+    <header class="app-header">
+
+      <!-- Filters Left -->
+      <div class="header-left">
+
+        <select id="monthFilter" class="filter-control">
+          <option>Current Month</option>
+        </select>
+
+        <input type="date" id="startDate" class="filter-control" />
+
+        <input type="date" id="endDate" class="filter-control" />
+
+        <select id="brandFilter" class="filter-control">
+          <option>All Brands</option>
+        </select>
+
+        <select id="poTypeFilter" class="filter-control">
+          <option>All PO Type</option>
+          <option>SJIT</option>
+          <option>PPMP</option>
+          <option>SOR</option>
+        </select>
+
+      </div>
+
+      <!-- App Name Center -->
+      <div class="header-center">
+        <h1 class="app-title">MYNTRA SALES & PLANNING</h1>
+      </div>
+
+      <!-- Search Right -->
+      <div class="header-right">
+        <div class="search-box">
+          <input
+            type="text"
+            id="globalSearch"
+            placeholder="Search Style ID / ERP SKU"
+          />
+        </div>
+      </div>
+
+    </header>
+
+    <!-- ================= KPI CARDS ================= -->
+    <section class="kpi-section">
+
+      <div class="kpi-card">
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value">₹0</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Units</div>
+        <div class="kpi-value">0</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Return %</div>
+        <div class="kpi-value">0%</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Total SJIT Stock</div>
+        <div class="kpi-value">0</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">SOR Stock</div>
+        <div class="kpi-value">0</div>
+      </div>
+
+      <div class="kpi-card growth-card">
+        <div class="kpi-label">Growth Status</div>
+        <div class="kpi-value">--</div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB NAV ================= -->
+    <nav class="tab-bar">
+
+      <button class="tab-btn active" data-tab="dashboard">🏠 Dashboard</button>
+      <button class="tab-btn" data-tab="sales">📈 Sales</button>
+      <button class="tab-btn" data-tab="traffic">🚦 Traffic</button>
+      <button class="tab-btn" data-tab="products">🧵 Products</button>
+      <button class="tab-btn" data-tab="inventory">📦 Inventory</button>
+      <button class="tab-btn" data-tab="sjit">🏭 SJIT Planning</button>
+      <button class="tab-btn" data-tab="sor">🚚 SOR Planning</button>
+      <button class="tab-btn" data-tab="export">📤 Export Center</button>
+
+    </nav>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="main-content">
+
+      <!-- Dashboard -->
+      <section class="tab-panel active" id="dashboard">
+
+        <div class="panel-grid two-col">
+
+          <div class="panel-card large">
+            <div class="panel-title">Date Wise Sales Units</div>
+            <div class="placeholder-box">Chart Area</div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-title">Brand Analysis (Current Month)</div>
+            <div class="placeholder-box">Brand Summary</div>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-title">PO Type Analysis</div>
+            <div class="placeholder-box">PO Type Summary</div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- Sales -->
+      <section class="tab-panel" id="sales">
+        <div class="panel-card full">
+          <div class="panel-title">Sales Report</div>
+          <div class="placeholder-box">Sales content will load here</div>
+        </div>
+      </section>
+
+      <!-- Traffic -->
+      <section class="tab-panel" id="traffic">
+        <div class="panel-card full">
+          <div class="panel-title">Traffic Report</div>
+          <div class="placeholder-box">Traffic content will load here</div>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="tab-panel" id="products">
+        <div class="panel-card full">
+          <div class="panel-title">Products Report</div>
+          <div class="placeholder-box">Products content will load here</div>
+        </div>
+      </section>
+
+      <!-- Inventory -->
+      <section class="tab-panel" id="inventory">
+        <div class="panel-card full">
+          <div class="panel-title">Inventory Report</div>
+          <div class="placeholder-box">Inventory content will load here</div>
+        </div>
+      </section>
+
+      <!-- SJIT -->
+      <section class="tab-panel" id="sjit">
+        <div class="panel-card full">
+          <div class="panel-title">SJIT Planning</div>
+          <div class="placeholder-box">SJIT planning content will load here</div>
+        </div>
+      </section>
+
+      <!-- SOR -->
+      <section class="tab-panel" id="sor">
+        <div class="panel-card full">
+          <div class="panel-title">SOR Planning</div>
+          <div class="placeholder-box">SOR planning content will load here</div>
+        </div>
+      </section>
+
+      <!-- Export -->
+      <section class="tab-panel" id="export">
+        <div class="panel-card full">
+          <div class="panel-title">Export Center</div>
+          <div class="placeholder-box">Export actions will load here</div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- JS -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
