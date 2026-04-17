@@ -1,0 +1,240 @@
+/* ==========================================
+   SALES.CSS
+   Sales Tab Only
+   Fully Isolated Styles
+========================================== */
+
+/* ==========================================
+   Sales Root
+========================================== */
+
+#sales {
+  width: 100%;
+}
+
+/* ==========================================
+   Layout
+========================================== */
+
+#sales .sales-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-16);
+}
+
+#sales .sales-stack {
+  display: grid;
+  gap: var(--space-16);
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+#sales .panel-card {
+  min-height: 180px;
+}
+
+#sales .panel-card.large {
+  min-height: 420px;
+}
+
+/* ==========================================
+   Chart Area
+========================================== */
+
+.sales-chart-wrap {
+  width: 100%;
+  height: 340px;
+
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    to bottom,
+    #ffffff 0%,
+    #f8fafc 100%
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
+
+/* ==========================================
+   Metric Blocks
+========================================== */
+
+.sales-metric-list {
+  display: grid;
+  gap: var(--space-10);
+}
+
+.sales-metric-item {
+  padding: var(--space-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.sales-metric-label {
+  font-size: var(--font-sm);
+  font-weight: var(--fw-600);
+  color: var(--text-main);
+}
+
+.sales-metric-value {
+  font-size: var(--font-md);
+  font-weight: var(--fw-700);
+  color: var(--text-main);
+}
+
+/* ==========================================
+   MOM Status
+========================================== */
+
+.sales-growth-up {
+  color: var(--success);
+}
+
+.sales-growth-flat {
+  color: var(--warning);
+}
+
+.sales-growth-down {
+  color: var(--danger);
+}
+
+/* ==========================================
+   Section Title
+========================================== */
+
+#sales .panel-title {
+  padding-bottom: var(--space-10);
+  margin-bottom: var(--space-14);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ==========================================
+   Toolbar
+========================================== */
+
+.sales-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+  flex-wrap: wrap;
+
+  margin-bottom: var(--space-12);
+}
+
+.sales-toolbar-left,
+.sales-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+}
+
+/* ==========================================
+   Highlight Cards
+========================================== */
+
+.sales-highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-12);
+}
+
+.sales-highlight-card {
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.sales-highlight-title {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.sales-highlight-value {
+  margin-top: var(--space-8);
+  font-size: var(--font-lg);
+  font-weight: var(--fw-700);
+}
+
+/* ==========================================
+   Loading
+========================================== */
+
+.sales-loading {
+  min-height: 240px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-muted);
+}
+
+/* ==========================================
+   Responsive
+========================================== */
+
+@media (max-width: 1200px) {
+  #sales .sales-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #sales .panel-card.large {
+    min-height: 360px;
+  }
+
+  .sales-chart-wrap {
+    height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  #sales .sales-stack,
+  #sales .sales-grid {
+    gap: var(--space-12);
+  }
+
+  .sales-highlight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #sales .panel-card.large {
+    min-height: 280px;
+  }
+
+  .sales-chart-wrap {
+    height: 220px;
+  }
+
+  .sales-metric-item,
+  .sales-highlight-card {
+    padding: var(--space-10);
+  }
+}
+
+@media (max-width: 480px) {
+  .sales-toolbar {
+    align-items: stretch;
+  }
+
+  .sales-toolbar-left,
+  .sales-toolbar-right {
+    width: 100%;
+  }
+}
