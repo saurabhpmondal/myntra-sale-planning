@@ -2,20 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>MYNTRA SALES & PLANNING</title>
 
-  <!-- Core CSS -->
   <link rel="stylesheet" href="css/reset.css" />
   <link rel="stylesheet" href="css/variables.css" />
   <link rel="stylesheet" href="css/layout.css" />
   <link rel="stylesheet" href="css/components.css" />
 
-  <!-- Tab CSS -->
   <link rel="stylesheet" href="css/dashboard.css" />
   <link rel="stylesheet" href="css/sales.css" />
   <link rel="stylesheet" href="css/traffic.css" />
@@ -28,44 +23,17 @@
 
 <body>
 
-  <!-- =====================================
-       APP HEADER
-  ====================================== -->
-  <header class="app-header">
+<!-- ==================================================
+HEADER
+================================================== -->
+<header class="app-header">
 
-    <div class="header-left filters-row">
+  <!-- TOP ROW -->
+  <div class="header-center">
 
-      <select id="monthFilter" class="filter-control">
-        <option>Loading...</option>
-      </select>
-
-      <input
-        type="date"
-        id="startDate"
-        class="filter-control"
-      />
-
-      <input
-        type="date"
-        id="endDate"
-        class="filter-control"
-      />
-
-      <select id="brandFilter" class="filter-control">
-        <option>All Brands</option>
-      </select>
-
-      <select id="poTypeFilter" class="filter-control">
-        <option>All PO Type</option>
-      </select>
-
-    </div>
-
-    <div class="header-center">
-      <h1 class="app-title">
-        MYNTRA SALES & PLANNING
-      </h1>
-    </div>
+    <h1 class="app-title">
+      MYNTRA SALES & PLANNING
+    </h1>
 
     <div class="header-right search-wrap">
       <input
@@ -77,305 +45,69 @@
       />
     </div>
 
-  </header>
+  </div>
 
-  <!-- =====================================
-       TAB NAVIGATION
-  ====================================== -->
-  <nav class="tab-nav">
+  <!-- FILTER ROW -->
+  <div class="header-left filters-row">
 
-    <button class="tab-btn active"
-      data-tab="dashboard">📊 Dashboard</button>
+    <select id="monthFilter" class="filter-control">
+      <option>Loading...</option>
+    </select>
 
-    <button class="tab-btn"
-      data-tab="sales">💰 Sales</button>
+    <input
+      type="date"
+      id="startDate"
+      class="filter-control"
+    />
 
-    <button class="tab-btn"
-      data-tab="traffic">🚦 Traffic</button>
+    <input
+      type="date"
+      id="endDate"
+      class="filter-control"
+    />
 
-    <button class="tab-btn"
-      data-tab="products">🧵 Products</button>
+    <select id="brandFilter" class="filter-control">
+      <option>All Brands</option>
+    </select>
 
-    <button class="tab-btn"
-      data-tab="inventory">📦 Inventory</button>
+    <select id="poTypeFilter" class="filter-control">
+      <option>All PO Type</option>
+    </select>
 
-    <button class="tab-btn"
-      data-tab="sjit">🚚 SJIT Planning</button>
+  </div>
 
-    <button class="tab-btn"
-      data-tab="sor">🏬 SOR Planning</button>
+</header>
 
-    <button class="tab-btn"
-      data-tab="export">⬇ Export Center</button>
+<!-- ==================================================
+TABS
+================================================== -->
+<nav class="tab-nav">
 
-  </nav>
+  <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+  <button class="tab-btn" data-tab="sales">💰 Sales</button>
+  <button class="tab-btn" data-tab="traffic">🚦 Traffic</button>
+  <button class="tab-btn" data-tab="products">🧵 Products</button>
+  <button class="tab-btn" data-tab="inventory">📦 Inventory</button>
+  <button class="tab-btn" data-tab="sjit">🚚 SJIT Planning</button>
+  <button class="tab-btn" data-tab="sor">🏬 SOR Planning</button>
+  <button class="tab-btn" data-tab="export">⬇ Export Center</button>
 
-  <!-- =====================================
-       MAIN CONTENT
-  ====================================== -->
-  <main class="app-main">
+</nav>
 
-    <!-- DASHBOARD -->
-    <section
-      id="dashboard"
-      class="tab-panel active">
+<!-- ==================================================
+MAIN CONTENT
+(KEEP YOUR EXISTING ALL SECTIONS BELOW EXACT SAME)
+================================================== -->
 
-      <div class="kpi-grid">
-        <div class="kpi-card"><span>Revenue</span><strong id="kpiRevenue">-</strong></div>
-        <div class="kpi-card"><span>Units</span><strong id="kpiUnits">-</strong></div>
-        <div class="kpi-card"><span>Return%</span><strong id="kpiReturn">-</strong></div>
-        <div class="kpi-card"><span>SJIT Stock</span><strong id="kpiSjit">-</strong></div>
-        <div class="kpi-card"><span>SOR Stock</span><strong id="kpiSor">-</strong></div>
-        <div class="kpi-card"><span>Growth</span><strong id="kpiGrowth">-</strong></div>
-      </div>
+<main class="app-main">
 
-      <div id="dashboardDailyChart"
-        class="panel-card large"></div>
+  <!-- KEEP ALL YOUR EXISTING DASHBOARD / SALES / TRAFFIC /
+       PRODUCTS / INVENTORY / SJIT / SOR / EXPORT
+       SECTIONS SAME AS PREVIOUS FILE -->
 
-      <div class="two-col-grid">
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Brand Analysis
-          </h3>
-          <div id="dashboardBrandSummary"></div>
-        </div>
+</main>
 
-        <div class="panel-card">
-          <h3 class="panel-title">
-            PO Type Analysis
-          </h3>
-          <div id="dashboardPoSummary"></div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- SALES -->
-    <section id="sales"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Sales Overview
-        </h3>
-        <div id="salesOverview"></div>
-      </div>
-
-      <div class="two-col-grid">
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Brand Sales
-          </h3>
-          <div id="salesBrandTable"></div>
-        </div>
-
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Top Products
-          </h3>
-          <div id="salesProductTable"></div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- TRAFFIC -->
-    <section id="traffic"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Traffic Overview
-        </h3>
-        <div id="trafficOverview"></div>
-      </div>
-
-      <div class="two-col-grid">
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Top Styles
-          </h3>
-          <div id="trafficTopStyles"></div>
-        </div>
-
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Brand Traffic
-          </h3>
-          <div id="trafficBrandTable"></div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- PRODUCTS -->
-    <section id="products"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Product Detail
-        </h3>
-        <div id="productsDetail"></div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Search Matches
-        </h3>
-        <div id="productsMatches"></div>
-      </div>
-
-    </section>
-
-    <!-- INVENTORY -->
-    <section id="inventory"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Inventory Overview
-        </h3>
-        <div id="inventoryOverview"></div>
-      </div>
-
-      <div class="two-col-grid">
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Inventory Table
-          </h3>
-          <div id="inventoryTable"></div>
-        </div>
-
-        <div class="panel-card">
-          <h3 class="panel-title">
-            Inventory Health
-          </h3>
-          <div id="inventoryHealth"></div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- SJIT -->
-    <section id="sjit"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          SJIT Overview
-        </h3>
-        <div id="sjitOverview"></div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Planning Actions
-        </h3>
-        <div id="sjitActions"></div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Style Level Planning
-        </h3>
-        <div id="sjitTable"></div>
-      </div>
-
-    </section>
-
-    <!-- SOR -->
-    <section id="sor"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          SOR Overview
-        </h3>
-        <div id="sorOverview"></div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Planning Actions
-        </h3>
-        <div id="sorActions"></div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Style Level Planning
-        </h3>
-        <div id="sorTable"></div>
-      </div>
-
-    </section>
-
-    <!-- EXPORT -->
-    <section id="export"
-      class="tab-panel">
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Export Reports
-        </h3>
-
-        <div class="export-list">
-
-          <button class="export-btn primary"
-            data-export="dashboard">
-            Dashboard Export
-          </button>
-
-          <button class="export-btn"
-            data-export="sales">
-            Sales Export
-          </button>
-
-          <button class="export-btn"
-            data-export="traffic">
-            Traffic Export
-          </button>
-
-          <button class="export-btn"
-            data-export="products">
-            Products Export
-          </button>
-
-          <button class="export-btn"
-            data-export="inventory">
-            Inventory Export
-          </button>
-
-          <button class="export-btn"
-            data-export="sjit">
-            SJIT Planning Export
-          </button>
-
-          <button class="export-btn"
-            data-export="sor">
-            SOR Planning Export
-          </button>
-
-        </div>
-      </div>
-
-      <div class="panel-card">
-        <h3 class="panel-title">
-          Export History
-        </h3>
-
-        <div id="exportHistory"></div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- Final App Entry -->
-  <script
-    type="module"
-    src="js/app.js"></script>
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
