@@ -1,0 +1,214 @@
+/* ==========================================
+   LAYOUT.CSS
+   Main Structural Layout
+========================================== */
+
+/* App Root */
+#app {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-16);
+}
+
+/* ==========================================
+   Main Content Wrapper
+========================================== */
+
+.main-content {
+  width: 100%;
+  margin-top: var(--space-16);
+}
+
+/* ==========================================
+   Tab Panels
+========================================== */
+
+.tab-panel {
+  display: none;
+  animation: fadeIn 0.22s ease;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ==========================================
+   Grid System
+========================================== */
+
+.panel-grid {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.panel-grid.two-col {
+  grid-template-columns: 2fr 1fr;
+}
+
+.panel-grid.three-col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.panel-grid.four-col {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+.panel-card {
+  padding: var(--space-16);
+  min-height: 120px;
+}
+
+.panel-card.full {
+  width: 100%;
+}
+
+.panel-card.large {
+  min-height: 420px;
+}
+
+.panel-card.compact {
+  min-height: auto;
+}
+
+/* Card Title */
+.panel-title {
+  margin-bottom: var(--space-12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-10);
+}
+
+/* ==========================================
+   Section Spacing
+========================================== */
+
+.section-gap {
+  margin-top: var(--space-16);
+}
+
+.section-gap-lg {
+  margin-top: var(--space-24);
+}
+
+/* ==========================================
+   Dashboard Special Layout
+========================================== */
+
+#dashboard .panel-grid > .panel-card:nth-child(1) {
+  grid-row: span 2;
+}
+
+/* ==========================================
+   Sticky Zones (future ready)
+========================================== */
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.sticky-under-header {
+  position: sticky;
+  top: calc(var(--header-height) + 8px);
+  z-index: 20;
+}
+
+/* ==========================================
+   Empty State
+========================================== */
+
+.empty-wrap {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: var(--space-20);
+}
+
+/* ==========================================
+   Fade Animation
+========================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   Responsive - Tablet
+========================================== */
+
+@media (max-width: 1200px) {
+  .panel-grid.two-col {
+    grid-template-columns: 1fr;
+  }
+
+  #dashboard .panel-grid > .panel-card:nth-child(1) {
+    grid-row: auto;
+  }
+
+  .panel-grid.three-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .panel-grid.four-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================
+   Responsive - Mobile
+========================================== */
+
+@media (max-width: 768px) {
+  #app {
+    padding: var(--space-10);
+  }
+
+  .main-content {
+    margin-top: var(--space-12);
+  }
+
+  .panel-grid,
+  .panel-grid.two-col,
+  .panel-grid.three-col,
+  .panel-grid.four-col {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+
+  .panel-card {
+    padding: var(--space-12);
+  }
+
+  .panel-card.large {
+    min-height: 280px;
+  }
+
+  .section-gap {
+    margin-top: var(--space-12);
+  }
+
+  .section-gap-lg {
+    margin-top: var(--space-16);
+  }
+}
