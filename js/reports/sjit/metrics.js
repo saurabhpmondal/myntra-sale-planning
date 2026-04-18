@@ -1,11 +1,15 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   V4.1 SAFE REBUILD
+   FIXED USING CENTRAL DATE ENGINE
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
 import { clean, num } from "../sales/helpers.js";
+
+import {
+  buildSaleKeyDate
+} from "../../normalize/dates.js";
 
 /* ==========================================
    PUBLIC
@@ -101,8 +105,7 @@ function buildRows(data) {
     const zone =
       getZone(
         clean(
-          r.state ||
-          r.ship_state
+          r.state
         ).toUpperCase()
       );
 
@@ -146,7 +149,7 @@ function buildRows(data) {
     }
   );
 
-  /* PRODUCT MASTER */
+  /* PM */
   data.pm.forEach(
     (r) => {
       const id =
@@ -316,6 +319,39 @@ function finalizeRow(r) {
 }
 
 /* ==========================================
+   DATE ENGINE
+========================================== */
+
+function isLast30Day(r) {
+  const key =
+    buildSaleKeyDate(
+      r.year,
+      r.month,
+      r.date
+    );
+
+  if (!key)
+    return false;
+
+  const rowDate =
+    new Date(key);
+
+  const cut =
+    new Date();
+
+  cut.setDate(
+    cut.getDate() -
+      30
+  );
+
+  cut.setHours(
+    0,0,0,0
+  );
+
+  return rowDate >= cut;
+}
+
+/* ==========================================
    HELPERS
 ========================================== */
 
@@ -410,87 +446,6 @@ function upper(v) {
     .trim()
     .toUpperCase();
 }
-
-/* ==========================================
-   DATE LOGIC
-========================================== */
-
-function isLast30Day(r) {
-  const dt =
-    parseDate(
-      r.order_date ||
-      r.date
-    );
-
-  if (dt) {
-    const cut =
-      new Date();
-
-    cut.setDate(
-      cut.getDate() -
-        30
-    );
-
-    cut.setHours(
-      0,0,0,0
-    );
-
-    return dt >= cut;
-  }
-
-  /* fallback */
-  const y =
-    Number(r.year);
-
-  const m =
-    Number(r.month);
-
-  if (!y || !m)
-    return false;
-
-  const now =
-    new Date();
-
-  const d =
-    new Date(
-      y,
-      m - 1,
-      1
-    );
-
-  const cut =
-    new Date();
-
-  cut.setDate(
-    cut.getDate() -
-      30
-  );
-
-  return d >=
-    new Date(
-      cut.getFullYear(),
-      cut.getMonth(),
-      1
-    );
-}
-
-function parseDate(v) {
-  if (!v) return null;
-
-  const d =
-    new Date(v);
-
-  if (
-    !isNaN(d)
-  )
-    return d;
-
-  return null;
-}
-
-/* ==========================================
-   ZONE
-========================================== */
 
 function getZone(x) {
   if (
