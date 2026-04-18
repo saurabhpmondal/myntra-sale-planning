@@ -332,3 +332,50 @@
     font-size: 13px;
   }
 }
+
+/* ==========================================
+   SALES REPORT TABLE
+========================================== */
+
+.sales-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.sales-table {
+  min-width: 1600px;
+}
+
+.sales-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #ffffff;
+  white-space: nowrap;
+}
+
+.sales-table td,
+.sales-table th {
+  white-space: nowrap;
+}
+
+.sales-table .sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: #ffffff;
+}
+
+.sales-table tbody tr:nth-child(even) .sticky-col {
+  background: #f8fafc;
+}
+
+.sales-table td.pos {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.sales-table td.neg {
+  color: #dc2626;
+  font-weight: 700;
+}
