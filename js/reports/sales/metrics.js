@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
    FULL REPLACE CODE
-   Final Rating Fix
+   FINAL RATING FIX = MAX NON ZERO
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -15,6 +15,10 @@ import {
   clean,
   byGmvDesc
 } from "./helpers.js";
+
+/* ==========================================
+   PUBLIC
+========================================== */
 
 export function getSalesRows() {
   const sales =
@@ -50,6 +54,10 @@ export function getSalesRows() {
       )
   });
 }
+
+/* ==========================================
+   BUILD
+========================================== */
 
 function buildRows(data) {
   const map = {};
@@ -175,15 +183,13 @@ function enrichPM(
 
 /* ==========================================
    FINAL RATING FIX
+   USE MAX NON ZERO
 ========================================== */
 
 function enrichTraffic(
   map,
   rows
 ) {
-  const ratingMap =
-    {};
-
   rows.forEach((r) => {
     const id =
       clean(
@@ -196,14 +202,13 @@ function enrichTraffic(
     )
       return;
 
-    const raw =
-      String(
-        r.rating ||
-          ""
-      ).trim();
-
     const val =
-      Number(raw);
+      Number(
+        String(
+          r.rating ||
+            ""
+        ).trim()
+      );
 
     if (
       isNaN(val) ||
@@ -212,34 +217,13 @@ function enrichTraffic(
       return;
 
     if (
-      !ratingMap[id]
+      val >
+      map[id].rating
     ) {
-      ratingMap[id] =
-        {
-          sum: 0,
-          count: 0
-        };
-    }
-
-    ratingMap[id].sum +=
-      val;
-
-    ratingMap[id]
-      .count += 1;
-  });
-
-  Object.keys(
-    ratingMap
-  ).forEach(
-    (id) => {
-      const x =
-        ratingMap[id];
-
       map[id].rating =
-        x.sum /
-        x.count;
+        val;
     }
-  );
+  });
 }
 
 /* ==========================================
@@ -461,7 +445,7 @@ function enrichGrowth(
           prev[id]
         );
     }
-  );
+  });
 }
 
 /* ==========================================
@@ -473,8 +457,7 @@ function finalize(
   totalUnits
 ) {
   return Object.values(
-    map
-  )
+    map)
     .map((r) => {
       r.asp =
         divide(
@@ -532,6 +515,7 @@ function blank(id) {
     erp: "",
     brand: "",
     rating: 0,
+
     gmv: 0,
     units: 0,
     asp: 0,
