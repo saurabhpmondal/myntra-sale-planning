@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   FINAL GROWTH FIX
+   GROWTH FIXED WITH MONTH NORMALIZATION
 ========================================== */
 
 import {
@@ -8,6 +8,7 @@ import {
 } from "../../core/state.js";
 
 import { applyGlobalFilters } from "../../filters/filter-engine.js";
+import { normalizeMonth } from "../../normalize/dates.js";
 
 import {
   setText,
@@ -30,41 +31,29 @@ export function renderKpis() {
     );
 
   const returns =
-    getDataset(
-      "returns"
-    );
+    getDataset("returns");
 
-  /* SALES KPI */
   const revenue =
     sales.reduce(
       (a, r) =>
-        a +
-        num(
-          r.final_amount
-        ),
+        a + num(r.final_amount),
       0
     );
 
   const units =
     sales.reduce(
       (a, r) =>
-        a +
-        num(r.qty),
+        a + num(r.qty),
       0
     );
 
-  /* RETURN % */
   const sold =
     new Set();
 
   sales.forEach((r) => {
-    if (
-      r.order_line_id
-    ) {
+    if (r.order_line_id) {
       sold.add(
-        String(
-          r.order_line_id
-        )
+        String(r.order_line_id)
       );
     }
   });
@@ -73,18 +62,12 @@ export function renderKpis() {
     new Set();
 
   returns.forEach((r) => {
-    const id =
-      String(
-        r.order_line_id ||
-          ""
-      ).trim();
+    const id = String(
+      r.order_line_id || ""
+    ).trim();
 
-    if (
-      sold.has(id)
-    ) {
-      returned.add(
-        id
-      );
+    if (sold.has(id)) {
+      returned.add(id);
     }
   });
 
@@ -94,42 +77,33 @@ export function renderKpis() {
           (returned.size /
             sold.size) *
           100
-        ).toFixed(1) +
-        "%"
+        ).toFixed(1) + "%"
       : "0%";
 
-  /* STOCK */
   const sjit =
-    getDataset(
-      "sjitStock"
-    ).reduce(
-      (a, r) =>
-        a +
-        num(
-          r.sellable_inventory_count
-        ),
-      0
-    );
+    getDataset("sjitStock")
+      .reduce(
+        (a, r) =>
+          a +
+          num(
+            r.sellable_inventory_count
+          ),
+        0
+      );
 
   const sor =
-    getDataset(
-      "sorStock"
-    ).reduce(
-      (a, r) =>
-        a +
-        num(
-          r.units
-        ),
-      0
-    );
+    getDataset("sorStock")
+      .reduce(
+        (a, r) =>
+          a + num(r.units),
+        0
+      );
 
-  /* GROWTH */
   const growth =
     calcGrowth(
       salesAll
     );
 
-  /* RENDER */
   setText(
     "kpiRevenue",
     fc(revenue)
@@ -161,7 +135,7 @@ export function renderKpis() {
 }
 
 /* ==========================================
-   FINAL GROWTH
+   GROWTH
 ========================================== */
 
 function calcGrowth(
@@ -199,47 +173,18 @@ function calcGrowth(
     py--;
   }
 
-  const endEl =
-    document.getElementById(
-      "endDate"
-    );
-
-  const daysInMonth =
-    new Date(
-      year,
-      month,
-      0
-    ).getDate();
-
-  let selectedDay =
-    daysInMonth;
-
-  if (
-    endEl &&
-    endEl.value
-  ) {
-    selectedDay =
-      Number(
-        endEl.value.split(
-          "-"
-        )[2]
-      );
-  }
-
-  let current =
-    0;
-  let previous =
-    0;
+  let current = 0;
+  let previous = 0;
 
   rows.forEach((r) => {
     const y =
-      Number(
-        r.year
-      );
+      Number(r.year);
 
     const m =
       Number(
-        r.month
+        normalizeMonth(
+          r.month
+        )
       );
 
     const val =
@@ -251,39 +196,27 @@ function calcGrowth(
       y === year &&
       m === month
     ) {
-      current +=
-        val;
+      current += val;
     }
 
     if (
       y === py &&
       m === pm
     ) {
-      previous +=
-        val;
+      previous += val;
     }
   });
 
-  if (
-    previous === 0
-  ) {
+  if (previous === 0) {
     return {
       raw: 0,
-      text: "-"
+      text: "0.0%"
     };
   }
 
-  const projected =
-    (current /
-      Math.max(
-        selectedDay,
-        1
-      )) *
-    daysInMonth;
-
   const pct =
     (
-      ((projected -
+      ((current -
         previous) /
         previous) *
       100
@@ -313,6 +246,7 @@ function renderGrowth(
     el.innerHTML =
       "▲ " +
       growth.text;
+
     el.style.color =
       "#16a34a";
   } else if (
@@ -321,11 +255,13 @@ function renderGrowth(
     el.innerHTML =
       "▼ " +
       growth.text;
+
     el.style.color =
       "#dc2626";
   } else {
     el.innerHTML =
       growth.text;
+
     el.style.color =
       "#64748b";
   }
