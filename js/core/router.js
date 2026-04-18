@@ -1,20 +1,20 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   Added SJIT Planning Render
+   SAFE MERGED ROUTER
+   Dashboard + Sales + Traffic + SJIT
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
+import { renderTrafficReport } from "../reports/traffic/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
    PUBLIC
 ========================================== */
 
-export function navigate(
-  tab = "dashboard"
-) {
+export function navigate(tab = "dashboard") {
   setActiveTab(tab);
   renderTab(tab);
 }
@@ -34,28 +34,23 @@ function setActiveTab(tab) {
       ".tab-panel"
     );
 
-  buttons.forEach(
-    (btn) => {
-      btn.classList.toggle(
-        "active",
-        btn.dataset.tab ===
-          tab
-      );
-    }
-  );
+  buttons.forEach((btn) => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.tab === tab
+    );
+  });
 
-  panels.forEach(
-    (panel) => {
-      panel.classList.toggle(
-        "active",
-        panel.id === tab
-      );
-    }
-  );
+  panels.forEach((panel) => {
+    panel.classList.toggle(
+      "active",
+      panel.id === tab
+    );
+  });
 }
 
 /* ==========================================
-   TAB RENDER
+   RENDER TAB
 ========================================== */
 
 function renderTab(tab) {
@@ -68,18 +63,19 @@ function renderTab(tab) {
       renderSalesReport();
       break;
 
+    case "traffic":
+      renderTrafficReport();
+      break;
+
     case "sjit":
       renderSjitReport();
       break;
 
-    case "traffic":
     case "products":
     case "inventory":
     case "sor":
     case "export":
-      renderPlaceholder(
-        tab
-      );
+      renderPlaceholder(tab);
       break;
 
     default:
@@ -92,20 +88,14 @@ function renderTab(tab) {
    PLACEHOLDER
 ========================================== */
 
-function renderPlaceholder(
-  id
-) {
+function renderPlaceholder(id) {
   const el =
-    document.getElementById(
-      id
-    );
+    document.getElementById(id);
 
-  if (!el)
-    return;
+  if (!el) return;
 
   if (
-    el.innerHTML
-      .trim() !== ""
+    el.innerHTML.trim() !== ""
   )
     return;
 
