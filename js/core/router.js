@@ -1,13 +1,14 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   FIXED LIVE SOR + TRAFFIC LAZY LOAD
+   Added Export Center
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 import { renderSorReport } from "../reports/sor/index.js";
+import { renderExportCenter } from "../reports/export/index.js";
 
 import {
   getDataset,
@@ -89,10 +90,8 @@ async function renderTab(tab) {
       break;
 
     case "export":
-      renderPlaceholder(
-        "export",
-        "Export Center"
-      );
+      await ensureTraffic();
+      renderExportCenter();
       break;
 
     default:
@@ -141,32 +140,4 @@ async function ensureTraffic() {
         []
     );
   }
-}
-
-/* ==========================================
-   PLACEHOLDER
-========================================== */
-
-function renderPlaceholder(
-  id,
-  title
-) {
-  const el =
-    document.getElementById(
-      id
-    );
-
-  if (!el) return;
-
-  el.innerHTML = `
-    <div class="panel-card">
-      <h3 class="panel-title">
-        ${title}
-      </h3>
-
-      <div class="placeholder-box large">
-        Coming Soon
-      </div>
-    </div>
-  `;
 }
