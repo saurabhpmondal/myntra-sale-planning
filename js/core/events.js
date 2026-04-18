@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   Added Traffic Refresh Support
+   Added SJIT Refresh Support
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -9,7 +9,7 @@ import { setFilter } from "./state.js";
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
-import { renderTrafficReport } from "../reports/traffic/index.js";
+import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
    PUBLIC
@@ -259,7 +259,7 @@ function bindSearch() {
 }
 
 /* ==========================================
-   REFRESH ACTIVE TAB
+   REFRESH
 ========================================== */
 
 function refresh() {
@@ -290,9 +290,9 @@ function refresh() {
 
   if (
     id ===
-    "traffic"
+    "sjit"
   ) {
-    renderTrafficReport();
+    renderSjitReport();
   }
 }
 
