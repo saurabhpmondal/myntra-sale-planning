@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
    FULL REPLACE CODE
-   Final Rating Fix + SOR Column Ready
+   HARD FIX:
+   Rating + SOR Stock key mismatch handling
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -29,29 +30,28 @@ export function getSalesRows() {
   const salesAll =
     getDataset("sales");
 
-  const pm =
-    getDataset("productMaster");
-
-  const traffic =
-    getDataset("traffic");
-
-  const returns =
-    getDataset("returns");
-
-  const sjit =
-    getDataset("sjitStock");
-
-  const sor =
-    getDataset("sorStock");
-
   return buildRows({
     sales,
     salesAll,
-    pm,
-    traffic,
-    returns,
-    sjit,
-    sor
+    pm: getDataset(
+      "productMaster"
+    ),
+    traffic:
+      getDataset(
+        "traffic"
+      ),
+    returns:
+      getDataset(
+        "returns"
+      ),
+    sjit:
+      getDataset(
+        "sjitStock"
+      ),
+    sor:
+      getDataset(
+        "sorStock"
+      )
   });
 }
 
@@ -60,92 +60,107 @@ export function getSalesRows() {
 ========================================== */
 
 function buildRows(data) {
-  const {
-    sales,
-    salesAll,
-    pm,
-    traffic,
-    returns,
-    sjit,
-    sor
-  } = data;
-
   const map = {};
   let totalUnits = 0;
 
-  sales.forEach((r) => {
-    const id =
-      clean(r.style_id);
+  data.sales.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
 
-    if (!id) return;
+      if (!id)
+        return;
 
-    if (!map[id]) {
-      map[id] =
-        blank(id);
-    }
+      if (!map[id]) {
+        map[id] =
+          blank(id);
+      }
 
-    const row =
-      map[id];
+      const row =
+        map[id];
 
-    const qty =
-      num(r.qty);
+      const qty =
+        num(r.qty);
 
-    const gmv =
-      num(
-        r.final_amount
-      );
+      row.units +=
+        qty;
 
-    row.gmv += gmv;
-    row.units += qty;
+      row.gmv +=
+        num(
+          r.final_amount
+        );
 
-    totalUnits += qty;
+      totalUnits +=
+        qty;
 
-    row.brand =
-      row.brand ||
-      clean(r.brand);
-
-    if (
-      r.order_line_id
-    ) {
-      row.soldIds.add(
+      row.brand =
+        row.brand ||
         clean(
-          r.order_line_id
-        )
-      );
+          r.brand
+        );
+
+      if (
+        r.order_line_id
+      ) {
+        row.soldIds.add(
+          clean(
+            r.order_line_id
+          )
+        );
+      }
+
+      const po =
+        clean(
+          r.po_type
+        ).toUpperCase();
+
+      if (
+        po ===
+        "PPMP"
+      )
+        row.ppmp +=
+          qty;
+
+      if (
+        po ===
+        "SJIT"
+      )
+        row.sjitSale +=
+          qty;
+
+      if (
+        po ===
+        "SOR"
+      )
+        row.sorSale +=
+          qty;
     }
+  );
 
-    const po =
-      clean(
-        r.po_type
-      ).toUpperCase();
+  enrichPM(
+    map,
+    data.pm
+  );
 
-    if (po === "PPMP")
-      row.ppmp += qty;
-
-    if (po === "SJIT")
-      row.sjitSale += qty;
-
-    if (po === "SOR")
-      row.sorSale += qty;
-  });
-
-  enrichPM(map, pm);
   enrichTraffic(
     map,
-    traffic
+    data.traffic
   );
+
   enrichReturns(
     map,
-    returns
+    data.returns
   );
+
   enrichStocks(
     map,
-    sjit,
-    sor
+    data.sjit,
+    data.sor
   );
+
   enrichGrowth(
     map,
-    salesAll
+    data.salesAll
   );
 
   return finalize(
@@ -162,33 +177,34 @@ function enrichPM(
   map,
   rows
 ) {
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+  rows.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
 
-    if (!map[id])
-      return;
+      if (!map[id])
+        return;
 
-    map[id].erp =
-      clean(
-        r.erp_sku
-      );
-
-    if (
-      !map[id].brand
-    ) {
-      map[id].brand =
+      map[id].erp =
         clean(
-          r.brand
+          r.erp_sku
         );
+
+      if (
+        !map[id]
+          .brand
+      ) {
+        map[id].brand =
+          clean(
+            r.brand
+          );
+      }
     }
-  });
+  );
 }
 
 /* ==========================================
-   FINAL RATING FIX
+   HARD RATING FIX
 ========================================== */
 
 function enrichTraffic(
@@ -198,39 +214,37 @@ function enrichTraffic(
   const bucket =
     {};
 
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
+  rows.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
+
+      if (!map[id])
+        return;
+
+      const val =
+        Number(
+          r.rating
+        );
+
+      if (
+        isNaN(val) ||
+        val <= 0
+      )
+        return;
+
+      if (
+        !bucket[id]
+      ) {
+        bucket[id] =
+          [];
+      }
+
+      bucket[id].push(
+        val
       );
-
-    if (
-      !map[id]
-    )
-      return;
-
-    const val =
-      Number(
-        r.rating
-      );
-
-    if (
-      isNaN(val) ||
-      val <= 0
-    )
-      return;
-
-    if (
-      !bucket[id]
-    ) {
-      bucket[id] =
-        [];
     }
-
-    bucket[id].push(
-      val
-    );
-  });
+  );
 
   Object.keys(
     bucket
@@ -239,16 +253,16 @@ function enrichTraffic(
       const arr =
         bucket[id];
 
-      const avg =
+      map[id].rating =
         arr.reduce(
-          (a, b) =>
+          (
+            a,
+            b
+          ) =>
             a + b,
           0
         ) /
         arr.length;
-
-      map[id].rating =
-        avg;
     }
   );
 }
@@ -257,7 +271,7 @@ function enrichReturns(
   map,
   rows
 ) {
-  const lineMap =
+  const link =
     {};
 
   Object.values(
@@ -266,75 +280,84 @@ function enrichReturns(
     (row) => {
       row.soldIds.forEach(
         (id) => {
-          lineMap[id] =
+          link[id] =
             row.styleId;
         }
       );
     }
   );
 
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.order_line_id
-      );
+  rows.forEach(
+    (r) => {
+      const id =
+        clean(
+          r.order_line_id
+        );
 
-    const style =
-      lineMap[id];
+      const style =
+        link[id];
 
-    if (
-      style &&
-      map[style]
-    ) {
-      map[
-        style
-      ].returnIds.add(
-        id
-      );
+      if (
+        style &&
+        map[style]
+      ) {
+        map[
+          style
+        ].returnIds.add(
+          id
+        );
+      }
     }
-  });
+  );
 }
+
+/* ==========================================
+   HARD SOR FIX
+========================================== */
 
 function enrichStocks(
   map,
   sjit,
   sor
 ) {
-  sjit.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+  sjit.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
 
-    if (
-      map[id]
-    ) {
-      map[id].sjitStock +=
-        num(
-          r.sellable_inventory_count
-        );
+      if (
+        map[id]
+      ) {
+        map[id]
+          .sjitStock +=
+          num(
+            r.sellable_inventory_count ||
+              r.inventory_count
+          );
+      }
     }
-  });
+  );
 
-  sor.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+  sor.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
 
-    if (
-      map[id]
-    ) {
-      map[id].sorStock +=
-        num(
-          r.units
-        );
+      if (
+        map[id]
+      ) {
+        map[id]
+          .sorStock +=
+          num(
+            r.units
+          );
+      }
     }
-  });
+  );
 }
 
 /* ==========================================
-   PROJECTED GROWTH
+   GROWTH
 ========================================== */
 
 function enrichGrowth(
@@ -401,64 +424,69 @@ function enrichGrowth(
   const prev =
     {};
 
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+  rows.forEach(
+    (r) => {
+      const id =
+        styleKey(r);
 
-    const y =
-      Number(
-        r.year
-      );
+      const y =
+        Number(
+          r.year
+        );
 
-    const m =
-      Number(
-        normalizeMonth(
-          r.month
-        )
-      );
+      const m =
+        Number(
+          normalizeMonth(
+            r.month
+          )
+        );
 
-    const val =
-      num(
-        r.final_amount
-      );
+      const val =
+        num(
+          r.final_amount
+        );
 
-    if (
-      y === year &&
-      m === month
-    ) {
-      curr[id] =
-        (curr[id] ||
-          0) + val;
+      if (
+        y ===
+          year &&
+        m ===
+          month
+      ) {
+        curr[id] =
+          (curr[id] ||
+            0) +
+          val;
+      }
+
+      if (
+        y === py &&
+        m === pm
+      ) {
+        prev[id] =
+          (prev[id] ||
+            0) +
+          val;
+      }
     }
-
-    if (
-      y === py &&
-      m === pm
-    ) {
-      prev[id] =
-        (prev[id] ||
-          0) + val;
-    }
-  });
+  );
 
   Object.keys(
     map
   ).forEach(
     (id) => {
-      const cm =
+      const current =
         curr[id] ||
         0;
 
       const projected =
         elapsed > 0
-          ? (cm /
+          ? (current /
               elapsed) *
             totalDays
-          : cm;
+          : current;
 
-      map[id].growthPct =
+      map[id]
+        .growthPct =
         growthPct(
           projected,
           prev[id]
@@ -478,68 +506,82 @@ function finalize(
   return Object.values(
     map
   )
-    .map((r) => {
-      r.asp =
-        divide(
-          r.gmv,
-          r.units
-        );
+    .map(
+      (r) => {
+        r.asp =
+          divide(
+            r.gmv,
+            r.units
+          );
 
-      r.returnPct =
-        divide(
-          r.returnIds
-            .size *
-            100,
-          r.soldIds
-            .size
-        );
+        r.returnPct =
+          divide(
+            r.returnIds
+              .size *
+              100,
+            r.soldIds
+              .size
+          );
 
-      r.ppmpPct =
-        divide(
-          r.ppmp *
-            100,
-          r.units
-        );
+        r.ppmpPct =
+          divide(
+            r.ppmp *
+              100,
+            r.units
+          );
 
-      r.sjitPct =
-        divide(
-          r.sjitSale *
-            100,
-          r.units
-        );
+        r.sjitPct =
+          divide(
+            r.sjitSale *
+              100,
+            r.units
+          );
 
-      r.sorPct =
-        divide(
-          r.sorSale *
-            100,
-          r.units
-        );
+        r.sorPct =
+          divide(
+            r.sorSale *
+              100,
+            r.units
+          );
 
-      r.sharePct =
-        divide(
-          r.units *
-            100,
-          totalUnits
-        );
+        r.sharePct =
+          divide(
+            r.units *
+              100,
+            totalUnits
+          );
 
-      return r;
-    })
+        return r;
+      }
+    )
     .sort(
       byGmvDesc
     );
 }
 
 /* ==========================================
-   TEMPLATE
+   HELPERS
 ========================================== */
 
-function blank(id) {
+function styleKey(
+  r
+) {
+  return clean(
+    r.style_id ||
+      r.styleid ||
+      r.style ||
+      r.model
+  );
+}
+
+function blank(
+  id
+) {
   return {
     styleId: id,
     erp: "",
     brand: "",
     rating: 0,
-
     gmv: 0,
     units: 0,
     asp: 0,
