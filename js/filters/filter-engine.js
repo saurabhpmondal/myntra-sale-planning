@@ -1,6 +1,9 @@
 /* ==========================================
    FILTER-ENGINE.JS
+   FULL REPLACE CODE
    FIXED MASTER DATE LOGIC
+   Enhanced Search:
+   Style ID + ERP SKU + Brand
 ========================================== */
 
 import { getFilters } from "../core/state.js";
@@ -148,7 +151,6 @@ function matchDateRange(
   )
     return true;
 
-  /* ONLY use sales dataset year month date */
   if (
     row.year &&
     row.month &&
@@ -199,7 +201,6 @@ function matchDateRange(
     return true;
   }
 
-  /* non sales rows pass */
   return true;
 }
 
@@ -284,7 +285,9 @@ function matchSearch(
   const hay =
     [
       row.style_id,
+      row.styleId,
       row.erp_sku,
+      row.erp,
       row.brand
     ]
       .map((x) =>
