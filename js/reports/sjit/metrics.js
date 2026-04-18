@@ -1,261 +1,74 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   FIXED USING CENTRAL DATE ENGINE
+   BUILT ON SALES ENGINE
+   Uses last 30 days sales equivalent
 ========================================== */
 
-import { getDataset } from "../../core/state.js";
-import { clean, num } from "../sales/helpers.js";
-
-import {
-  buildSaleKeyDate
-} from "../../normalize/dates.js";
+import { getSalesRows } from "../sales/metrics.js";
 
 /* ==========================================
    PUBLIC
 ========================================== */
 
 export function getSjitRows() {
+  const salesRows =
+    getSalesRows() || [];
+
   const rows =
-    buildRows({
-      sales:
-        getDataset(
-          "sales"
-        ) || [],
-      returns:
-        getDataset(
-          "returns"
-        ) || [],
-      pm:
-        getDataset(
-          "productMaster"
-        ) || [],
-      traffic:
-        getDataset(
-          "traffic"
-        ) || [],
-      sjit:
-        getDataset(
-          "sjitStock"
-        ) || []
-    });
+    salesRows.map((r) =>
+      buildPlan(r)
+    );
 
   return rows.sort(
     (a, b) =>
       b.totalQty -
       a.totalQty ||
-      b.net - a.net
+      b.units - a.units
   );
 }
 
 /* ==========================================
-   BUILD
+   BUILD PLAN
 ========================================== */
 
-function buildRows(data) {
-  const map = {};
-  const soldLink = {};
+function buildPlan(r) {
+  const gross =
+    num(r.units);
 
-  data.sales.forEach((r) => {
-    if (
-      !isLast30Day(
-        r
-      )
-    )
-      return;
-
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (!id)
-      return;
-
-    if (!map[id]) {
-      map[id] =
-        blank(id);
-    }
-
-    const row =
-      map[id];
-
-    const qty =
-      num(r.qty);
-
-    row.gross += qty;
-
-    row.brand =
-      row.brand ||
-      clean(
-        r.brand
-      );
-
-    const line =
-      clean(
-        r.order_line_id
-      );
-
-    if (line) {
-      soldLink[
-        line
-      ] = id;
-    }
-
-    const zone =
-      getZone(
-        clean(
-          r.state
-        ).toUpperCase()
-      );
-
-    if (
-      zone ===
-      "North"
-    ) {
-      row.northDemand +=
-        qty;
-    }
-
-    if (
-      zone ===
-      "South"
-    ) {
-      row.southDemand +=
-        qty;
-    }
-  });
-
-  /* RETURNS */
-  data.returns.forEach(
-    (r) => {
-      const line =
-        clean(
-          r.order_line_id
-        );
-
-      const id =
-        soldLink[
-          line
-        ];
-
-      if (
-        id &&
-        map[id]
-      ) {
-        map[id]
-          .returns += 1;
-      }
-    }
-  );
-
-  /* PM */
-  data.pm.forEach(
-    (r) => {
-      const id =
-        clean(
-          r.style_id
-        );
-
-      if (!map[id])
-        return;
-
-      map[id].erp =
-        clean(
-          r.erp_sku
-        );
-
-      map[id].status =
-        clean(
-          r.status
-        );
-    }
-  );
-
-  /* RATING */
-  data.traffic.forEach(
-    (r) => {
-      const id =
-        clean(
-          r.style_id
-        );
-
-      if (!map[id])
-        return;
-
-      const val =
-        Number(
-          r.rating
-        );
-
-      if (
-        !isNaN(
-          val
-        ) &&
-        val >
-          map[id]
-            .rating
-      ) {
-        map[id].rating =
-          val;
-      }
-    }
-  );
-
-  /* STOCK */
-  data.sjit.forEach(
-    (r) => {
-      const id =
-        clean(
-          r.style_id
-        );
-
-      if (!map[id])
-        return;
-
-      map[id].stock +=
+  const returns =
+    Math.round(
+      gross *
         num(
-          r.sellable_inventory_count
-        );
-    }
-  );
+          r.returnPct
+        ) /
+        100
+    );
 
-  return Object.values(
-    map
-  ).map((r) =>
-    finalizeRow(r)
-  );
-}
-
-/* ==========================================
-   FINALIZE
-========================================== */
-
-function finalizeRow(r) {
-  r.net =
+  const net =
     Math.max(
       0,
-      r.gross -
-        r.returns
+      gross -
+        returns
     );
 
-  r.returnPct =
-    pct(
-      r.returns,
-      r.gross
+  /* assume current sales filter = last 30d base */
+  const drr =
+    net / 30;
+
+  const stock =
+    num(
+      r.sjitStock
     );
 
-  r.drr =
-    r.net / 30;
-
-  r.sc =
-    r.drr > 0
-      ? r.stock /
-        r.drr
+  const sc =
+    drr > 0
+      ? stock /
+        drr
       : 0;
 
   const target =
-    r.drr * 45;
+    drr * 45;
 
   let total = 0;
   let recall = 0;
@@ -264,128 +77,97 @@ function finalizeRow(r) {
     upper(
       r.status
     ) !==
-    "CONTINUE";
+      "CONTINUE" &&
+    upper(
+      r.status
+    ) !== "";
 
   const badRating =
-    r.rating > 0 &&
-    r.rating < 3.5;
+    num(
+      r.rating
+    ) > 0 &&
+    num(
+      r.rating
+    ) < 3.5;
 
   if (
-    r.stock > 0 &&
+    stock > 0 &&
     (
-      r.drr === 0 ||
+      drr === 0 ||
       badStatus ||
       badRating
     )
   ) {
     recall =
-      r.stock;
+      stock;
   } else if (
-    r.sc > 60
+    sc > 60
   ) {
     recall =
       ceil0(
-        r.stock -
+        stock -
           target
       );
   } else {
     total =
       ceil0(
         target -
-          r.stock
+          stock
       );
   }
 
   const split =
     splitQty(
-      total,
-      r.northDemand,
-      r.southDemand
+      total
     );
 
-  r.northQty =
-    split.north;
-
-  r.southQty =
-    split.south;
-
-  r.totalQty =
-    total;
-
-  r.recallQty =
-    recall;
-
-  return r;
-}
-
-/* ==========================================
-   DATE ENGINE
-========================================== */
-
-function isLast30Day(r) {
-  const key =
-    buildSaleKeyDate(
-      r.year,
-      r.month,
-      r.date
-    );
-
-  if (!key)
-    return false;
-
-  const rowDate =
-    new Date(key);
-
-  const cut =
-    new Date();
-
-  cut.setDate(
-    cut.getDate() -
-      30
-  );
-
-  cut.setHours(
-    0,0,0,0
-  );
-
-  return rowDate >= cut;
-}
-
-/* ==========================================
-   HELPERS
-========================================== */
-
-function blank(id) {
   return {
-    styleId: id,
-    erp: "",
-    status: "",
-    brand: "",
-    rating: 0,
+    styleId:
+      r.styleId,
+    erp:
+      r.erp || "",
+    status:
+      r.status ||
+      "",
+    brand:
+      r.brand || "",
+    rating:
+      num(
+        r.rating
+      ),
 
-    gross: 0,
-    returns: 0,
-    net: 0,
-    returnPct: 0,
+    gross,
+    returns,
+    net,
+    returnPct:
+      num(
+        r.returnPct
+      ),
 
-    northDemand: 0,
-    southDemand: 0,
+    drr,
+    stock,
+    sc,
 
-    drr: 0,
-    stock: 0,
-    sc: 0,
+    northQty:
+      split.north,
+    southQty:
+      split.south,
+    totalQty:
+      total,
+    recallQty:
+      recall,
 
-    northQty: 0,
-    southQty: 0,
-    totalQty: 0,
-    recallQty: 0
+    units:
+      gross
   };
 }
 
+/* ==========================================
+   SPLIT
+========================================== */
+
 function splitQty(
-  qty,
-  north,
-  south
+  qty
 ) {
   if (
     qty <= 0
@@ -396,33 +178,21 @@ function splitQty(
     };
   }
 
-  const total =
-    north + south;
-
-  if (
-    total <= 0
-  ) {
-    return {
-      north: 0,
-      south: 0
-    };
-  }
-
-  const northQty =
+  const north =
     Math.round(
-      qty *
-        north /
-        total
+      qty * 0.55
     );
 
   return {
-    north:
-      northQty,
+    north,
     south:
-      qty -
-      northQty
+      qty - north
   };
 }
+
+/* ==========================================
+   HELPERS
+========================================== */
 
 function ceil0(v) {
   if (v <= 0)
@@ -434,9 +204,8 @@ function ceil0(v) {
   );
 }
 
-function pct(a, b) {
-  if (!b) return 0;
-  return (a / b) * 100;
+function num(v) {
+  return Number(v) || 0;
 }
 
 function upper(v) {
@@ -445,24 +214,4 @@ function upper(v) {
   )
     .trim()
     .toUpperCase();
-}
-
-function getZone(x) {
-  if (
-    [
-      "UP","DL","HR","UT",
-      "PB","HP","JK","CH"
-    ].includes(x)
-  )
-    return "North";
-
-  if (
-    [
-      "KA","TG","AP",
-      "TN","KL","PY"
-    ].includes(x)
-  )
-    return "South";
-
-  return "";
 }
