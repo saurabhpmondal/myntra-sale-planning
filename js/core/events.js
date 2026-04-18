@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   Added SOR Wiring
+   SAFE FIXED EVENTS
+   (keeps original working logic + adds SOR)
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -36,9 +37,13 @@ function bindTabs() {
     tab.addEventListener(
       "click",
       async () => {
-        await navigate(
-          tab.dataset.tab
-        );
+        try {
+          await navigate(
+            tab.dataset.tab
+          );
+        } catch (error) {
+          console.error(error);
+        }
       }
     );
   });
@@ -112,14 +117,14 @@ function bindMonth() {
         ] =
           val.split("-");
 
-        start.value =
-          `${year}-${pad(mm)}-01`;
-
         const y =
           Number(year);
 
         const m =
           Number(mm);
+
+        start.value =
+          `${year}-${pad(mm)}-01`;
 
         const now =
           new Date();
@@ -227,9 +232,13 @@ function bindSearch() {
         event.key ===
         "Enter"
       ) {
-        await navigate(
-          "sales"
-        );
+        try {
+          await navigate(
+            "sales"
+          );
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
   );
@@ -251,32 +260,40 @@ function refresh() {
   const id =
     active.id;
 
-  if (
-    id ===
-    "dashboard"
-  ) {
-    renderDashboard();
-  }
+  try {
+    if (
+      id ===
+      "dashboard"
+    ) {
+      renderDashboard();
+      return;
+    }
 
-  if (
-    id ===
-    "sales"
-  ) {
-    renderSalesReport();
-  }
+    if (
+      id ===
+      "sales"
+    ) {
+      renderSalesReport();
+      return;
+    }
 
-  if (
-    id ===
-    "sjit"
-  ) {
-    renderSjitReport();
-  }
+    if (
+      id ===
+      "sjit"
+    ) {
+      renderSjitReport();
+      return;
+    }
 
-  if (
-    id ===
-    "sor"
-  ) {
-    renderSorReport();
+    if (
+      id ===
+      "sor"
+    ) {
+      renderSorReport();
+      return;
+    }
+  } catch (error) {
+    console.error(error);
   }
 }
 
@@ -285,9 +302,8 @@ function refresh() {
 ========================================== */
 
 function pad(v) {
-  return String(v)
-    .padStart(
-      2,
-      "0"
-    );
+  return String(v).padStart(
+    2,
+    "0"
+  );
 }
