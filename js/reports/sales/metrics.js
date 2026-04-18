@@ -1,6 +1,6 @@
 /* ==========================================
    SALES REPORT / METRICS.JS
-   Final aggregation engine
+   FINAL LOGIC ROUND
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -29,29 +29,19 @@ export function getSalesRows() {
     getDataset("sales");
 
   const pm =
-    getDataset(
-      "productMaster"
-    );
+    getDataset("productMaster");
 
   const traffic =
-    getDataset(
-      "traffic"
-    );
+    getDataset("traffic");
 
   const returns =
-    getDataset(
-      "returns"
-    );
+    getDataset("returns");
 
   const sjit =
-    getDataset(
-      "sjitStock"
-    );
+    getDataset("sjitStock");
 
   const sor =
-    getDataset(
-      "sorStock"
-    );
+    getDataset("sorStock");
 
   return buildRows({
     sales,
@@ -65,12 +55,10 @@ export function getSalesRows() {
 }
 
 /* ==========================================
-   CORE
+   BUILD
 ========================================== */
 
-function buildRows(
-  data
-) {
+function buildRows(data) {
   const {
     sales,
     salesAll,
@@ -84,15 +72,11 @@ function buildRows(
   const map = {};
   let totalUnits = 0;
 
-  /* CURRENT FILTERED SALES */
   sales.forEach((r) => {
     const id =
-      clean(
-        r.style_id
-      );
+      clean(r.style_id);
 
-    if (!id)
-      return;
+    if (!id) return;
 
     if (!map[id]) {
       map[id] =
@@ -117,9 +101,17 @@ function buildRows(
 
     row.brand =
       row.brand ||
-      clean(
-        r.brand
+      clean(r.brand);
+
+    if (
+      r.order_line_id
+    ) {
+      row.soldIds.add(
+        clean(
+          r.order_line_id
+        )
       );
+    }
 
     const po =
       clean(
@@ -134,39 +126,22 @@ function buildRows(
 
     if (po === "SOR")
       row.sorSale += qty;
-
-    if (
-      r.order_line_id
-    ) {
-      row.soldIds.add(
-        clean(
-          r.order_line_id
-        )
-      );
-    }
   });
 
-  enrichMaster(
-    map,
-    pm
-  );
-
+  enrichPM(map, pm);
   enrichTraffic(
     map,
     traffic
   );
-
   enrichReturns(
     map,
     returns
   );
-
   enrichStocks(
     map,
     sjit,
     sor
   );
-
   enrichGrowth(
     map,
     salesAll
@@ -182,62 +157,100 @@ function buildRows(
    ENRICHERS
 ========================================== */
 
-function enrichMaster(
+function enrichPM(
   map,
-  pm
+  rows
 ) {
-  pm.forEach((r) => {
+  rows.forEach((r) => {
     const id =
       clean(
         r.style_id
       );
 
-    if (
-      map[id]
-    ) {
-      map[id].erp =
-        clean(
-          r.erp_sku
-        );
+    if (!map[id])
+      return;
 
-      if (
-        !map[id].brand
-      ) {
-        map[id].brand =
-          clean(
-            r.brand
-          );
-      }
+    map[id].erp =
+      clean(
+        r.erp_sku
+      );
+
+    if (
+      !map[id].brand
+    ) {
+      map[id].brand =
+        clean(
+          r.brand
+        );
     }
   });
 }
 
 function enrichTraffic(
   map,
-  traffic
+  rows
 ) {
-  traffic.forEach((r) => {
+  const ratingMap =
+    {};
+
+  rows.forEach((r) => {
     const id =
       clean(
         r.style_id
       );
 
     if (
-      map[id]
-    ) {
-      map[id].rating =
-        num(
-          r.rating
-        );
+      !map[id]
+    )
+      return;
+
+    const val =
+      num(
+        r.rating
+      );
+
+    if (val > 0) {
+      if (
+        !ratingMap[id]
+      ) {
+        ratingMap[
+          id
+        ] = {
+          sum: 0,
+          count: 0
+        };
+      }
+
+      ratingMap[
+        id
+      ].sum += val;
+
+      ratingMap[
+        id
+      ].count += 1;
     }
   });
+
+  Object.keys(
+    ratingMap
+  ).forEach(
+    (id) => {
+      map[id].rating =
+        ratingMap[
+          id
+        ].sum /
+        ratingMap[
+          id
+        ].count;
+    }
+  );
 }
 
 function enrichReturns(
   map,
-  returns
+  rows
 ) {
-  const lineToStyle =
+  const lineMap =
     {};
 
   Object.values(
@@ -246,25 +259,21 @@ function enrichReturns(
     (row) => {
       row.soldIds.forEach(
         (id) => {
-          lineToStyle[
-            id
-          ] =
+          lineMap[id] =
             row.styleId;
         }
       );
     }
   );
 
-  returns.forEach((r) => {
+  rows.forEach((r) => {
     const id =
       clean(
         r.order_line_id
       );
 
     const style =
-      lineToStyle[
-        id
-      ];
+      lineMap[id];
 
     if (
       style &&
@@ -317,13 +326,22 @@ function enrichStocks(
   });
 }
 
+/* ==========================================
+   PROJECTED GROWTH
+========================================== */
+
 function enrichGrowth(
   map,
-  salesAll
+  rows
 ) {
   const monthEl =
     document.getElementById(
       "monthFilter"
+    );
+
+  const endEl =
+    document.getElementById(
+      "endDate"
     );
 
   if (
@@ -349,10 +367,34 @@ function enrichGrowth(
     py--;
   }
 
-  const curr = {};
-  const prev = {};
+  const totalDays =
+    new Date(
+      year,
+      month,
+      0
+    ).getDate();
 
-  salesAll.forEach((r) => {
+  let elapsed =
+    totalDays;
+
+  if (
+    endEl &&
+    endEl.value
+  ) {
+    elapsed =
+      Number(
+        endEl.value.split(
+          "-"
+        )[2]
+      );
+  }
+
+  const curr =
+    {};
+  const prev =
+    {};
+
+  rows.forEach((r) => {
     const id =
       clean(
         r.style_id
@@ -398,9 +440,20 @@ function enrichGrowth(
     map
   ).forEach(
     (id) => {
+      const cm =
+        curr[id] ||
+        0;
+
+      const projected =
+        elapsed > 0
+          ? (cm /
+              elapsed) *
+            totalDays
+          : cm;
+
       map[id].growthPct =
         growthPct(
-          curr[id],
+          projected,
           prev[id]
         );
     }
@@ -473,9 +526,7 @@ function finalize(
    TEMPLATE
 ========================================== */
 
-function blank(
-  id
-) {
+function blank(id) {
   return {
     styleId: id,
     erp: "",
@@ -504,8 +555,6 @@ function blank(
       new Set(),
 
     returnIds:
-      new Set(),
-
-    returnPct: 0
+      new Set()
   };
 }
