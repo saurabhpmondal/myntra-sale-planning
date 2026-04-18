@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   SAFE FIXED EVENTS
-   (keeps original working logic + adds SOR)
+   Added Export Refresh Wiring
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -12,6 +11,7 @@ import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 import { renderSorReport } from "../reports/sor/index.js";
+import { renderExportCenter } from "../reports/export/index.js";
 
 /* ==========================================
    PUBLIC
@@ -37,13 +37,9 @@ function bindTabs() {
     tab.addEventListener(
       "click",
       async () => {
-        try {
-          await navigate(
-            tab.dataset.tab
-          );
-        } catch (error) {
-          console.error(error);
-        }
+        await navigate(
+          tab.dataset.tab
+        );
       }
     );
   });
@@ -232,13 +228,9 @@ function bindSearch() {
         event.key ===
         "Enter"
       ) {
-        try {
-          await navigate(
-            "sales"
-          );
-        } catch (error) {
-          console.error(error);
-        }
+        await navigate(
+          "sales"
+        );
       }
     }
   );
@@ -260,41 +252,20 @@ function refresh() {
   const id =
     active.id;
 
-  try {
-    if (
-      id ===
-      "dashboard"
-    ) {
-      renderDashboard();
-      return;
-    }
+  if (id === "dashboard")
+    renderDashboard();
 
-    if (
-      id ===
-      "sales"
-    ) {
-      renderSalesReport();
-      return;
-    }
+  if (id === "sales")
+    renderSalesReport();
 
-    if (
-      id ===
-      "sjit"
-    ) {
-      renderSjitReport();
-      return;
-    }
+  if (id === "sjit")
+    renderSjitReport();
 
-    if (
-      id ===
-      "sor"
-    ) {
-      renderSorReport();
-      return;
-    }
-  } catch (error) {
-    console.error(error);
-  }
+  if (id === "sor")
+    renderSorReport();
+
+  if (id === "export")
+    renderExportCenter();
 }
 
 /* ==========================================
@@ -302,8 +273,9 @@ function refresh() {
 ========================================== */
 
 function pad(v) {
-  return String(v).padStart(
-    2,
-    "0"
-  );
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
