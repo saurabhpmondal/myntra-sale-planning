@@ -1,6 +1,7 @@
 /* ==========================================
-   SALES REPORT / METRICS.JS
-   FINAL LOGIC ROUND
+   File: js/reports/sales/metrics.js
+   FULL REPLACE CODE
+   Final Rating Fix + SOR Column Ready
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -186,11 +187,15 @@ function enrichPM(
   });
 }
 
+/* ==========================================
+   FINAL RATING FIX
+========================================== */
+
 function enrichTraffic(
   map,
   rows
 ) {
-  const ratingMap =
+  const bucket =
     {};
 
   rows.forEach((r) => {
@@ -205,43 +210,45 @@ function enrichTraffic(
       return;
 
     const val =
-      num(
+      Number(
         r.rating
       );
 
-    if (val > 0) {
-      if (
-        !ratingMap[id]
-      ) {
-        ratingMap[
-          id
-        ] = {
-          sum: 0,
-          count: 0
-        };
-      }
+    if (
+      isNaN(val) ||
+      val <= 0
+    )
+      return;
 
-      ratingMap[
-        id
-      ].sum += val;
-
-      ratingMap[
-        id
-      ].count += 1;
+    if (
+      !bucket[id]
+    ) {
+      bucket[id] =
+        [];
     }
+
+    bucket[id].push(
+      val
+    );
   });
 
   Object.keys(
-    ratingMap
+    bucket
   ).forEach(
     (id) => {
+      const arr =
+        bucket[id];
+
+      const avg =
+        arr.reduce(
+          (a, b) =>
+            a + b,
+          0
+        ) /
+        arr.length;
+
       map[id].rating =
-        ratingMap[
-          id
-        ].sum /
-        ratingMap[
-          id
-        ].count;
+        avg;
     }
   );
 }
