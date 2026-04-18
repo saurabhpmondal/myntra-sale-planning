@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   RETURN % + GROWTH KPI
+   POLISHED RETURN + GROWTH KPI
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -19,9 +19,7 @@ import {
 
 export function renderKpis() {
   const salesAll =
-    getDataset(
-      "sales"
-    );
+    getDataset("sales");
 
   const sales =
     applyGlobalFilters(
@@ -33,7 +31,7 @@ export function renderKpis() {
       "returns"
     );
 
-  /* CURRENT FILTERED SALES */
+  /* SALES */
   const revenue =
     sales.reduce(
       (a, r) =>
@@ -52,18 +50,15 @@ export function renderKpis() {
       0
     );
 
-  /* ======================================
-     RETURN %
-  ====================================== */
-
-  const soldIds =
+  /* RETURN % */
+  const sold =
     new Set();
 
   sales.forEach((r) => {
     if (
       r.order_line_id
     ) {
-      soldIds.add(
+      sold.add(
         String(
           r.order_line_id
         )
@@ -82,7 +77,7 @@ export function renderKpis() {
       ).trim();
 
     if (
-      soldIds.has(id)
+      sold.has(id)
     ) {
       returned.add(
         id
@@ -91,19 +86,16 @@ export function renderKpis() {
   });
 
   const returnPct =
-    soldIds.size > 0
+    sold.size > 0
       ? (
           (returned.size /
-            soldIds.size) *
+            sold.size) *
           100
         ).toFixed(1) +
         "%"
       : "0%";
 
-  /* ======================================
-     STOCK
-  ====================================== */
-
+  /* STOCK */
   const sjit =
     getDataset(
       "sjitStock"
@@ -128,20 +120,13 @@ export function renderKpis() {
       0
     );
 
-  /* ======================================
-     GROWTH KPI
-     Last Month vs Projected Current
-  ====================================== */
-
+  /* GROWTH */
   const growth =
     calcGrowth(
       salesAll
     );
 
-  /* ======================================
-     RENDER
-  ====================================== */
-
+  /* RENDER */
   setText(
     "kpiRevenue",
     fc(revenue)
@@ -167,21 +152,57 @@ export function renderKpis() {
     fn(sor)
   );
 
-  setText(
-    "kpiGrowth",
+  renderGrowth(
     growth
   );
 }
 
 /* ==========================================
-   GROWTH
+   GROWTH KPI
 ========================================== */
+
+function renderGrowth(
+  growth
+) {
+  const el =
+    document.getElementById(
+      "kpiGrowth"
+    );
+
+  if (!el) return;
+
+  if (
+    growth.raw > 0
+  ) {
+    el.innerHTML =
+      "▲ " +
+      growth.text;
+    el.style.color =
+      "#16a34a";
+  } else if (
+    growth.raw < 0
+  ) {
+    el.innerHTML =
+      "▼ " +
+      growth.text;
+    el.style.color =
+      "#dc2626";
+  } else {
+    el.innerHTML =
+      growth.text;
+    el.style.color =
+      "#64748b";
+  }
+}
 
 function calcGrowth(
   rows = []
 ) {
   if (!rows.length)
-    return "-";
+    return {
+      raw: 0,
+      text: "-"
+    };
 
   const now =
     new Date();
@@ -196,7 +217,7 @@ function calcGrowth(
   const today =
     now.getDate();
 
-  const daysInMonth =
+  const days =
     new Date(
       cy,
       cm,
@@ -252,7 +273,10 @@ function calcGrowth(
   if (
     previous === 0
   )
-    return "-";
+    return {
+      raw: 0,
+      text: "-"
+    };
 
   const projected =
     (current /
@@ -260,7 +284,7 @@ function calcGrowth(
         today,
         1
       )) *
-    daysInMonth;
+    days;
 
   const pct =
     (
@@ -270,5 +294,10 @@ function calcGrowth(
       100
     ).toFixed(1);
 
-  return pct + "%";
+  return {
+    raw:
+      Number(pct),
+    text:
+      pct + "%"
+  };
 }
