@@ -1,6 +1,6 @@
 /* ==========================================
    APP.JS
-   Final bootstrap
+   FIXED DEFAULT CURRENT MONTH LOAD
 ========================================== */
 
 import { bootstrapAppData } from "./data/bootstrap.js";
@@ -21,13 +21,20 @@ async function initApp() {
   try {
     await bootstrapAppData();
 
+    /* build dropdowns */
     buildFilters();
 
+    /* bind listeners first */
     initEvents();
 
+    /* now apply current month */
+    setDefaultMonth();
+
+    /* render dashboard */
     navigate(
       "dashboard"
     );
+
   } catch (error) {
     console.error(
       "App failed",
@@ -45,9 +52,11 @@ async function initApp() {
 function buildFilters() {
   populateMonthFilterFromData();
   populateAllFilters();
-
-  setDefaultMonth();
 }
+
+/* ==========================================
+   DEFAULT MONTH
+========================================== */
 
 function setDefaultMonth() {
   const month =
@@ -57,17 +66,19 @@ function setDefaultMonth() {
 
   if (
     !month ||
-    !month.options
-      .length
+    !month.options.length
   ) {
     return;
   }
 
+  /* latest month = first option */
   month.selectedIndex = 0;
 
+  /* trigger month logic */
   month.dispatchEvent(
     new Event(
-      "change"
+      "change",
+      { bubbles: true }
     )
   );
 }
