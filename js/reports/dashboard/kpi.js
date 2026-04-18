@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   Precision Fix
+   REAL RETURN %
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -23,6 +23,12 @@ export function renderKpis() {
       getDataset("sales")
     );
 
+  const returns =
+    getDataset(
+      "returns"
+    );
+
+  /* SALES KPI */
   const revenue =
     sales.reduce(
       (a, r) =>
@@ -41,26 +47,87 @@ export function renderKpis() {
       0
     );
 
-  const sjitStock =
+  /* UNIQUE SOLD ORDER LINES */
+  const soldSet =
+    new Set();
+
+  sales.forEach((row) => {
+    if (
+      row.order_line_id
+    ) {
+      soldSet.add(
+        String(
+          row.order_line_id
+        )
+      );
+    }
+  });
+
+  /* FILTER RETURNS
+     only lines existing in current filtered sales
+  */
+  const returnSet =
+    new Set();
+
+  returns.forEach((row) => {
+    const id =
+      String(
+        row.order_line_id ||
+          ""
+      ).trim();
+
+    if (
+      !id
+    )
+      return;
+
+    if (
+      soldSet.has(
+        id
+      )
+    ) {
+      returnSet.add(
+        id
+      );
+    }
+  });
+
+  const returnPct =
+    soldSet.size > 0
+      ? (
+          (returnSet.size /
+            soldSet.size) *
+          100
+        ).toFixed(1) +
+        "%"
+      : "0%";
+
+  /* STOCK KPI */
+  const sjit =
     getDataset(
       "sjitStock"
     ).reduce(
       (a, r) =>
         a +
-        getSjitUnits(r),
+        num(
+          r.sellable_inventory_count
+        ),
       0
     );
 
-  const sorStock =
+  const sor =
     getDataset(
       "sorStock"
     ).reduce(
       (a, r) =>
         a +
-        getSorUnits(r),
+        num(
+          r.units
+        ),
       0
     );
 
+  /* RENDER */
   setText(
     "kpiRevenue",
     fc(revenue)
@@ -73,49 +140,21 @@ export function renderKpis() {
 
   setText(
     "kpiReturn",
-    "0%"
+    returnPct
   );
 
   setText(
     "kpiSjit",
-    fn(sjitStock)
+    fn(sjit)
   );
 
   setText(
     "kpiSor",
-    fn(sorStock)
+    fn(sor)
   );
 
   setText(
     "kpiGrowth",
     "-"
-  );
-}
-
-/* ==========================================
-   FALLBACK FIELD MAPPING
-========================================== */
-
-function getSjitUnits(
-  row = {}
-) {
-  return num(
-    row
-      .sellable_inventory_count ??
-      row.stock ??
-      row.units ??
-      row.qty ??
-      row.inventory
-  );
-}
-
-function getSorUnits(
-  row = {}
-) {
-  return num(
-    row.units ??
-      row.stock ??
-      row.qty ??
-      row.inventory
   );
 }
