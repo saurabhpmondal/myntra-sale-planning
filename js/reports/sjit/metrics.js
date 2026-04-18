@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
-   SJIT PLANNING ENGINE
    FULL REPLACE CODE
+   FIXED SALES DATE COLUMN
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -27,13 +27,14 @@ export function getSjitRows() {
   const sjit =
     getDataset("sjitStock") || [];
 
-  const rows = buildRows({
-    sales,
-    returns,
-    pm,
-    traffic,
-    sjit
-  });
+  const rows =
+    buildRows({
+      sales,
+      returns,
+      pm,
+      traffic,
+      sjit
+    });
 
   return rows.sort(
     (a, b) =>
@@ -47,31 +48,22 @@ export function getSjitRows() {
 ========================================== */
 
 function buildRows(data) {
-  const {
-    sales,
-    returns,
-    pm,
-    traffic,
-    sjit
-  } = data;
-
   const map = {};
-  const soldLines =
-    {};
+  const soldLines = {};
 
   const cutoff =
-    getCutoffDate(
-      30
-    );
+    getCutoffDate(30);
 
-  /* ===============================
-     SALES LAST 30D
-  =============================== */
+  /* SALES LAST 30D */
+  data.sales.forEach((r) => {
+    const rawDate =
+      r.order_date ||
+      r.date ||
+      "";
 
-  sales.forEach((r) => {
     const dt =
       new Date(
-        r.date
+        rawDate
       );
 
     if (
@@ -109,7 +101,9 @@ function buildRows(data) {
 
     const state =
       clean(
-        r.state
+        r.state ||
+          r.ship_state ||
+          ""
       ).toUpperCase();
 
     if (
@@ -142,107 +136,99 @@ function buildRows(data) {
     }
   });
 
-  /* ===============================
-     RETURNS
-  =============================== */
+  /* RETURNS */
+  data.returns.forEach(
+    (r) => {
+      const line =
+        clean(
+          r.order_line_id
+        );
 
-  returns.forEach((r) => {
-    const line =
-      clean(
-        r.order_line_id
-      );
+      const id =
+        soldLines[
+          line
+        ];
 
-    const id =
-      soldLines[
-        line
-      ];
-
-    if (
-      id &&
-      map[id]
-    ) {
-      map[id]
-        .returns += 1;
-    }
-  });
-
-  /* ===============================
-     PRODUCT MASTER
-  =============================== */
-
-  pm.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (!map[id])
-      return;
-
-    map[id].erp =
-      clean(
-        r.erp_sku
-      );
-
-    map[id].status =
-      clean(
-        r.status
-      );
-  });
-
-  /* ===============================
-     RATING
-  =============================== */
-
-  traffic.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (!map[id])
-      return;
-
-    const rating =
-      Number(
-        r.rating
-      );
-
-    if (
-      !isNaN(
-        rating
-      ) &&
-      rating >
+      if (
+        id &&
         map[id]
-          .rating
-    ) {
-      map[id].rating =
-        rating;
+      ) {
+        map[id]
+          .returns += 1;
+      }
     }
-  });
+  );
 
-  /* ===============================
-     STOCK
-  =============================== */
+  /* PRODUCT MASTER */
+  data.pm.forEach(
+    (r) => {
+      const id =
+        clean(
+          r.style_id
+        );
 
-  sjit.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+      if (!map[id])
+        return;
 
-    if (!map[id])
-      return;
+      map[id].erp =
+        clean(
+          r.erp_sku
+        );
 
-    map[id].stock +=
-      num(
-        r.sellable_inventory_count
-      );
-  });
+      map[id].status =
+        clean(
+          r.status
+        );
+    }
+  );
 
-  /* ===============================
-     FINAL CALC
-  =============================== */
+  /* RATING */
+  data.traffic.forEach(
+    (r) => {
+      const id =
+        clean(
+          r.style_id
+        );
+
+      if (!map[id])
+        return;
+
+      const rating =
+        Number(
+          r.rating
+        );
+
+      if (
+        !isNaN(
+          rating
+        ) &&
+        rating >
+          map[id]
+            .rating
+      ) {
+        map[id].rating =
+          rating;
+      }
+    }
+  );
+
+  /* STOCK */
+  data.sjit.forEach(
+    (r) => {
+      const id =
+        clean(
+          r.style_id
+        );
+
+      if (!map[id])
+        return;
+
+      map[id].stock +=
+        num(
+          r.sellable_inventory_count
+        );
+    }
+  );
 
   return Object.values(
     map
@@ -255,15 +241,13 @@ function buildRows(data) {
    FINAL ROW
 ========================================== */
 
-function finalizeRow(
-  r
-) {
+function finalizeRow(r) {
   r.net =
-    r.gross -
-    r.returns;
-
-  if (r.net < 0)
-    r.net = 0;
+    Math.max(
+      0,
+      r.gross -
+        r.returns
+    );
 
   r.returnPct =
     percent(
@@ -286,7 +270,6 @@ function finalizeRow(
   const target =
     45 * r.drr;
 
-  /* FULL RECALL */
   if (
     r.stock > 0 &&
     (
@@ -301,35 +284,26 @@ function finalizeRow(
   ) {
     recall =
       r.stock;
-  }
-
-  /* EXCESS RECALL */
-  else if (
+  } else if (
     r.sc > 60
   ) {
-    recall = Math.ceil(
-      r.stock -
-        target
-    );
-
-    if (
-      recall < 0
-    )
-      recall = 0;
-  }
-
-  /* SHIPMENT */
-  else {
-    totalQty =
-      Math.ceil(
-        target -
-          r.stock
+    recall =
+      Math.max(
+        0,
+        Math.ceil(
+          r.stock -
+            target
+        )
       );
-
-    if (
-      totalQty < 0
-    )
-      totalQty = 0;
+  } else {
+    totalQty =
+      Math.max(
+        0,
+        Math.ceil(
+          target -
+            r.stock
+        )
+      );
   }
 
   const split =
@@ -352,53 +326,6 @@ function finalizeRow(
     recall;
 
   return r;
-}
-
-/* ==========================================
-   SPLIT
-========================================== */
-
-function splitQty(
-  qty,
-  north,
-  south
-) {
-  if (
-    qty <= 0
-  ) {
-    return {
-      north: 0,
-      south: 0
-    };
-  }
-
-  const total =
-    north +
-    south;
-
-  if (
-    total <= 0
-  ) {
-    return {
-      north: 0,
-      south: 0
-    };
-  }
-
-  const northQty =
-    Math.round(
-      qty *
-        (north /
-          total)
-    );
-
-  return {
-    north:
-      northQty,
-    south:
-      qty -
-      northQty
-  };
 }
 
 /* ==========================================
@@ -432,17 +359,51 @@ function blank(id) {
   };
 }
 
-function percent(
-  a,
-  b
+function splitQty(
+  qty,
+  north,
+  south
 ) {
-  if (!b)
-    return 0;
+  if (
+    qty <= 0
+  ) {
+    return {
+      north: 0,
+      south: 0
+    };
+  }
 
-  return (
-    (a / b) *
-    100
-  );
+  const total =
+    north + south;
+
+  if (
+    total <= 0
+  ) {
+    return {
+      north: 0,
+      south: 0
+    };
+  }
+
+  const northQty =
+    Math.round(
+      qty *
+        north /
+        total
+    );
+
+  return {
+    north:
+      northQty,
+    south:
+      qty -
+      northQty
+  };
+}
+
+function percent(a, b) {
+  if (!b) return 0;
+  return (a / b) * 100;
 }
 
 function upper(v) {
@@ -453,9 +414,7 @@ function upper(v) {
     .toUpperCase();
 }
 
-function getCutoffDate(
-  days
-) {
+function getCutoffDate(days) {
   const d =
     new Date();
 
@@ -465,39 +424,22 @@ function getCutoffDate(
   );
 
   d.setHours(
-    0,
-    0,
-    0,
-    0
+    0, 0, 0, 0
   );
 
   return d;
 }
 
-function isNorth(
-  code
-) {
+function isNorth(x) {
   return [
-    "UP",
-    "DL",
-    "HR",
-    "UT",
-    "PB",
-    "HP",
-    "JK",
-    "CH"
-  ].includes(code);
+    "UP","DL","HR","UT",
+    "PB","HP","JK","CH"
+  ].includes(x);
 }
 
-function isSouth(
-  code
-) {
+function isSouth(x) {
   return [
-    "KA",
-    "TG",
-    "AP",
-    "TN",
-    "KL",
-    "PY"
-  ].includes(code);
+    "KA","TG","AP",
+    "TN","KL","PY"
+  ].includes(x);
 }
