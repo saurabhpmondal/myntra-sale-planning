@@ -1,10 +1,11 @@
 /* ==========================================
    APP.JS
-   DEBUG RECOVERY BUILD
+   Current Month Default Load
+   Debug Logger Kept
 ========================================== */
 
 /* ==========================================
-   GLOBAL DEBUG PANEL
+   DEBUG PANEL
 ========================================== */
 
 createDebugPanel();
@@ -12,14 +13,12 @@ createDebugPanel();
 window.onerror = function (
   msg,
   src,
-  line,
-  col,
-  err
+  line
 ) {
   logDebug(
     "ERROR: " +
       msg +
-      " | line " +
+      " @ " +
       line
   );
 };
@@ -27,7 +26,7 @@ window.onerror = function (
 window.onunhandledrejection =
   function (e) {
     logDebug(
-      "PROMISE ERROR: " +
+      "PROMISE: " +
         (
           e.reason?.message ||
           e.reason ||
@@ -73,173 +72,211 @@ document.addEventListener(
 );
 
 /* ==========================================
-   MAIN
+   INIT
 ========================================== */
 
 async function initApp() {
-  logDebug(
-    "STEP 1 DOM Ready"
-  );
-
   try {
     initErrorHandler();
-    logDebug(
-      "STEP 2 ErrorHandler OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL initErrorHandler"
-    );
-  }
-
-  try {
     initRouter();
-    logDebug(
-      "STEP 3 Router OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL initRouter"
-    );
-  }
-
-  try {
     initEvents();
-    logDebug(
-      "STEP 4 Events OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL initEvents"
-    );
-  }
-
-  try {
     initSearchEngine();
-    logDebug(
-      "STEP 5 Search OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL initSearch"
-    );
-  }
 
-  try {
     subscribe(() => {
       renderAllReports();
     });
 
     logDebug(
-      "STEP 6 Subscribe OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL subscribe"
-    );
-  }
-
-  try {
-    logDebug(
-      "STEP 7 Loading Data..."
+      "Loading data..."
     );
 
     await bootstrapAppData();
 
     logDebug(
-      "STEP 8 Data Loaded"
+      "Data loaded"
+    );
+
+    populateMonthFilterFromData();
+
+    applyDefaultLatestMonth();
+
+    populateAllFilters();
+
+    renderAllReports();
+
+    logDebug(
+      "Render complete"
     );
   } catch (e) {
     logDebug(
-      "FAIL bootstrapAppData: " +
+      "BOOT FAIL: " +
         (
           e.message ||
           e
         )
     );
+  }
+}
+
+/* ==========================================
+   DEFAULT MONTH = LATEST
+========================================== */
+
+function applyDefaultLatestMonth() {
+  const month =
+    document.getElementById(
+      "monthFilter"
+    );
+
+  const start =
+    document.getElementById(
+      "startDate"
+    );
+
+  const end =
+    document.getElementById(
+      "endDate"
+    );
+
+  if (
+    !month ||
+    !month.options
+      .length
+  )
     return;
+
+  /* first option already latest due desc sort */
+  month.selectedIndex = 0;
+
+  const value =
+    month.value;
+
+  if (!value) return;
+
+  const [
+    year,
+    mm
+  ] =
+    value.split(
+      "-"
+    );
+
+  const y =
+    Number(year);
+  const m =
+    Number(mm);
+
+  const now =
+    new Date();
+
+  const isCurrentMonth =
+    now.getFullYear() ===
+      y &&
+    now.getMonth() +
+      1 ===
+      m;
+
+  const firstDay =
+    `${year}-${pad(
+      mm
+    )}-01`;
+
+  let lastDay;
+
+  if (
+    isCurrentMonth
+  ) {
+    /* yesterday */
+    const yday =
+      new Date();
+    yday.setDate(
+      yday.getDate() -
+        1
+    );
+
+    lastDay = `${yday.getFullYear()}-${pad(
+      yday.getMonth() +
+        1
+    )}-${pad(
+      yday.getDate()
+    )}`;
+  } else {
+    const d =
+      new Date(
+        y,
+        m,
+        0
+      );
+
+    lastDay = `${year}-${pad(
+      mm
+    )}-${pad(
+      d.getDate()
+    )}`;
   }
 
-  try {
-    populateMonthFilterFromData();
-    logDebug(
-      "STEP 9 Month Filter OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL month filter"
-    );
-  }
-
-  try {
-    populateAllFilters();
-    logDebug(
-      "STEP 10 All Filters OK"
-    );
-  } catch (e) {
-    logDebug(
-      "FAIL all filters"
-    );
-  }
-
-  renderAllReports();
+  start.value =
+    firstDay;
+  end.value =
+    lastDay;
 
   logDebug(
-    "STEP 11 Render Complete"
+    "Default month: " +
+      value
   );
 }
 
 /* ==========================================
-   RENDER
+   RENDER ALL
 ========================================== */
 
 function renderAllReports() {
   safe(
-    renderDashboard,
-    "dashboard"
+    renderDashboard
   );
   safe(
-    renderSalesReport,
-    "sales"
+    renderSalesReport
   );
   safe(
-    renderTrafficReport,
-    "traffic"
+    renderTrafficReport
   );
   safe(
-    renderProductsReport,
-    "products"
+    renderProductsReport
   );
   safe(
-    renderInventoryReport,
-    "inventory"
+    renderInventoryReport
   );
   safe(
-    renderSjitPlanning,
-    "sjit"
+    renderSjitPlanning
   );
   safe(
-    renderSorPlanning,
-    "sor"
+    renderSorPlanning
   );
   safe(
-    renderExportCenter,
-    "export"
+    renderExportCenter
   );
 }
 
-function safe(
-  fn,
-  name
-) {
+function safe(fn) {
   try {
     fn();
   } catch (e) {
     logDebug(
-      "FAIL render " +
-        name
+      "Render fail"
     );
   }
+}
+
+/* ==========================================
+   HELPERS
+========================================== */
+
+function pad(v) {
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
 
 /* ==========================================
@@ -267,7 +304,7 @@ function createDebugPanel() {
       box.style.right =
         "0";
       box.style.maxHeight =
-        "220px";
+        "170px";
       box.style.overflow =
         "auto";
       box.style.zIndex =
@@ -279,7 +316,7 @@ function createDebugPanel() {
       box.style.fontSize =
         "11px";
       box.style.padding =
-        "8px";
+        "6px";
       box.style.fontFamily =
         "monospace";
 
