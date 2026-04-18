@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   FIXED: Uses SAME monthFilter logic
-   as working Sales report
+   V4.1 SAFE REBUILD
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -13,34 +12,35 @@ import { clean, num } from "../sales/helpers.js";
 ========================================== */
 
 export function getSjitRows() {
-  const sales =
-    getDataset("sales") || [];
-
-  const returns =
-    getDataset("returns") || [];
-
-  const pm =
-    getDataset("productMaster") || [];
-
-  const traffic =
-    getDataset("traffic") || [];
-
-  const sjit =
-    getDataset("sjitStock") || [];
-
   const rows =
     buildRows({
-      sales,
-      returns,
-      pm,
-      traffic,
-      sjit
+      sales:
+        getDataset(
+          "sales"
+        ) || [],
+      returns:
+        getDataset(
+          "returns"
+        ) || [],
+      pm:
+        getDataset(
+          "productMaster"
+        ) || [],
+      traffic:
+        getDataset(
+          "traffic"
+        ) || [],
+      sjit:
+        getDataset(
+          "sjitStock"
+        ) || []
     });
 
   return rows.sort(
     (a, b) =>
       b.totalQty -
-      a.totalQty
+      a.totalQty ||
+      b.net - a.net
   );
 }
 
@@ -50,21 +50,12 @@ export function getSjitRows() {
 
 function buildRows(data) {
   const map = {};
-  const soldLines = {};
+  const soldLink = {};
 
-  const validMonths =
-    getLast30DayMonths();
-
-  /* SALES */
   data.sales.forEach((r) => {
-    const ym =
-      `${r.year}-${pad2(
-        r.month
-      )}`;
-
     if (
-      !validMonths.has(
-        ym
+      !isLast30Day(
+        r
       )
     )
       return;
@@ -96,40 +87,39 @@ function buildRows(data) {
         r.brand
       );
 
-    const state =
-      clean(
-        r.state ||
-          r.ship_state ||
-          ""
-      ).toUpperCase();
-
-    if (
-      isNorth(
-        state
-      )
-    ) {
-      row.northDemand +=
-        qty;
-    }
-
-    if (
-      isSouth(
-        state
-      )
-    ) {
-      row.southDemand +=
-        qty;
-    }
-
     const line =
       clean(
         r.order_line_id
       );
 
     if (line) {
-      soldLines[
+      soldLink[
         line
       ] = id;
+    }
+
+    const zone =
+      getZone(
+        clean(
+          r.state ||
+          r.ship_state
+        ).toUpperCase()
+      );
+
+    if (
+      zone ===
+      "North"
+    ) {
+      row.northDemand +=
+        qty;
+    }
+
+    if (
+      zone ===
+      "South"
+    ) {
+      row.southDemand +=
+        qty;
     }
   });
 
@@ -142,7 +132,7 @@ function buildRows(data) {
         );
 
       const id =
-        soldLines[
+        soldLink[
           line
         ];
 
@@ -156,7 +146,7 @@ function buildRows(data) {
     }
   );
 
-  /* PM */
+  /* PRODUCT MASTER */
   data.pm.forEach(
     (r) => {
       const id =
@@ -190,21 +180,21 @@ function buildRows(data) {
       if (!map[id])
         return;
 
-      const rating =
+      const val =
         Number(
           r.rating
         );
 
       if (
         !isNaN(
-          rating
+          val
         ) &&
-        rating >
+        val >
           map[id]
             .rating
       ) {
         map[id].rating =
-          rating;
+          val;
       }
     }
   );
@@ -262,21 +252,27 @@ function finalizeRow(r) {
       : 0;
 
   const target =
-    45 * r.drr;
+    r.drr * 45;
 
   let total = 0;
   let recall = 0;
+
+  const badStatus =
+    upper(
+      r.status
+    ) !==
+    "CONTINUE";
+
+  const badRating =
+    r.rating > 0 &&
+    r.rating < 3.5;
 
   if (
     r.stock > 0 &&
     (
       r.drr === 0 ||
-      upper(
-        r.status
-      ) !==
-        "CONTINUE" ||
-      r.rating <
-        3.5
+      badStatus ||
+      badRating
     )
   ) {
     recall =
@@ -285,21 +281,15 @@ function finalizeRow(r) {
     r.sc > 60
   ) {
     recall =
-      Math.max(
-        0,
-        Math.ceil(
-          r.stock -
-            target
-        )
+      ceil0(
+        r.stock -
+          target
       );
   } else {
     total =
-      Math.max(
-        0,
-        Math.ceil(
-          target -
-            r.stock
-        )
+      ceil0(
+        target -
+          r.stock
       );
   }
 
@@ -323,42 +313,6 @@ function finalizeRow(r) {
     recall;
 
   return r;
-}
-
-/* ==========================================
-   LAST 30 DAY MONTH LOGIC
-========================================== */
-
-function getLast30DayMonths() {
-  const set =
-    new Set();
-
-  const d =
-    new Date();
-
-  for (
-    let i = 0;
-    i < 30;
-    i++
-  ) {
-    const x =
-      new Date(d);
-
-    x.setDate(
-      d.getDate() -
-        i
-    );
-
-    const key =
-      `${x.getFullYear()}-${pad2(
-        x.getMonth() +
-          1
-      )}`;
-
-    set.add(key);
-  }
-
-  return set;
 }
 
 /* ==========================================
@@ -406,28 +360,42 @@ function splitQty(
     };
   }
 
-  const t =
+  const total =
     north + south;
 
-  if (t <= 0) {
+  if (
+    total <= 0
+  ) {
     return {
       north: 0,
       south: 0
     };
   }
 
-  const n =
+  const northQty =
     Math.round(
       qty *
         north /
-        t
+        total
     );
 
   return {
-    north: n,
+    north:
+      northQty,
     south:
-      qty - n
+      qty -
+      northQty
   };
+}
+
+function ceil0(v) {
+  if (v <= 0)
+    return 0;
+
+  return Math.max(
+    1,
+    Math.ceil(v)
+  );
 }
 
 function pct(a, b) {
@@ -443,24 +411,103 @@ function upper(v) {
     .toUpperCase();
 }
 
-function pad2(v) {
-  return String(v)
-    .padStart(
-      2,
-      "0"
+/* ==========================================
+   DATE LOGIC
+========================================== */
+
+function isLast30Day(r) {
+  const dt =
+    parseDate(
+      r.order_date ||
+      r.date
+    );
+
+  if (dt) {
+    const cut =
+      new Date();
+
+    cut.setDate(
+      cut.getDate() -
+        30
+    );
+
+    cut.setHours(
+      0,0,0,0
+    );
+
+    return dt >= cut;
+  }
+
+  /* fallback */
+  const y =
+    Number(r.year);
+
+  const m =
+    Number(r.month);
+
+  if (!y || !m)
+    return false;
+
+  const now =
+    new Date();
+
+  const d =
+    new Date(
+      y,
+      m - 1,
+      1
+    );
+
+  const cut =
+    new Date();
+
+  cut.setDate(
+    cut.getDate() -
+      30
+  );
+
+  return d >=
+    new Date(
+      cut.getFullYear(),
+      cut.getMonth(),
+      1
     );
 }
 
-function isNorth(x) {
-  return [
-    "UP","DL","HR","UT",
-    "PB","HP","JK","CH"
-  ].includes(x);
+function parseDate(v) {
+  if (!v) return null;
+
+  const d =
+    new Date(v);
+
+  if (
+    !isNaN(d)
+  )
+    return d;
+
+  return null;
 }
 
-function isSouth(x) {
-  return [
-    "KA","TG","AP",
-    "TN","KL","PY"
-  ].includes(x);
+/* ==========================================
+   ZONE
+========================================== */
+
+function getZone(x) {
+  if (
+    [
+      "UP","DL","HR","UT",
+      "PB","HP","JK","CH"
+    ].includes(x)
+  )
+    return "North";
+
+  if (
+    [
+      "KA","TG","AP",
+      "TN","KL","PY"
+    ].includes(x)
+  )
+    return "South";
+
+  return "";
 }
