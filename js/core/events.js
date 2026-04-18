@@ -1,6 +1,7 @@
 /* ==========================================
-   EVENTS.JS
-   Final event binder
+   File: js/core/events.js
+   FULL REPLACE CODE
+   Added Traffic Refresh Support
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -8,6 +9,7 @@ import { setFilter } from "./state.js";
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
+import { renderTrafficReport } from "../reports/traffic/index.js";
 
 /* ==========================================
    PUBLIC
@@ -34,11 +36,8 @@ function bindTabs() {
       tab.addEventListener(
         "click",
         () => {
-          const id =
-            tab.dataset.tab;
-
           navigate(
-            id
+            tab.dataset.tab
           );
         }
       );
@@ -260,7 +259,7 @@ function bindSearch() {
 }
 
 /* ==========================================
-   REFRESH ACTIVE REPORT
+   REFRESH ACTIVE TAB
 ========================================== */
 
 function refresh() {
@@ -283,9 +282,17 @@ function refresh() {
   }
 
   if (
-    id === "sales"
+    id ===
+    "sales"
   ) {
     renderSalesReport();
+  }
+
+  if (
+    id ===
+    "traffic"
+  ) {
+    renderTrafficReport();
   }
 }
 
