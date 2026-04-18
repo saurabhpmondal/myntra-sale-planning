@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   REAL RETURN %
+   RETURN % + GROWTH KPI
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -18,9 +18,14 @@ import {
 ========================================== */
 
 export function renderKpis() {
+  const salesAll =
+    getDataset(
+      "sales"
+    );
+
   const sales =
     applyGlobalFilters(
-      getDataset("sales")
+      salesAll
     );
 
   const returns =
@@ -28,7 +33,7 @@ export function renderKpis() {
       "returns"
     );
 
-  /* SALES KPI */
+  /* CURRENT FILTERED SALES */
   const revenue =
     sales.reduce(
       (a, r) =>
@@ -47,62 +52,58 @@ export function renderKpis() {
       0
     );
 
-  /* UNIQUE SOLD ORDER LINES */
-  const soldSet =
+  /* ======================================
+     RETURN %
+  ====================================== */
+
+  const soldIds =
     new Set();
 
-  sales.forEach((row) => {
+  sales.forEach((r) => {
     if (
-      row.order_line_id
+      r.order_line_id
     ) {
-      soldSet.add(
+      soldIds.add(
         String(
-          row.order_line_id
+          r.order_line_id
         )
       );
     }
   });
 
-  /* FILTER RETURNS
-     only lines existing in current filtered sales
-  */
-  const returnSet =
+  const returned =
     new Set();
 
-  returns.forEach((row) => {
+  returns.forEach((r) => {
     const id =
       String(
-        row.order_line_id ||
+        r.order_line_id ||
           ""
       ).trim();
 
     if (
-      !id
-    )
-      return;
-
-    if (
-      soldSet.has(
-        id
-      )
+      soldIds.has(id)
     ) {
-      returnSet.add(
+      returned.add(
         id
       );
     }
   });
 
   const returnPct =
-    soldSet.size > 0
+    soldIds.size > 0
       ? (
-          (returnSet.size /
-            soldSet.size) *
+          (returned.size /
+            soldIds.size) *
           100
         ).toFixed(1) +
         "%"
       : "0%";
 
-  /* STOCK KPI */
+  /* ======================================
+     STOCK
+  ====================================== */
+
   const sjit =
     getDataset(
       "sjitStock"
@@ -127,7 +128,20 @@ export function renderKpis() {
       0
     );
 
-  /* RENDER */
+  /* ======================================
+     GROWTH KPI
+     Last Month vs Projected Current
+  ====================================== */
+
+  const growth =
+    calcGrowth(
+      salesAll
+    );
+
+  /* ======================================
+     RENDER
+  ====================================== */
+
   setText(
     "kpiRevenue",
     fc(revenue)
@@ -155,6 +169,106 @@ export function renderKpis() {
 
   setText(
     "kpiGrowth",
-    "-"
+    growth
   );
+}
+
+/* ==========================================
+   GROWTH
+========================================== */
+
+function calcGrowth(
+  rows = []
+) {
+  if (!rows.length)
+    return "-";
+
+  const now =
+    new Date();
+
+  const cy =
+    now.getFullYear();
+
+  const cm =
+    now.getMonth() +
+    1;
+
+  const today =
+    now.getDate();
+
+  const daysInMonth =
+    new Date(
+      cy,
+      cm,
+      0
+    ).getDate();
+
+  let py = cy;
+  let pm = cm - 1;
+
+  if (pm === 0) {
+    pm = 12;
+    py--;
+  }
+
+  let current =
+    0;
+  let previous =
+    0;
+
+  rows.forEach((r) => {
+    const y =
+      Number(
+        r.year
+      );
+
+    const m =
+      Number(
+        r.month
+      );
+
+    const val =
+      num(
+        r.final_amount
+      );
+
+    if (
+      y === cy &&
+      m === cm
+    ) {
+      current +=
+        val;
+    }
+
+    if (
+      y === py &&
+      m === pm
+    ) {
+      previous +=
+        val;
+    }
+  });
+
+  if (
+    previous === 0
+  )
+    return "-";
+
+  const projected =
+    (current /
+      Math.max(
+        today,
+        1
+      )) *
+    daysInMonth;
+
+  const pct =
+    (
+      ((projected -
+        previous) /
+        previous) *
+      100
+    ).toFixed(1);
+
+  return pct + "%";
 }
