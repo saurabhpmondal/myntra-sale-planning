@@ -1,6 +1,6 @@
 /* ==========================================
    APP.JS
-   Stable Recovery Build
+   Stable Build + Dashboard Binding Layer
 ========================================== */
 
 import { initRouter } from "./core/router.js";
@@ -21,8 +21,7 @@ import { initSearchEngine } from "./filters/search.js";
    REPORTS
 ========================================== */
 
-/* ROLLBACK TO STABLE FILE */
-import { renderDashboard } from "./reports/dashboard.js";
+import { renderDashboard } from "./reports/dashboard-bind.js";
 
 import { renderSalesReport } from "./reports/sales.js";
 import { renderTrafficReport } from "./reports/traffic.js";
@@ -60,7 +59,7 @@ async function initApp() {
 }
 
 /* ==========================================
-   RENDER ALL
+   MASTER RENDER
 ========================================== */
 
 function renderAllReports() {
@@ -78,6 +77,9 @@ function safe(fn) {
   try {
     fn();
   } catch (error) {
-    console.error(fn.name, error);
+    console.error(
+      fn.name,
+      error
+    );
   }
 }
