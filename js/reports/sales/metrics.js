@@ -1,15 +1,11 @@
 /* ==========================================
    SALES REPORT / METRICS.JS
-   Style level aggregation engine
+   Final aggregation engine
 ========================================== */
 
-import {
-  getDataset
-} from "../../core/state.js";
-
-import {
-  applyGlobalFilters
-} from "../../filters/filter-engine.js";
+import { getDataset } from "../../core/state.js";
+import { applyGlobalFilters } from "../../filters/filter-engine.js";
+import { normalizeMonth } from "../../normalize/dates.js";
 
 import {
   num,
@@ -18,10 +14,6 @@ import {
   clean,
   byGmvDesc
 } from "./helpers.js";
-
-import {
-  normalizeMonth
-} from "../../normalize/dates.js";
 
 /* ==========================================
    PUBLIC
@@ -32,6 +24,9 @@ export function getSalesRows() {
     applyGlobalFilters(
       getDataset("sales")
     );
+
+  const salesAll =
+    getDataset("sales");
 
   const pm =
     getDataset(
@@ -60,6 +55,7 @@ export function getSalesRows() {
 
   return buildRows({
     sales,
+    salesAll,
     pm,
     traffic,
     returns,
@@ -69,7 +65,7 @@ export function getSalesRows() {
 }
 
 /* ==========================================
-   CORE BUILD
+   CORE
 ========================================== */
 
 function buildRows(
@@ -77,6 +73,7 @@ function buildRows(
 ) {
   const {
     sales,
+    salesAll,
     pm,
     traffic,
     returns,
@@ -85,21 +82,21 @@ function buildRows(
   } = data;
 
   const map = {};
-
   let totalUnits = 0;
 
-  /* current sales */
+  /* CURRENT FILTERED SALES */
   sales.forEach((r) => {
     const id =
       clean(
         r.style_id
       );
 
-    if (!id) return;
+    if (!id)
+      return;
 
     if (!map[id]) {
       map[id] =
-        blankRow(id);
+        blank(id);
     }
 
     const row =
@@ -117,6 +114,12 @@ function buildRows(
     row.units += qty;
 
     totalUnits += qty;
+
+    row.brand =
+      row.brand ||
+      clean(
+        r.brand
+      );
 
     const po =
       clean(
@@ -143,7 +146,46 @@ function buildRows(
     }
   });
 
-  /* product master */
+  enrichMaster(
+    map,
+    pm
+  );
+
+  enrichTraffic(
+    map,
+    traffic
+  );
+
+  enrichReturns(
+    map,
+    returns
+  );
+
+  enrichStocks(
+    map,
+    sjit,
+    sor
+  );
+
+  enrichGrowth(
+    map,
+    salesAll
+  );
+
+  return finalize(
+    map,
+    totalUnits
+  );
+}
+
+/* ==========================================
+   ENRICHERS
+========================================== */
+
+function enrichMaster(
+  map,
+  pm
+) {
   pm.forEach((r) => {
     const id =
       clean(
@@ -168,8 +210,12 @@ function buildRows(
       }
     }
   });
+}
 
-  /* rating */
+function enrichTraffic(
+  map,
+  traffic
+) {
   traffic.forEach((r) => {
     const id =
       clean(
@@ -185,24 +231,29 @@ function buildRows(
         );
     }
   });
+}
 
-  /* returns */
-  const styleByLine =
+function enrichReturns(
+  map,
+  returns
+) {
+  const lineToStyle =
     {};
 
-  Object.values(map)
-    .forEach(
-      (row) => {
-        row.soldIds.forEach(
-          (id) => {
-            styleByLine[
-              id
-            ] =
-              row.styleId;
-          }
-        );
-      }
-    );
+  Object.values(
+    map
+  ).forEach(
+    (row) => {
+      row.soldIds.forEach(
+        (id) => {
+          lineToStyle[
+            id
+          ] =
+            row.styleId;
+        }
+      );
+    }
+  );
 
   returns.forEach((r) => {
     const id =
@@ -211,7 +262,7 @@ function buildRows(
       );
 
     const style =
-      styleByLine[
+      lineToStyle[
         id
       ];
 
@@ -226,8 +277,13 @@ function buildRows(
       );
     }
   });
+}
 
-  /* stocks */
+function enrichStocks(
+  map,
+  sjit,
+  sor
+) {
   sjit.forEach((r) => {
     const id =
       clean(
@@ -259,107 +315,44 @@ function buildRows(
         );
     }
   });
-
-  /* growth */
-  applyGrowth(
-    map
-  );
-
-  /* finalize */
-  const rows =
-    Object.values(
-      map
-    ).map(
-      (r) => {
-        r.asp =
-          divide(
-            r.gmv,
-            r.units
-          );
-
-        r.returnPct =
-          divide(
-            r.returnIds
-              .size *
-              100,
-            r.soldIds
-              .size
-          );
-
-        r.ppmpPct =
-          divide(
-            r.ppmp *
-              100,
-            r.units
-          );
-
-        r.sjitPct =
-          divide(
-            r.sjitSale *
-              100,
-            r.units
-          );
-
-        r.sorPct =
-          divide(
-            r.sorSale *
-              100,
-            r.units
-          );
-
-        r.sharePct =
-          divide(
-            r.units *
-              100,
-            totalUnits
-          );
-
-        return r;
-      }
-    );
-
-  return rows.sort(
-    byGmvDesc
-  );
 }
 
-/* ==========================================
-   GROWTH
-========================================== */
-
-function applyGrowth(
-  map
+function enrichGrowth(
+  map,
+  salesAll
 ) {
-  const sales =
-    getDataset(
-      "sales"
+  const monthEl =
+    document.getElementById(
+      "monthFilter"
     );
 
-  const now =
-    new Date();
+  if (
+    !monthEl ||
+    !monthEl.value
+  )
+    return;
 
-  const cy =
-    now.getFullYear();
+  const [
+    year,
+    month
+  ] =
+    monthEl.value
+      .split("-")
+      .map(Number);
 
-  const cm =
-    now.getMonth() +
-    1;
-
-  let py = cy;
+  let py = year;
   let pm =
-    cm - 1;
+    month - 1;
 
   if (pm === 0) {
     pm = 12;
     py--;
   }
 
-  const curr =
-    {};
-  const prev =
-    {};
+  const curr = {};
+  const prev = {};
 
-  sales.forEach((r) => {
+  salesAll.forEach((r) => {
     const id =
       clean(
         r.style_id
@@ -383,8 +376,8 @@ function applyGrowth(
       );
 
     if (
-      y === cy &&
-      m === cm
+      y === year &&
+      m === month
     ) {
       curr[id] =
         (curr[id] ||
@@ -415,10 +408,72 @@ function applyGrowth(
 }
 
 /* ==========================================
-   HELPERS
+   FINALIZE
 ========================================== */
 
-function blankRow(
+function finalize(
+  map,
+  totalUnits
+) {
+  return Object.values(
+    map
+  )
+    .map((r) => {
+      r.asp =
+        divide(
+          r.gmv,
+          r.units
+        );
+
+      r.returnPct =
+        divide(
+          r.returnIds
+            .size *
+            100,
+          r.soldIds
+            .size
+        );
+
+      r.ppmpPct =
+        divide(
+          r.ppmp *
+            100,
+          r.units
+        );
+
+      r.sjitPct =
+        divide(
+          r.sjitSale *
+            100,
+          r.units
+        );
+
+      r.sorPct =
+        divide(
+          r.sorSale *
+            100,
+          r.units
+        );
+
+      r.sharePct =
+        divide(
+          r.units *
+            100,
+          totalUnits
+        );
+
+      return r;
+    })
+    .sort(
+      byGmvDesc
+    );
+}
+
+/* ==========================================
+   TEMPLATE
+========================================== */
+
+function blank(
   id
 ) {
   return {
@@ -447,6 +502,7 @@ function blankRow(
 
     soldIds:
       new Set(),
+
     returnIds:
       new Set(),
 
