@@ -1,3 +1,14 @@
+/* ==========================================
+   APP.JS
+   DEBUG RECOVERY BUILD
+========================================== */
+
+/* ==========================================
+   GLOBAL DEBUG PANEL
+========================================== */
+
+createDebugPanel();
+
 window.onerror = function (
   msg,
   src,
@@ -5,38 +16,28 @@ window.onerror = function (
   col,
   err
 ) {
-  const box =
-    document.createElement("div");
-
-  box.style.position = "fixed";
-  box.style.top = "0";
-  box.style.left = "0";
-  box.style.right = "0";
-  box.style.zIndex = "99999";
-  box.style.background = "#b91c1c";
-  box.style.color = "#fff";
-  box.style.padding = "10px";
-  box.style.fontSize = "12px";
-  box.style.maxHeight = "220px";
-  box.style.overflow = "auto";
-
-  box.innerText =
-    "JS Error:\n" +
-    msg +
-    "\nLine: " +
-    line +
-    "\nFile: " +
-    src;
-
-  document.body.appendChild(
-    box
+  logDebug(
+    "ERROR: " +
+      msg +
+      " | line " +
+      line
   );
 };
 
+window.onunhandledrejection =
+  function (e) {
+    logDebug(
+      "PROMISE ERROR: " +
+        (
+          e.reason?.message ||
+          e.reason ||
+          "unknown"
+        )
+    );
+  };
 
 /* ==========================================
-   APP.JS
-   Stable Build + Dashboard Binding Layer
+   IMPORTS
 ========================================== */
 
 import { initRouter } from "./core/router.js";
@@ -53,12 +54,7 @@ import {
 
 import { initSearchEngine } from "./filters/search.js";
 
-/* ==========================================
-   REPORTS
-========================================== */
-
 import { renderDashboard } from "./reports/dashboard-bind.js";
-
 import { renderSalesReport } from "./reports/sales.js";
 import { renderTrafficReport } from "./reports/traffic.js";
 import { renderProductsReport } from "./reports/products.js";
@@ -68,7 +64,7 @@ import { renderSorPlanning } from "./reports/sor.js";
 import { renderExportCenter } from "./reports/export.js";
 
 /* ==========================================
-   INIT
+   START
 ========================================== */
 
 document.addEventListener(
@@ -76,46 +72,236 @@ document.addEventListener(
   initApp
 );
 
+/* ==========================================
+   MAIN
+========================================== */
+
 async function initApp() {
-  initErrorHandler();
-  initRouter();
-  initEvents();
-  initSearchEngine();
+  logDebug(
+    "STEP 1 DOM Ready"
+  );
 
-  subscribe(() => {
-    renderAllReports();
-  });
+  try {
+    initErrorHandler();
+    logDebug(
+      "STEP 2 ErrorHandler OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL initErrorHandler"
+    );
+  }
 
-  await bootstrapAppData();
+  try {
+    initRouter();
+    logDebug(
+      "STEP 3 Router OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL initRouter"
+    );
+  }
 
-  populateMonthFilterFromData();
-  populateAllFilters();
+  try {
+    initEvents();
+    logDebug(
+      "STEP 4 Events OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL initEvents"
+    );
+  }
+
+  try {
+    initSearchEngine();
+    logDebug(
+      "STEP 5 Search OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL initSearch"
+    );
+  }
+
+  try {
+    subscribe(() => {
+      renderAllReports();
+    });
+
+    logDebug(
+      "STEP 6 Subscribe OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL subscribe"
+    );
+  }
+
+  try {
+    logDebug(
+      "STEP 7 Loading Data..."
+    );
+
+    await bootstrapAppData();
+
+    logDebug(
+      "STEP 8 Data Loaded"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL bootstrapAppData: " +
+        (
+          e.message ||
+          e
+        )
+    );
+    return;
+  }
+
+  try {
+    populateMonthFilterFromData();
+    logDebug(
+      "STEP 9 Month Filter OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL month filter"
+    );
+  }
+
+  try {
+    populateAllFilters();
+    logDebug(
+      "STEP 10 All Filters OK"
+    );
+  } catch (e) {
+    logDebug(
+      "FAIL all filters"
+    );
+  }
 
   renderAllReports();
+
+  logDebug(
+    "STEP 11 Render Complete"
+  );
 }
 
 /* ==========================================
-   MASTER RENDER
+   RENDER
 ========================================== */
 
 function renderAllReports() {
-  safe(renderDashboard);
-  safe(renderSalesReport);
-  safe(renderTrafficReport);
-  safe(renderProductsReport);
-  safe(renderInventoryReport);
-  safe(renderSjitPlanning);
-  safe(renderSorPlanning);
-  safe(renderExportCenter);
+  safe(
+    renderDashboard,
+    "dashboard"
+  );
+  safe(
+    renderSalesReport,
+    "sales"
+  );
+  safe(
+    renderTrafficReport,
+    "traffic"
+  );
+  safe(
+    renderProductsReport,
+    "products"
+  );
+  safe(
+    renderInventoryReport,
+    "inventory"
+  );
+  safe(
+    renderSjitPlanning,
+    "sjit"
+  );
+  safe(
+    renderSorPlanning,
+    "sor"
+  );
+  safe(
+    renderExportCenter,
+    "export"
+  );
 }
 
-function safe(fn) {
+function safe(
+  fn,
+  name
+) {
   try {
     fn();
-  } catch (error) {
-    console.error(
-      fn.name,
-      error
+  } catch (e) {
+    logDebug(
+      "FAIL render " +
+        name
     );
   }
+}
+
+/* ==========================================
+   DEBUG UI
+========================================== */
+
+function createDebugPanel() {
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      const box =
+        document.createElement(
+          "div"
+        );
+
+      box.id =
+        "debugPanel";
+
+      box.style.position =
+        "fixed";
+      box.style.bottom =
+        "0";
+      box.style.left =
+        "0";
+      box.style.right =
+        "0";
+      box.style.maxHeight =
+        "220px";
+      box.style.overflow =
+        "auto";
+      box.style.zIndex =
+        "99999";
+      box.style.background =
+        "#111";
+      box.style.color =
+        "#0f0";
+      box.style.fontSize =
+        "11px";
+      box.style.padding =
+        "8px";
+      box.style.fontFamily =
+        "monospace";
+
+      document.body.appendChild(
+        box
+      );
+    }
+  );
+}
+
+function logDebug(
+  text
+) {
+  const box =
+    document.getElementById(
+      "debugPanel"
+    );
+
+  if (!box) return;
+
+  box.innerHTML +=
+    "<div>" +
+    text +
+    "</div>";
 }
