@@ -1,0 +1,82 @@
+/* ==========================================
+   File: css/progress.css
+   NEW FILE
+   Real Progress Overlay UI
+========================================== */
+
+#appProgressOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(
+    0,
+    0,
+    0,
+    0.28
+  );
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#appProgressOverlay.show {
+  display: flex;
+}
+
+.progress-card {
+  width: 320px;
+  max-width: calc(
+    100vw - 32px
+  );
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow:
+    0 20px 50px rgba(
+      0,
+      0,
+      0,
+      0.18
+    );
+}
+
+.progress-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+}
+
+.progress-sub {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #4b5563;
+  text-align: center;
+}
+
+.progress-rows {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.progress-track {
+  margin-top: 14px;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    #2563eb,
+    #10b981
+  );
+  transition: width 0.25s linear;
+  border-radius: 999px;
+}
