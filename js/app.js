@@ -1,13 +1,9 @@
 /* ==========================================
    APP.JS
-   Current Month Default Load
-   Debug Logger Kept
+   FIX DEFAULT MONTH LOAD
 ========================================== */
 
-/* ==========================================
-   DEBUG PANEL
-========================================== */
-
+/* DEBUG KEPT */
 createDebugPanel();
 
 window.onerror = function (
@@ -35,10 +31,7 @@ window.onunhandledrejection =
     );
   };
 
-/* ==========================================
-   IMPORTS
-========================================== */
-
+/* IMPORTS */
 import { initRouter } from "./core/router.js";
 import { initEvents } from "./core/events.js";
 import { initErrorHandler } from "./core/error-handler.js";
@@ -62,18 +55,11 @@ import { renderSjitPlanning } from "./reports/sjit.js";
 import { renderSorPlanning } from "./reports/sor.js";
 import { renderExportCenter } from "./reports/export.js";
 
-/* ==========================================
-   START
-========================================== */
-
+/* START */
 document.addEventListener(
   "DOMContentLoaded",
   initApp
 );
-
-/* ==========================================
-   INIT
-========================================== */
 
 async function initApp() {
   try {
@@ -86,26 +72,17 @@ async function initApp() {
       renderAllReports();
     });
 
-    logDebug(
-      "Loading data..."
-    );
-
     await bootstrapAppData();
 
-    logDebug(
-      "Data loaded"
-    );
-
     populateMonthFilterFromData();
-
-    applyDefaultLatestMonth();
-
     populateAllFilters();
+
+    forceLatestMonth();
 
     renderAllReports();
 
     logDebug(
-      "Render complete"
+      "APP READY"
     );
   } catch (e) {
     logDebug(
@@ -119,10 +96,10 @@ async function initApp() {
 }
 
 /* ==========================================
-   DEFAULT MONTH = LATEST
+   FORCE CURRENT / LATEST MONTH
 ========================================== */
 
-function applyDefaultLatestMonth() {
+function forceLatestMonth() {
   const month =
     document.getElementById(
       "monthFilter"
@@ -145,89 +122,85 @@ function applyDefaultLatestMonth() {
   )
     return;
 
-  /* first option already latest due desc sort */
   month.selectedIndex = 0;
 
-  const value =
+  const val =
     month.value;
-
-  if (!value) return;
 
   const [
     year,
     mm
   ] =
-    value.split(
-      "-"
-    );
+    val.split("-");
 
-  const y =
-    Number(year);
-  const m =
-    Number(mm);
-
-  const now =
+  const today =
     new Date();
 
-  const isCurrentMonth =
-    now.getFullYear() ===
-      y &&
-    now.getMonth() +
+  const current =
+    today.getFullYear() ===
+      Number(year) &&
+    today.getMonth() +
       1 ===
-      m;
+      Number(mm);
 
-  const firstDay =
-    `${year}-${pad(
-      mm
-    )}-01`;
+  start.value =
+    `${year}-${mm}-01`;
 
-  let lastDay;
-
-  if (
-    isCurrentMonth
-  ) {
-    /* yesterday */
-    const yday =
+  if (current) {
+    const y =
       new Date();
-    yday.setDate(
-      yday.getDate() -
-        1
+    y.setDate(
+      y.getDate() - 1
     );
 
-    lastDay = `${yday.getFullYear()}-${pad(
-      yday.getMonth() +
-        1
-    )}-${pad(
-      yday.getDate()
-    )}`;
+    end.value =
+      `${y.getFullYear()}-${pad(
+        y.getMonth() +
+          1
+      )}-${pad(
+        y.getDate()
+      )}`;
   } else {
-    const d =
+    const last =
       new Date(
-        y,
-        m,
+        Number(year),
+        Number(mm),
         0
       );
 
-    lastDay = `${year}-${pad(
-      mm
-    )}-${pad(
-      d.getDate()
-    )}`;
+    end.value =
+      `${year}-${mm}-${pad(
+        last.getDate()
+      )}`;
   }
 
-  start.value =
-    firstDay;
-  end.value =
-    lastDay;
+  /* force change event */
+  month.dispatchEvent(
+    new Event(
+      "change"
+    )
+  );
+
+  start.dispatchEvent(
+    new Event(
+      "change"
+    )
+  );
+
+  end.dispatchEvent(
+    new Event(
+      "change"
+    )
+  );
 
   logDebug(
-    "Default month: " +
-      value
+    "DEFAULT " +
+      val
   );
 }
 
 /* ==========================================
-   RENDER ALL
+   RENDER
 ========================================== */
 
 function renderAllReports() {
@@ -262,14 +235,10 @@ function safe(fn) {
     fn();
   } catch (e) {
     logDebug(
-      "Render fail"
+      "FAIL render"
     );
   }
 }
-
-/* ==========================================
-   HELPERS
-========================================== */
 
 function pad(v) {
   return String(v)
@@ -279,66 +248,63 @@ function pad(v) {
     );
 }
 
-/* ==========================================
-   DEBUG UI
-========================================== */
-
+/* DEBUG */
 function createDebugPanel() {
   document.addEventListener(
     "DOMContentLoaded",
     () => {
-      const box =
+      const d =
         document.createElement(
           "div"
         );
 
-      box.id =
+      d.id =
         "debugPanel";
 
-      box.style.position =
+      d.style.position =
         "fixed";
-      box.style.bottom =
+      d.style.bottom =
         "0";
-      box.style.left =
+      d.style.left =
         "0";
-      box.style.right =
+      d.style.right =
         "0";
-      box.style.maxHeight =
-        "170px";
-      box.style.overflow =
+      d.style.maxHeight =
+        "160px";
+      d.style.overflow =
         "auto";
-      box.style.zIndex =
+      d.style.zIndex =
         "99999";
-      box.style.background =
+      d.style.background =
         "#111";
-      box.style.color =
+      d.style.color =
         "#0f0";
-      box.style.fontSize =
+      d.style.fontSize =
         "11px";
-      box.style.padding =
+      d.style.padding =
         "6px";
-      box.style.fontFamily =
+      d.style.fontFamily =
         "monospace";
 
       document.body.appendChild(
-        box
+        d
       );
     }
   );
 }
 
 function logDebug(
-  text
+  t
 ) {
-  const box =
+  const d =
     document.getElementById(
       "debugPanel"
     );
 
-  if (!box) return;
+  if (!d) return;
 
-  box.innerHTML +=
+  d.innerHTML +=
     "<div>" +
-    text +
+    t +
     "</div>";
 }
