@@ -1,6 +1,7 @@
 /* ==========================================
-   SALES REPORT / TABLE.JS
-   Premium renderer
+   File: js/reports/sales/table.js
+   FULL REPLACE CODE
+   Added Final SOR Stock Column
 ========================================== */
 
 import {
