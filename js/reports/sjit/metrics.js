@@ -1,12 +1,16 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   FIXED ERP STATUS
+   Added Smart Visibility Filter
+   Show only:
+   Net Sale > 0 OR SJIT Stock > 0
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
-import { getFilters } from "../../core/state.js";
-import { getDataset } from "../../core/state.js";
+import {
+  getFilters,
+  getDataset
+} from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
@@ -28,13 +32,19 @@ export function getSjitRows() {
     getActiveDays();
 
   const rows =
-    salesRows.map((r) =>
-      buildPlan(
-        r,
-        days,
-        statusMap
+    salesRows
+      .map((r) =>
+        buildPlan(
+          r,
+          days,
+          statusMap
+        )
       )
-    );
+      .filter(
+        (r) =>
+          r.net > 0 ||
+          r.stock > 0
+      );
 
   return rows.sort(
     (a, b) =>
