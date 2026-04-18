@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   Added SJIT Refresh Support
+   SAFE MERGED EVENTS
+   Dashboard + Sales + Traffic + SJIT
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -9,6 +10,7 @@ import { setFilter } from "./state.js";
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
+import { renderTrafficReport } from "../reports/traffic/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
@@ -31,18 +33,16 @@ function bindTabs() {
       ".tab-btn"
     );
 
-  tabs.forEach(
-    (tab) => {
-      tab.addEventListener(
-        "click",
-        () => {
-          navigate(
-            tab.dataset.tab
-          );
-        }
-      );
-    }
-  );
+  tabs.forEach((tab) => {
+    tab.addEventListener(
+      "click",
+      () => {
+        navigate(
+          tab.dataset.tab
+        );
+      }
+    );
+  });
 }
 
 /* ==========================================
@@ -89,15 +89,13 @@ function bindMonth() {
       "endDate"
     );
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.addEventListener(
     "change",
     (event) => {
       const val =
-        event.target
-          .value;
+        event.target.value;
 
       setFilter(
         "month",
@@ -113,24 +111,16 @@ function bindMonth() {
           year,
           mm
         ] =
-          val.split(
-            "-"
-          );
+          val.split("-");
 
         const y =
-          Number(
-            year
-          );
+          Number(year);
 
         const m =
-          Number(
-            mm
-          );
+          Number(mm);
 
         start.value =
-          `${year}-${pad(
-            mm
-          )}-01`;
+          `${year}-${pad(mm)}-01`;
 
         const now =
           new Date();
@@ -138,8 +128,7 @@ function bindMonth() {
         const isCurrent =
           now.getFullYear() ===
             y &&
-          now.getMonth() +
-            1 ===
+          now.getMonth() + 1 ===
             m;
 
         if (
@@ -149,14 +138,12 @@ function bindMonth() {
             new Date();
 
           d.setDate(
-            d.getDate() -
-              1
+            d.getDate() - 1
           );
 
           end.value =
             `${d.getFullYear()}-${pad(
-              d.getMonth() +
-                1
+              d.getMonth() + 1
             )}-${pad(
               d.getDate()
             )}`;
@@ -169,9 +156,7 @@ function bindMonth() {
             );
 
           end.value =
-            `${year}-${pad(
-              mm
-            )}-${pad(
+            `${year}-${pad(mm)}-${pad(
               last.getDate()
             )}`;
         }
@@ -197,20 +182,16 @@ function bindSingle(
   key
 ) {
   const el =
-    document.getElementById(
-      id
-    );
+    document.getElementById(id);
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.addEventListener(
     "change",
     (event) => {
       setFilter(
         key,
-        event.target
-          .value
+        event.target.value
       );
 
       refresh();
@@ -228,8 +209,7 @@ function bindSearch() {
       "globalSearch"
     );
 
-  if (!el)
-    return;
+  if (!el) return;
 
   el.addEventListener(
     "input",
@@ -259,7 +239,7 @@ function bindSearch() {
 }
 
 /* ==========================================
-   REFRESH
+   REFRESH ACTIVE TAB
 ========================================== */
 
 function refresh() {
@@ -268,8 +248,7 @@ function refresh() {
       ".tab-panel.active"
     );
 
-  if (!active)
-    return;
+  if (!active) return;
 
   const id =
     active.id;
@@ -282,15 +261,19 @@ function refresh() {
   }
 
   if (
-    id ===
-    "sales"
+    id === "sales"
   ) {
     renderSalesReport();
   }
 
   if (
-    id ===
-    "sjit"
+    id === "traffic"
+  ) {
+    renderTrafficReport();
+  }
+
+  if (
+    id === "sjit"
   ) {
     renderSjitReport();
   }
@@ -301,9 +284,8 @@ function refresh() {
 ========================================== */
 
 function pad(v) {
-  return String(v)
-    .padStart(
-      2,
-      "0"
-    );
+  return String(v).padStart(
+    2,
+    "0"
+  );
 }
