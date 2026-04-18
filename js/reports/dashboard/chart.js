@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / CHART.JS
-   FIXED DATE WISE UNITS CHART
+   FIXED TO MASTER DATE COLUMNS
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -92,7 +92,7 @@ export function renderChart() {
                     220
                 )}px
               "
-              title="${row.date} : ${fn(
+              title="${row.label} : ${fn(
                 row.units
               )}"
             ></div>
@@ -113,7 +113,7 @@ export function renderChart() {
 }
 
 /* ==========================================
-   DAILY GROUP
+   GROUP DAILY
 ========================================== */
 
 function buildDaily(
@@ -122,22 +122,22 @@ function buildDaily(
   const map = {};
 
   rows.forEach((row) => {
-    const raw =
-      row.order_date ||
-      row.sale_key_date ||
-      row.created_on ||
-      row.date ||
-      "";
+    if (
+      !row.year ||
+      !row.month ||
+      !row.date
+    )
+      return;
 
-    const date =
-      normalize(
-        raw
+    const key =
+      makeDate(
+        row.year,
+        row.month,
+        row.date
       );
 
-    if (!date) return;
-
-    map[date] =
-      (map[date] || 0) +
+    map[key] =
+      (map[key] || 0) +
       num(row.qty);
   });
 
@@ -145,58 +145,30 @@ function buildDaily(
     map
   )
     .sort()
-    .map((date) => ({
-      date,
-      day:
-        date.split(
+    .map((key) => {
+      const p =
+        key.split(
           "-"
-        )[2],
-      units:
-        map[date]
-    }));
+        );
+
+      return {
+        label: key,
+        day: p[2],
+        units:
+          map[key]
+      };
+    });
 }
 
-/* ==========================================
-   NORMALIZE
-========================================== */
-
-function normalize(
-  val
+function makeDate(
+  y,
+  m,
+  d
 ) {
-  const t =
-    String(
-      val || ""
-    )
-      .trim()
-      .replaceAll(
-        "/",
-        "-"
-      );
-
-  const p =
-    t.split("-");
-
-  if (
-    p.length !== 3
-  )
-    return "";
-
-  /* yyyy-mm-dd */
-  if (
-    p[0].length === 4
-  ) {
-    return `${p[0]}-${pad(
-      p[1]
-    )}-${pad(
-      p[2]
-    )}`;
-  }
-
-  /* dd-mm-yyyy */
-  return `${p[2]}-${pad(
-    p[1]
+  return `${y}-${pad(
+    m
   )}-${pad(
-    p[0]
+    d
   )}`;
 }
 
