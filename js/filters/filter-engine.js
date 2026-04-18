@@ -1,7 +1,6 @@
 /* ==========================================
    FILTER-ENGINE.JS
-   Global Filtering Logic
-   Used by all reports
+   FIXED MASTER DATE LOGIC
 ========================================== */
 
 import { getFilters } from "../core/state.js";
@@ -9,16 +8,21 @@ import { normalizeMonth } from "../normalize/dates.js";
 import { searchText } from "../normalize/text.js";
 
 /* ==========================================
-   PUBLIC API
+   PUBLIC
 ========================================== */
 
 export function applyGlobalFilters(
   rows = []
 ) {
-  const filters = getFilters();
+  const filters =
+    getFilters();
 
-  return rows.filter((row) =>
-    passesFilters(row, filters)
+  return rows.filter(
+    (row) =>
+      passesFilters(
+        row,
+        filters
+      )
   );
 }
 
@@ -26,22 +30,32 @@ export function applyCustomFilters(
   rows = [],
   filters = {}
 ) {
-  return rows.filter((row) =>
-    passesFilters(row, filters)
+  return rows.filter(
+    (row) =>
+      passesFilters(
+        row,
+        filters
+      )
   );
 }
 
 /* ==========================================
-   CORE FILTER CHECK
+   CORE
 ========================================== */
 
 function passesFilters(
   row,
   filters
 ) {
-  if (!row) return false;
+  if (!row)
+    return false;
 
-  if (!matchMonth(row, filters.month))
+  if (
+    !matchMonth(
+      row,
+      filters.month
+    )
+  )
     return false;
 
   if (
@@ -88,22 +102,34 @@ function matchMonth(
   row,
   monthValue
 ) {
-  if (!monthValue) return true;
-
-  if (!row.year || !row.month)
+  if (!monthValue)
     return true;
 
-  const [year, month] =
-    String(monthValue).split("-");
+  if (
+    !row.year ||
+    !row.month
+  )
+    return true;
 
-  const rowMonth =
-    normalizeMonth(row.month);
+  const [
+    y,
+    m
+  ] =
+    String(
+      monthValue
+    ).split("-");
 
   return (
-    Number(row.year) ===
-      Number(year) &&
-    Number(rowMonth) ===
-      Number(month)
+    Number(
+      row.year
+    ) ===
+      Number(y) &&
+    Number(
+      normalizeMonth(
+        row.month
+      )
+    ) ===
+      Number(m)
   );
 }
 
@@ -116,40 +142,75 @@ function matchDateRange(
   startDate,
   endDate
 ) {
-  if (!startDate && !endDate)
+  if (
+    !startDate &&
+    !endDate
+  )
     return true;
 
-  const rowDate =
-    row.sale_key_date ||
-    row.start_date ||
-    row.return_created_date ||
-    row.created_on;
+  /* ONLY use sales dataset year month date */
+  if (
+    row.year &&
+    row.month &&
+    row.date
+  ) {
+    const rowDate =
+      buildDate(
+        row.year,
+        row.month,
+        row.date
+      );
 
-  if (!rowDate) return true;
-
-  const current =
-    new Date(rowDate).getTime();
-
-  if (startDate) {
-    const start =
+    const current =
       new Date(
-        startDate
+        rowDate
       ).getTime();
 
-    if (current < start)
-      return false;
-  }
+    if (
+      startDate
+    ) {
+      const start =
+        new Date(
+          startDate
+        ).getTime();
 
-  if (endDate) {
-    const end = new Date(
+      if (
+        current <
+        start
+      )
+        return false;
+    }
+
+    if (
       endDate
-    ).getTime();
+    ) {
+      const end =
+        new Date(
+          endDate
+        ).getTime();
 
-    if (current > end)
-      return false;
+      if (
+        current >
+        end
+      )
+        return false;
+    }
+
+    return true;
   }
 
+  /* non sales rows pass */
   return true;
+}
+
+function buildDate(
+  y,
+  m,
+  d
+) {
+  return `${y}-${pad(
+    normalizeMonth(m)
+  )}-${pad(d)}`;
 }
 
 /* ==========================================
@@ -162,15 +223,19 @@ function matchBrand(
 ) {
   if (
     !brand ||
-    brand === "All Brands"
+    brand ===
+      "All Brands"
   )
     return true;
 
-  if (!row.brand) return false;
-
   return (
-    String(row.brand) ===
-    String(brand)
+    String(
+      row.brand ||
+        ""
+    ) ===
+    String(
+      brand
+    )
   );
 }
 
@@ -184,16 +249,19 @@ function matchPoType(
 ) {
   if (
     !poType ||
-    poType === "All PO Type"
+    poType ===
+      "All PO Type"
   )
     return true;
 
-  if (!row.po_type)
-    return false;
-
   return (
-    String(row.po_type) ===
-    String(poType)
+    String(
+      row.po_type ||
+        ""
+    ) ===
+    String(
+      poType
+    )
   );
 }
 
@@ -205,22 +273,38 @@ function matchSearch(
   row,
   keyword
 ) {
-  if (!keyword) return true;
+  if (!keyword)
+    return true;
 
   const needle =
-    searchText(keyword);
+    searchText(
+      keyword
+    );
 
-  const haystack = [
-    row.style_id,
-    row.erp_sku,
-    row.brand
-  ]
-    .map((item) =>
-      searchText(item)
-    )
-    .join("|");
+  const hay =
+    [
+      row.style_id,
+      row.erp_sku,
+      row.brand
+    ]
+      .map((x) =>
+        searchText(x)
+      )
+      .join("|");
 
-  return haystack.includes(
+  return hay.includes(
     needle
   );
+}
+
+/* ==========================================
+   HELPERS
+========================================== */
+
+function pad(v) {
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
