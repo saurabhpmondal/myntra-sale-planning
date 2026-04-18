@@ -1,69 +1,106 @@
 /* ==========================================
    SALES.CSS
-   Sales tab styling
+   Sales report full styling
+========================================== */
+
+/* ==========================================
+   PANEL
 ========================================== */
 
 #sales {
-  width: 100%;
+  padding: 0;
+}
+
+#sales .panel-card {
+  margin: 0;
 }
 
 /* ==========================================
-   OVERVIEW METRICS
+   TABLE WRAP
 ========================================== */
 
-.sales-metric-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+.sales-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: 16px;
 }
 
-.sales-metric-item {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-}
+/* ==========================================
+   TABLE
+========================================== */
 
-.sales-metric-label {
+.sales-table {
+  width: 100%;
+  min-width: 1650px;
+  border-collapse: collapse;
   font-size: 13px;
-  color: var(--text-muted);
+}
+
+.sales-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sales-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.sales-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ==========================================
+   STICKY FIRST COLUMN
+========================================== */
+
+.sales-table .sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: #ffffff;
   font-weight: 700;
 }
 
-.sales-metric-value {
-  margin-top: 8px;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-main);
+.sales-table tbody tr:nth-child(even) .sticky-col {
+  background: #f8fafc;
 }
 
 /* ==========================================
-   TABLE PANELS
+   COLORS
 ========================================== */
 
-#salesBrandTable,
-#salesProductTable {
-  width: 100%;
+.sales-table td.pos {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.sales-table td.neg {
+  color: #dc2626;
+  font-weight: 700;
 }
 
 /* ==========================================
-   PANEL CARD BALANCE
+   MOBILE
 ========================================== */
 
-#sales .panel-card {
-  min-height: 220px;
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width: 900px) {
-  .sales-metric-list {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .sales-table {
+    font-size: 12px;
+    min-width: 1500px;
   }
 
-  .sales-metric-value {
-    font-size: 22px;
+  .sales-table thead th,
+  .sales-table tbody td {
+    padding: 9px 8px;
   }
 }
