@@ -1,11 +1,12 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   SALES ENGINE + ACTIVE DAY DRR
+   FIXED ERP STATUS
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
 import { getFilters } from "../../core/state.js";
+import { getDataset } from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
@@ -15,6 +16,14 @@ export function getSjitRows() {
   const salesRows =
     getSalesRows() || [];
 
+  const pm =
+    getDataset(
+      "productMaster"
+    ) || [];
+
+  const statusMap =
+    buildStatusMap(pm);
+
   const days =
     getActiveDays();
 
@@ -22,7 +31,8 @@ export function getSjitRows() {
     salesRows.map((r) =>
       buildPlan(
         r,
-        days
+        days,
+        statusMap
       )
     );
 
@@ -40,7 +50,8 @@ export function getSjitRows() {
 
 function buildPlan(
   r,
-  days
+  days,
+  statusMap
 ) {
   const gross =
     num(r.units);
@@ -71,6 +82,11 @@ function buildPlan(
       r.sjitStock
     );
 
+  const status =
+    statusMap[
+      r.styleId
+    ] || "";
+
   const sc =
     drr > 0
       ? stock / drr
@@ -84,11 +100,11 @@ function buildPlan(
 
   const badStatus =
     upper(
-      r.status
+      status
     ) !==
       "CONTINUE" &&
     upper(
-      r.status
+      status
     ) !== "";
 
   const badRating =
@@ -134,8 +150,7 @@ function buildPlan(
       r.styleId,
     erp:
       r.erp || "",
-    status:
-      r.status || "",
+    status,
     brand:
       r.brand || "",
     rating:
@@ -167,6 +182,35 @@ function buildPlan(
     units:
       gross
   };
+}
+
+/* ==========================================
+   PRODUCT MASTER
+========================================== */
+
+function buildStatusMap(
+  rows
+) {
+  const map = {};
+
+  rows.forEach((r) => {
+    const id =
+      String(
+        r.style_id ||
+        ""
+      ).trim();
+
+    if (!id)
+      return;
+
+    map[id] =
+      String(
+        r.status ||
+        ""
+      ).trim();
+  });
+
+  return map;
 }
 
 /* ==========================================
