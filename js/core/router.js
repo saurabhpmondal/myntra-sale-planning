@@ -1,20 +1,21 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   SAFE MERGED ROUTER
-   Dashboard + Sales + Traffic + SJIT
+   CLEAN CORE ROUTER
+   Dashboard + Sales + SJIT + SOR + Export
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
-import { renderTrafficReport } from "../reports/traffic/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
    PUBLIC
 ========================================== */
 
-export function navigate(tab = "dashboard") {
+export function navigate(
+  tab = "dashboard"
+) {
   setActiveTab(tab);
   renderTab(tab);
 }
@@ -50,7 +51,7 @@ function setActiveTab(tab) {
 }
 
 /* ==========================================
-   RENDER TAB
+   TAB RENDER
 ========================================== */
 
 function renderTab(tab) {
@@ -63,19 +64,22 @@ function renderTab(tab) {
       renderSalesReport();
       break;
 
-    case "traffic":
-      renderTrafficReport();
-      break;
-
     case "sjit":
       renderSjitReport();
       break;
 
-    case "products":
-    case "inventory":
     case "sor":
+      renderPlaceholder(
+        "sor",
+        "SOR Planning"
+      );
+      break;
+
     case "export":
-      renderPlaceholder(tab);
+      renderPlaceholder(
+        "export",
+        "Export Center"
+      );
       break;
 
     default:
@@ -88,19 +92,21 @@ function renderTab(tab) {
    PLACEHOLDER
 ========================================== */
 
-function renderPlaceholder(id) {
+function renderPlaceholder(
+  id,
+  title
+) {
   const el =
     document.getElementById(id);
 
   if (!el) return;
 
-  if (
-    el.innerHTML.trim() !== ""
-  )
-    return;
-
   el.innerHTML = `
     <div class="panel-card">
+      <h3 class="panel-title">
+        ${title}
+      </h3>
+
       <div class="placeholder-box large">
         Coming Soon
       </div>
