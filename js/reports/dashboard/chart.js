@@ -1,6 +1,6 @@
 /* ==========================================
    DASHBOARD / CHART.JS
-   Precision Fix Chart
+   FIXED DATE WISE UNITS CHART
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -24,14 +24,14 @@ export function renderChart() {
 
   if (!el) return;
 
-  const sales =
+  const rows =
     applyGlobalFilters(
       getDataset("sales")
     );
 
   const daily =
-    buildDailyData(
-      sales
+    buildDaily(
+      rows
     );
 
   if (!daily.length) {
@@ -52,6 +52,14 @@ export function renderChart() {
       1
     );
 
+  const total =
+    daily.reduce(
+      (a, r) =>
+        a +
+        r.units,
+      0
+    );
+
   el.innerHTML = `
     <div class="chart-shell">
 
@@ -62,12 +70,7 @@ export function renderChart() {
 
         <div class="chart-total">
           ${fn(
-            daily.reduce(
-              (a, r) =>
-                a +
-                r.units,
-              0
-            )
+            total
           )} Units
         </div>
       </div>
@@ -81,13 +84,15 @@ export function renderChart() {
 
             <div
               class="chart-bar"
-              style="height:${Math.max(
-                12,
-                (row.units /
-                  max) *
-                  220
-              )}px"
-              title="${row.label}: ${fn(
+              style="
+                height:${Math.max(
+                  10,
+                  (row.units /
+                    max) *
+                    220
+                )}px
+              "
+              title="${row.date} : ${fn(
                 row.units
               )}"
             ></div>
@@ -108,30 +113,31 @@ export function renderChart() {
 }
 
 /* ==========================================
-   BUILD DAILY
+   DAILY GROUP
 ========================================== */
 
-function buildDailyData(
+function buildDaily(
   rows = []
 ) {
   const map = {};
 
   rows.forEach((row) => {
     const raw =
+      row.order_date ||
       row.sale_key_date ||
       row.created_on ||
       row.date ||
       "";
 
-    const key =
-      normalizeDate(
+    const date =
+      normalize(
         raw
       );
 
-    if (!key) return;
+    if (!date) return;
 
-    map[key] =
-      (map[key] || 0) +
+    map[date] =
+      (map[date] || 0) +
       num(row.qty);
   });
 
@@ -139,64 +145,65 @@ function buildDailyData(
     map
   )
     .sort()
-    .map((key) => ({
-      label: key,
+    .map((date) => ({
+      date,
       day:
-        key.split(
+        date.split(
           "-"
         )[2],
       units:
-        map[key]
+        map[date]
     }));
 }
 
 /* ==========================================
-   NORMALIZE DATE
+   NORMALIZE
 ========================================== */
 
-function normalizeDate(
-  value = ""
+function normalize(
+  val
 ) {
-  const text =
-    String(value)
+  const t =
+    String(
+      val || ""
+    )
       .trim()
       .replaceAll(
         "/",
         "-"
       );
 
-  const parts =
-    text.split("-");
+  const p =
+    t.split("-");
 
   if (
-    parts.length === 3
-  ) {
-    /* already yyyy-mm-dd */
-    if (
-      parts[0]
-        .length === 4
-    ) {
-      return `${parts[0]}-${pad(
-        parts[1]
-      )}-${pad(
-        parts[2]
-      )}`;
-    }
+    p.length !== 3
+  )
+    return "";
 
-    /* dd-mm-yyyy */
-    return `${parts[2]}-${pad(
-      parts[1]
+  /* yyyy-mm-dd */
+  if (
+    p[0].length === 4
+  ) {
+    return `${p[0]}-${pad(
+      p[1]
     )}-${pad(
-      parts[0]
+      p[2]
     )}`;
   }
 
-  return "";
+  /* dd-mm-yyyy */
+  return `${p[2]}-${pad(
+    p[1]
+  )}-${pad(
+    p[0]
+  )}`;
 }
 
 function pad(v) {
-  return String(v).padStart(
-    2,
-    "0"
-  );
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
