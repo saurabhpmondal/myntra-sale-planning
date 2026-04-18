@@ -1,6 +1,6 @@
 /* ==========================================
    ROUTER.JS
-   Central tab router
+   Final tab router
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
@@ -13,34 +13,15 @@ import { renderSalesReport } from "../reports/sales/index.js";
 export function navigate(
   tab = "dashboard"
 ) {
-  activateTab(tab);
+  setActiveTab(tab);
   renderTab(tab);
 }
 
 /* ==========================================
-   RENDER
+   ACTIVE UI
 ========================================== */
 
-function renderTab(tab) {
-  switch (tab) {
-    case "sales":
-      renderSalesReport();
-      break;
-
-    case "dashboard":
-      renderDashboard();
-      break;
-
-    default:
-      break;
-  }
-}
-
-/* ==========================================
-   UI ACTIVE STATES
-========================================== */
-
-function activateTab(tab) {
+function setActiveTab(tab) {
   const buttons =
     document.querySelectorAll(
       ".tab-btn"
@@ -53,27 +34,81 @@ function activateTab(tab) {
 
   buttons.forEach(
     (btn) => {
-      const active =
-        btn.dataset.tab ===
-        tab;
-
       btn.classList.toggle(
         "active",
-        active
+        btn.dataset.tab ===
+          tab
       );
     }
   );
 
   panels.forEach(
     (panel) => {
-      const active =
-        panel.id ===
-        tab;
-
       panel.classList.toggle(
         "active",
-        active
+        panel.id === tab
       );
     }
   );
+}
+
+/* ==========================================
+   TAB RENDERERS
+========================================== */
+
+function renderTab(tab) {
+  switch (tab) {
+    case "dashboard":
+      renderDashboard();
+      break;
+
+    case "sales":
+      renderSalesReport();
+      break;
+
+    case "traffic":
+    case "products":
+    case "inventory":
+    case "sjit":
+    case "sor":
+    case "export":
+      renderPlaceholder(
+        tab
+      );
+      break;
+
+    default:
+      renderDashboard();
+      break;
+  }
+}
+
+/* ==========================================
+   PLACEHOLDER
+========================================== */
+
+function renderPlaceholder(
+  id
+) {
+  const el =
+    document.getElementById(
+      id
+    );
+
+  if (!el)
+    return;
+
+  if (
+    el.innerHTML
+      .trim() !== ""
+  )
+    return;
+
+  el.innerHTML = `
+    <div class="panel-card">
+      <div class="placeholder-box large">
+        Coming Soon
+      </div>
+    </div>
+  `;
 }
