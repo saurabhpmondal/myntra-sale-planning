@@ -1,7 +1,8 @@
 /* ==========================================
-   BOOTSTRAP.JS
-   Initial App Data Loader
-   UI Phase + Future Ready Engine
+   File: js/data/bootstrap.js
+   FULL REPLACE CODE
+   OPTION A LAZY LOAD READY
+   traffic excluded from boot load
 ========================================== */
 
 import {
@@ -32,29 +33,62 @@ export async function bootstrapAppData() {
   try {
     setLoading(true);
 
-    info("Bootstrapping initial datasets...");
+    info(
+      "Bootstrapping initial datasets..."
+    );
 
-    const sources = getInitialSources();
+    /* remove traffic from initial load */
+    const sources =
+      getInitialSources().filter(
+        (item) =>
+          item.key !==
+          "traffic"
+      );
 
-    const results = await fetchMany(sources);
+    const results =
+      await fetchMany(
+        sources
+      );
 
-    const payload = {};
+    const payload =
+      {};
 
-    results.forEach((item) => {
-      payload[item.key] = item.rows;
+    results.forEach(
+      (item) => {
+        payload[
+          item.key
+        ] =
+          item.rows;
 
-      if (!item.success) {
-        warn(`Dataset failed: ${item.key}`);
+        if (
+          !item.success
+        ) {
+          warn(
+            `Dataset failed: ${item.key}`
+          );
+        }
       }
-    });
+    );
 
-    setDatasets(payload);
+    /* keep traffic empty initially */
+    payload.traffic =
+      [];
+
+    setDatasets(
+      payload
+    );
+
     setLastUpdated();
     setLoaded(true);
 
-    info("Bootstrap complete");
+    info(
+      "Bootstrap complete"
+    );
   } catch (error) {
-    warn("Bootstrap failed", error);
+    warn(
+      "Bootstrap failed",
+      error
+    );
   } finally {
     setLoading(false);
   }
