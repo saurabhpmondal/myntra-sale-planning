@@ -1,108 +1,113 @@
 /* ==========================================
-   SJIT-PLANNING.CSS
-   SJIT planning tab styling
+   File: css/sjit-planning.css
+   FULL REPLACE CODE
+   SJIT Planning Styling
 ========================================== */
 
 #sjit {
-  width: 100%;
-}
-
-/* ==========================================
-   OVERVIEW
-========================================== */
-
-.sjit-metric-list {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.sjit-metric-item {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
   padding: 16px;
 }
 
-.sjit-metric-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.sjit-metric-value {
-  margin-top: 8px;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-main);
-}
-
-/* ==========================================
-   ACTION TILES
-========================================== */
-
-.sjit-tiles {
+#sjit .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  );
+  gap: 12px;
+  margin-bottom: 16px;
 }
-
-.sjit-tile {
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-}
-
-.sjit-tile-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.sjit-tile-value {
-  margin-top: 8px;
-  font-size: 22px;
-  font-weight: 800;
-}
-
-/* ==========================================
-   TABLE
-========================================== */
-
-#sjitTable {
-  width: 100%;
-}
-
-/* ==========================================
-   PANEL HEIGHT
-========================================== */
 
 #sjit .panel-card {
-  min-height: 220px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
 }
 
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width: 1200px) {
-  .sjit-metric-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .sjit-tiles {
-    grid-template-columns: 1fr;
-  }
+#sjit .panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #0f172a;
 }
 
-@media (max-width: 640px) {
-  .sjit-metric-list {
-    grid-template-columns: 1fr;
+/* table */
+
+#sjit .sales-scroll {
+  overflow-x: auto;
+  width: 100%;
+}
+
+#sjit .sales-table {
+  width: 100%;
+  min-width: 1700px;
+  border-collapse: collapse;
+}
+
+#sjit .sales-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8fafc;
+}
+
+#sjit .sales-table th,
+#sjit .sales-table td {
+  border-bottom: 1px solid #eef2f7;
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+#sjit .sales-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+#sjit .sticky-col {
+  position: sticky;
+  left: 0;
+  background: #ffffff;
+  z-index: 1;
+}
+
+#sjit .second-col {
+  left: 58px;
+}
+
+#sjit .rank-col {
+  width: 58px;
+  min-width: 58px;
+}
+
+#sjit .pos {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+#sjit .neg {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+#sjit .placeholder-box {
+  padding: 28px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  #sjit {
+    padding: 10px;
   }
 
-  .sjit-metric-value,
-  .sjit-tile-value {
-    font-size: 18px;
+  #sjit .sales-table {
+    min-width: 1500px;
+  }
+
+  #sjit .panel-card {
+    padding: 10px;
   }
 }
