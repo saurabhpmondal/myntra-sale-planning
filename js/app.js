@@ -1,81 +1,105 @@
 /* ==========================================
-   File: js/app.js
-   FULL REPLACE CODE
-   Boot + Traffic Ready
+   APP.JS
+   FIXED DEFAULT CURRENT MONTH LOAD
 ========================================== */
 
-import { loadInitialData } from "./data/loader.js";
+import { bootstrapAppData } from "./data/bootstrap.js";
+
+import {
+  populateAllFilters,
+  populateMonthFilterFromData
+} from "./filters/options.js";
+
 import { initEvents } from "./core/events.js";
 import { navigate } from "./core/router.js";
 
-import {
-  initFilters
-} from "./filters/init.js";
-
 /* ==========================================
-   BOOT
+   INIT
 ========================================== */
 
-async function boot() {
+async function initApp() {
   try {
-    showLoading();
+    await bootstrapAppData();
 
-    await loadInitialData();
+    /* build dropdowns */
+    buildFilters();
 
-    initFilters();
-
+    /* bind listeners first */
     initEvents();
 
+    /* now apply current month */
+    setDefaultMonth();
+
+    /* render dashboard */
     navigate(
       "dashboard"
     );
 
-    hideLoading();
   } catch (error) {
     console.error(
+      "App failed",
       error
     );
 
-    showError(
-      "Failed to load data"
-    );
+    showFatal();
   }
 }
 
-boot();
-
 /* ==========================================
-   UI HELPERS
+   FILTERS
 ========================================== */
 
-function showLoading() {
-  document.body.classList.add(
-    "app-loading"
-  );
+function buildFilters() {
+  populateMonthFilterFromData();
+  populateAllFilters();
 }
 
-function hideLoading() {
-  document.body.classList.remove(
-    "app-loading"
-  );
-}
+/* ==========================================
+   DEFAULT MONTH
+========================================== */
 
-function showError(msg) {
-  const root =
-    document.querySelector(
-      ".app-main"
+function setDefaultMonth() {
+  const month =
+    document.getElementById(
+      "monthFilter"
     );
 
-  if (!root)
+  if (
+    !month ||
+    !month.options.length
+  ) {
     return;
+  }
 
-  root.innerHTML = `
-    <section class="tab-panel active">
-      <div class="panel-card">
-        <div class="placeholder-box large">
-          ${msg}
-        </div>
-      </div>
-    </section>
+  /* latest month = first option */
+  month.selectedIndex = 0;
+
+  /* trigger month logic */
+  month.dispatchEvent(
+    new Event(
+      "change",
+      { bubbles: true }
+    )
+  );
+}
+
+/* ==========================================
+   FATAL
+========================================== */
+
+function showFatal() {
+  document.body.innerHTML = `
+    <div style="
+      padding:24px;
+      font-family:Arial,sans-serif;
+    ">
+      Failed to load app
+    </div>
   `;
 }
+
+/* ==========================================
+   START
+========================================== */
+
+initApp();
