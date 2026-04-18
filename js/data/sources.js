@@ -1,7 +1,7 @@
 /* ==========================================
    SOURCES.JS
    Dataset Source Registry
-   FIXED STOCK LOAD ON INITIAL APP BOOT
+   RETURNS ENABLED FOR KPI
 ========================================== */
 
 import { DATA_SOURCES } from "../core/config.js";
@@ -25,8 +25,6 @@ export const SOURCES = [
     priority: "high",
     lazy: false
   },
-
-  /* IMPORTANT FOR DASHBOARD */
   {
     key: "sjitStock",
     label: "SJIT Stock",
@@ -42,14 +40,16 @@ export const SOURCES = [
     lazy: false
   },
 
-  /* lazy optional */
+  /* KPI IMPORTANT */
   {
     key: "returns",
     label: "Returns Data",
     url: DATA_SOURCES.returns,
-    priority: "medium",
-    lazy: true
+    priority: "high",
+    lazy: false
   },
+
+  /* later load */
   {
     key: "traffic",
     label: "Traffic Data",
