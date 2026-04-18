@@ -68,4 +68,35 @@
   position: sticky;
   left: 0;
   background: #ffffff;
-  z
+  z-index: 1;
+}
+
+#traffic .second-col {
+  left: 58px;
+}
+
+#traffic .rank-col {
+  width: 58px;
+  min-width: 58px;
+}
+
+#traffic .placeholder-box {
+  padding: 28px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  #traffic {
+    padding: 10px;
+  }
+
+  #traffic .sales-table {
+    min-width: 1200px;
+  }
+
+  #traffic .panel-card {
+    padding: 10px;
+  }
+}
