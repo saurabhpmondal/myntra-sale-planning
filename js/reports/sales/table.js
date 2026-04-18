@@ -1,6 +1,6 @@
 /* ==========================================
    SALES REPORT / TABLE.JS
-   Master style table renderer
+   Final renderer
 ========================================== */
 
 import {
@@ -22,7 +22,8 @@ export function renderSalesTable(
       targetId
     );
 
-  if (!el) return;
+  if (!el)
+    return;
 
   if (!rows.length) {
     el.innerHTML = `
@@ -34,8 +35,9 @@ export function renderSalesTable(
   }
 
   el.innerHTML = `
-    <div class="table-wrap sales-scroll">
-      <table class="data-table zebra sales-table">
+    <div class="sales-scroll">
+      <table class="sales-table">
+
         <thead>
           <tr>
             <th>Style ID</th>
@@ -60,12 +62,13 @@ export function renderSalesTable(
           ${rows
             .map(
               (row) =>
-                renderRow(
+                rowHtml(
                   row
                 )
             )
             .join("")}
         </tbody>
+
       </table>
     </div>
   `;
@@ -75,25 +78,39 @@ export function renderSalesTable(
    ROW
 ========================================== */
 
-function renderRow(
+function rowHtml(
   row
 ) {
-  const growthClass =
-    row.growthPct > 0
-      ? "pos"
-      : row.growthPct < 0
-      ? "neg"
-      : "";
+  const growth =
+    classGrowth(
+      row.growthPct
+    );
+
+  const ret =
+    classReturn(
+      row.returnPct
+    );
 
   return `
     <tr>
+
       <td class="sticky-col">
-        ${row.styleId}
+        ${safe(
+          row.styleId
+        )}
       </td>
 
-      <td>${row.erp}</td>
+      <td>
+        ${safe(
+          row.erp
+        )}
+      </td>
 
-      <td>${row.brand}</td>
+      <td>
+        ${safe(
+          row.brand
+        )}
+      </td>
 
       <td>
         ${Number(
@@ -119,7 +136,7 @@ function renderRow(
         )}
       </td>
 
-      <td>
+      <td class="${ret}">
         ${pct(
           row.returnPct
         )}
@@ -143,7 +160,7 @@ function renderRow(
         )}
       </td>
 
-      <td class="${growthClass}">
+      <td class="${growth}">
         ${pct(
           row.growthPct
         )}
@@ -166,6 +183,47 @@ function renderRow(
           row.sorStock
         )}
       </td>
+
     </tr>
   `;
+}
+
+/* ==========================================
+   STATES
+========================================== */
+
+function classGrowth(
+  v
+) {
+  if (v > 0)
+    return "pos";
+
+  if (v < 0)
+    return "neg";
+
+  return "";
+}
+
+function classReturn(
+  v
+) {
+  if (v >= 20)
+    return "neg";
+
+  if (v >= 10)
+    return "warn";
+
+  return "";
+}
+
+/* ==========================================
+   SAFE
+========================================== */
+
+function safe(
+  v
+) {
+  return String(
+    v || ""
+  );
 }
