@@ -1,11 +1,15 @@
 /* ==========================================
    File: js/reports/sor/metrics.js
-   NEW FILE
-   SOR Planning Engine
+   FULL REPLACE CODE
+   FIXED ERP STATUS FROM PRODUCT MASTER
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
-import { getFilters } from "../../core/state.js";
+
+import {
+  getFilters,
+  getDataset
+} from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
@@ -15,6 +19,14 @@ export function getSorRows() {
   const salesRows =
     getSalesRows() || [];
 
+  const pm =
+    getDataset(
+      "productMaster"
+    ) || [];
+
+  const statusMap =
+    buildStatusMap(pm);
+
   const days =
     getActiveDays();
 
@@ -22,7 +34,8 @@ export function getSorRows() {
     salesRows.map((r) =>
       buildPlan(
         r,
-        days
+        days,
+        statusMap
       )
     );
 
@@ -40,7 +53,8 @@ export function getSorRows() {
 
 function buildPlan(
   r,
-  days
+  days,
+  statusMap
 ) {
   const gross =
     num(r.units);
@@ -77,9 +91,9 @@ function buildPlan(
       : 0;
 
   const status =
-    upper(
-      r.status
-    );
+    statusMap[
+      r.styleId
+    ] || "";
 
   let ship = 0;
   let recall = 0;
@@ -101,7 +115,9 @@ function buildPlan(
       );
   } else if (
     status &&
-    status !==
+    upper(
+      status
+    ) !==
       "CONTINUE"
   ) {
     recall =
@@ -119,8 +135,7 @@ function buildPlan(
       r.styleId,
     erp:
       r.erp || "",
-    status:
-      r.status || "",
+    status,
     brand:
       r.brand || "",
     rating:
@@ -148,6 +163,35 @@ function buildPlan(
     units:
       gross
   };
+}
+
+/* ==========================================
+   PRODUCT MASTER
+========================================== */
+
+function buildStatusMap(
+  rows
+) {
+  const map = {};
+
+  rows.forEach((r) => {
+    const id =
+      String(
+        r.style_id ||
+        ""
+      ).trim();
+
+    if (!id)
+      return;
+
+    map[id] =
+      String(
+        r.status ||
+        ""
+      ).trim();
+  });
+
+  return map;
 }
 
 /* ==========================================
