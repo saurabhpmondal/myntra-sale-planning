@@ -1,10 +1,12 @@
 /* ==========================================
-   ROUTER.JS
-   Final tab router
+   File: js/core/router.js
+   FULL REPLACE CODE
+   Added Traffic Report Render
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
+import { renderTrafficReport } from "../reports/traffic/index.js";
 
 /* ==========================================
    PUBLIC
@@ -67,6 +69,9 @@ function renderTab(tab) {
       break;
 
     case "traffic":
+      renderTrafficReport();
+      break;
+
     case "products":
     case "inventory":
     case "sjit":
