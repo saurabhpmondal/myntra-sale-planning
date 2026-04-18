@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   FIXED SALES DATE COLUMN
+   FIXED: Uses SAME monthFilter logic
+   as working Sales report
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -51,24 +52,20 @@ function buildRows(data) {
   const map = {};
   const soldLines = {};
 
-  const cutoff =
-    getCutoffDate(30);
+  const validMonths =
+    getLast30DayMonths();
 
-  /* SALES LAST 30D */
+  /* SALES */
   data.sales.forEach((r) => {
-    const rawDate =
-      r.order_date ||
-      r.date ||
-      "";
-
-    const dt =
-      new Date(
-        rawDate
-      );
+    const ym =
+      `${r.year}-${pad2(
+        r.month
+      )}`;
 
     if (
-      isNaN(dt) ||
-      dt < cutoff
+      !validMonths.has(
+        ym
+      )
     )
       return;
 
@@ -159,7 +156,7 @@ function buildRows(data) {
     }
   );
 
-  /* PRODUCT MASTER */
+  /* PM */
   data.pm.forEach(
     (r) => {
       const id =
@@ -238,7 +235,7 @@ function buildRows(data) {
 }
 
 /* ==========================================
-   FINAL ROW
+   FINALIZE
 ========================================== */
 
 function finalizeRow(r) {
@@ -250,7 +247,7 @@ function finalizeRow(r) {
     );
 
   r.returnPct =
-    percent(
+    pct(
       r.returns,
       r.gross
     );
@@ -264,11 +261,11 @@ function finalizeRow(r) {
         r.drr
       : 0;
 
-  let totalQty = 0;
-  let recall = 0;
-
   const target =
     45 * r.drr;
+
+  let total = 0;
+  let recall = 0;
 
   if (
     r.stock > 0 &&
@@ -296,7 +293,7 @@ function finalizeRow(r) {
         )
       );
   } else {
-    totalQty =
+    total =
       Math.max(
         0,
         Math.ceil(
@@ -308,7 +305,7 @@ function finalizeRow(r) {
 
   const split =
     splitQty(
-      totalQty,
+      total,
       r.northDemand,
       r.southDemand
     );
@@ -320,12 +317,48 @@ function finalizeRow(r) {
     split.south;
 
   r.totalQty =
-    totalQty;
+    total;
 
   r.recallQty =
     recall;
 
   return r;
+}
+
+/* ==========================================
+   LAST 30 DAY MONTH LOGIC
+========================================== */
+
+function getLast30DayMonths() {
+  const set =
+    new Set();
+
+  const d =
+    new Date();
+
+  for (
+    let i = 0;
+    i < 30;
+    i++
+  ) {
+    const x =
+      new Date(d);
+
+    x.setDate(
+      d.getDate() -
+        i
+    );
+
+    const key =
+      `${x.getFullYear()}-${pad2(
+        x.getMonth() +
+          1
+      )}`;
+
+    set.add(key);
+  }
+
+  return set;
 }
 
 /* ==========================================
@@ -373,35 +406,31 @@ function splitQty(
     };
   }
 
-  const total =
+  const t =
     north + south;
 
-  if (
-    total <= 0
-  ) {
+  if (t <= 0) {
     return {
       north: 0,
       south: 0
     };
   }
 
-  const northQty =
+  const n =
     Math.round(
       qty *
         north /
-        total
+        t
     );
 
   return {
-    north:
-      northQty,
+    north: n,
     south:
-      qty -
-      northQty
+      qty - n
   };
 }
 
-function percent(a, b) {
+function pct(a, b) {
   if (!b) return 0;
   return (a / b) * 100;
 }
@@ -414,20 +443,12 @@ function upper(v) {
     .toUpperCase();
 }
 
-function getCutoffDate(days) {
-  const d =
-    new Date();
-
-  d.setDate(
-    d.getDate() -
-      days
-  );
-
-  d.setHours(
-    0, 0, 0, 0
-  );
-
-  return d;
+function pad2(v) {
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
 
 function isNorth(x) {
