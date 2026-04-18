@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
-   CLEAN SAFE VERSION
-   No Syntax Errors
+   FULL REPLACE CODE
+   Added:
+   Impressions / Clicks / ATC / CTR / CVR
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -81,7 +82,10 @@ function buildRows(data) {
       num(r.qty);
 
     row.units += qty;
-    row.gmv += num(r.final_amount);
+    row.gmv +=
+      num(
+        r.final_amount
+      );
 
     totalUnits += qty;
 
@@ -171,7 +175,7 @@ function enrichPM(
 }
 
 /* ==========================================
-   RATING = MAX NON ZERO
+   TRAFFIC + RATING
 ========================================== */
 
 function enrichTraffic(
@@ -190,24 +194,41 @@ function enrichTraffic(
     )
       return;
 
-    const val =
+    const row =
+      map[id];
+
+    const rating =
       Number(
         r.rating
       );
 
     if (
-      isNaN(val) ||
-      val <= 0
-    )
-      return;
-
-    if (
-      val >
-      map[id].rating
+      !isNaN(
+        rating
+      ) &&
+      rating > 0 &&
+      rating >
+        row.rating
     ) {
-      map[id].rating =
-        val;
+      row.rating =
+        rating;
     }
+
+    row.impressions +=
+      num(
+        r.impressions
+      );
+
+    row.clicks +=
+      num(
+        r.clicks
+      );
+
+    row.atc +=
+      num(
+        r.atc ||
+          r.add_to_carts
+      );
   });
 }
 
@@ -219,8 +240,7 @@ function enrichReturns(
   map,
   rows
 ) {
-  const link =
-    {};
+  const link = {};
 
   Object.values(
     map
@@ -325,16 +345,13 @@ function enrichGrowth(
   )
     return;
 
-  const parts =
+  const [
+    year,
+    month
+  ] =
     monthEl.value
       .split("-")
       .map(Number);
-
-  const year =
-    parts[0];
-
-  const month =
-    parts[1];
 
   let py = year;
   let pm =
@@ -491,6 +508,20 @@ function finalize(
           totalUnits
         );
 
+      r.ctrPct =
+        divide(
+          r.clicks *
+            100,
+          r.impressions
+        );
+
+      r.cvrPct =
+        divide(
+          r.units *
+            100,
+          r.clicks
+        );
+
       return r;
     })
     .sort(
@@ -526,6 +557,12 @@ function blank(id) {
 
     sjitStock: 0,
     sorStock: 0,
+
+    impressions: 0,
+    clicks: 0,
+    atc: 0,
+    ctrPct: 0,
+    cvrPct: 0,
 
     soldIds:
       new Set(),
