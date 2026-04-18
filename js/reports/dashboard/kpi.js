@@ -214,7 +214,7 @@ DASHBOARD
 
 </main>
 
-<script
+<script>
   type="module"
   src="js/app.js"></script>
 
