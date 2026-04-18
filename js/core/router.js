@@ -1,12 +1,12 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   Added Traffic Report Render
+   Added SJIT Planning Render
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
-import { renderTrafficReport } from "../reports/traffic/index.js";
+import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
    PUBLIC
@@ -55,7 +55,7 @@ function setActiveTab(tab) {
 }
 
 /* ==========================================
-   TAB RENDERERS
+   TAB RENDER
 ========================================== */
 
 function renderTab(tab) {
@@ -68,13 +68,13 @@ function renderTab(tab) {
       renderSalesReport();
       break;
 
-    case "traffic":
-      renderTrafficReport();
+    case "sjit":
+      renderSjitReport();
       break;
 
+    case "traffic":
     case "products":
     case "inventory":
-    case "sjit":
     case "sor":
     case "export":
       renderPlaceholder(
