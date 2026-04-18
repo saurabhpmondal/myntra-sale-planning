@@ -1,6 +1,8 @@
 /* ==========================================
    APP.JS
+   FULL REPLACE CODE
    FIXED DEFAULT CURRENT MONTH LOAD
+   Added Progress Bar Init
 ========================================== */
 
 import { bootstrapAppData } from "./data/bootstrap.js";
@@ -13,12 +15,19 @@ import {
 import { initEvents } from "./core/events.js";
 import { navigate } from "./core/router.js";
 
+import {
+  initProgressBar
+} from "./ui/progress.js";
+
 /* ==========================================
    INIT
 ========================================== */
 
 async function initApp() {
   try {
+    /* prepare loader UI first */
+    initProgressBar();
+
     await bootstrapAppData();
 
     /* build dropdowns */
@@ -31,7 +40,7 @@ async function initApp() {
     setDefaultMonth();
 
     /* render dashboard */
-    navigate(
+    await navigate(
       "dashboard"
     );
 
