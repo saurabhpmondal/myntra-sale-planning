@@ -1,19 +1,17 @@
 /* ==========================================
    APP.JS
-   Main App Bootstrap
+   Final bootstrap
 ========================================== */
 
 import { bootstrapAppData } from "./data/bootstrap.js";
-
-import { initEvents } from "./core/events.js";
-
-import { renderDashboard } from "./reports/dashboard/index.js";
-import { renderSalesReport } from "./reports/sales/index.js";
 
 import {
   populateAllFilters,
   populateMonthFilterFromData
 } from "./filters/options.js";
+
+import { initEvents } from "./core/events.js";
+import { navigate } from "./core/router.js";
 
 /* ==========================================
    INIT
@@ -23,126 +21,33 @@ async function initApp() {
   try {
     await bootstrapAppData();
 
-    populateMonthFilterFromData();
-    populateAllFilters();
-
-    setDefaultMonth();
+    buildFilters();
 
     initEvents();
-    initTabs();
 
-    renderDashboard();
+    navigate(
+      "dashboard"
+    );
   } catch (error) {
     console.error(
-      "App init failed",
+      "App failed",
       error
     );
+
+    showFatal();
   }
 }
 
 /* ==========================================
-   TABS
+   FILTERS
 ========================================== */
 
-function initTabs() {
-  const buttons =
-    document.querySelectorAll(
-      ".tab-btn"
-    );
+function buildFilters() {
+  populateMonthFilterFromData();
+  populateAllFilters();
 
-  buttons.forEach(
-    (button) => {
-      button.addEventListener(
-        "click",
-        () => {
-          const tab =
-            button.dataset.tab;
-
-          switchTab(
-            tab
-          );
-        }
-      );
-    }
-  );
+  setDefaultMonth();
 }
-
-function switchTab(tab) {
-  const panels =
-    document.querySelectorAll(
-      ".tab-panel"
-    );
-
-  const buttons =
-    document.querySelectorAll(
-      ".tab-btn"
-    );
-
-  panels.forEach(
-    (panel) => {
-      panel.classList.remove(
-        "active"
-      );
-    }
-  );
-
-  buttons.forEach(
-    (btn) => {
-      btn.classList.remove(
-        "active"
-      );
-    }
-  );
-
-  const target =
-    document.getElementById(
-      tab
-    );
-
-  const activeBtn =
-    document.querySelector(
-      `.tab-btn[data-tab="${tab}"]`
-    );
-
-  if (target) {
-    target.classList.add(
-      "active"
-    );
-  }
-
-  if (activeBtn) {
-    activeBtn.classList.add(
-      "active"
-    );
-  }
-
-  renderTab(tab);
-}
-
-/* ==========================================
-   TAB RENDERERS
-========================================== */
-
-function renderTab(tab) {
-  if (
-    tab ===
-    "dashboard"
-  ) {
-    renderDashboard();
-    return;
-  }
-
-  if (
-    tab === "sales"
-  ) {
-    renderSalesReport();
-    return;
-  }
-}
-
-/* ==========================================
-   DEFAULT MONTH
-========================================== */
 
 function setDefaultMonth() {
   const month =
@@ -154,8 +59,9 @@ function setDefaultMonth() {
     !month ||
     !month.options
       .length
-  )
+  ) {
     return;
+  }
 
   month.selectedIndex = 0;
 
@@ -164,6 +70,21 @@ function setDefaultMonth() {
       "change"
     )
   );
+}
+
+/* ==========================================
+   FATAL
+========================================== */
+
+function showFatal() {
+  document.body.innerHTML = `
+    <div style="
+      padding:24px;
+      font-family:Arial,sans-serif;
+    ">
+      Failed to load app
+    </div>
+  `;
 }
 
 /* ==========================================
