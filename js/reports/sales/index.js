@@ -1,6 +1,6 @@
 /* ==========================================
    SALES REPORT / INDEX.JS
-   Main renderer
+   Main sales report renderer
 ========================================== */
 
 import { getSalesRows } from "./metrics.js";
@@ -11,11 +11,48 @@ import { renderSalesTable } from "./table.js";
 ========================================== */
 
 export function renderSalesReport() {
-  const rows =
-    getSalesRows();
+  const root =
+    document.getElementById(
+      "salesReportRoot"
+    );
 
-  renderSalesTable(
-    "salesReportRoot",
-    rows
-  );
+  if (!root)
+    return;
+
+  showLoading(root);
+
+  try {
+    const rows =
+      getSalesRows();
+
+    renderSalesTable(
+      "salesReportRoot",
+      rows
+    );
+  } catch (error) {
+    console.error(
+      "Sales report failed",
+      error
+    );
+
+    root.innerHTML = `
+      <div class="placeholder-box large">
+        Failed to load sales report
+      </div>
+    `;
+  }
+}
+
+/* ==========================================
+   HELPERS
+========================================== */
+
+function showLoading(
+  el
+) {
+  el.innerHTML = `
+    <div class="placeholder-box large">
+      Loading sales report...
+    </div>
+  `;
 }
