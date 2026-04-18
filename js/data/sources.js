@@ -1,7 +1,7 @@
 /* ==========================================
    SOURCES.JS
    Dataset Source Registry
-   RETURNS ENABLED FOR KPI
+   TRAFFIC ENABLED FOR SALES RATINGS
 ========================================== */
 
 import { DATA_SOURCES } from "../core/config.js";
@@ -39,8 +39,6 @@ export const SOURCES = [
     priority: "high",
     lazy: false
   },
-
-  /* KPI IMPORTANT */
   {
     key: "returns",
     label: "Returns Data",
@@ -49,14 +47,15 @@ export const SOURCES = [
     lazy: false
   },
 
-  /* later load */
+  /* NOW PRELOAD */
   {
     key: "traffic",
     label: "Traffic Data",
     url: DATA_SOURCES.traffic,
-    priority: "medium",
-    lazy: true
+    priority: "high",
+    lazy: false
   },
+
   {
     key: "sellerStock",
     label: "Seller Stock",
