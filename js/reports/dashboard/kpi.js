@@ -1,11 +1,10 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   FILTER BASED GROWTH KPI
+   FINAL GROWTH FIX
 ========================================== */
 
 import {
-  getDataset,
-  getFilters
+  getDataset
 } from "../../core/state.js";
 
 import { applyGlobalFilters } from "../../filters/filter-engine.js";
@@ -35,6 +34,7 @@ export function renderKpis() {
       "returns"
     );
 
+  /* SALES KPI */
   const revenue =
     sales.reduce(
       (a, r) =>
@@ -123,7 +123,7 @@ export function renderKpis() {
       0
     );
 
-  /* FILTER BASED GROWTH */
+  /* GROWTH */
   const growth =
     calcGrowth(
       salesAll
@@ -161,17 +161,20 @@ export function renderKpis() {
 }
 
 /* ==========================================
-   GROWTH
+   FINAL GROWTH
 ========================================== */
 
 function calcGrowth(
   rows = []
 ) {
-  const filters =
-    getFilters();
+  const monthEl =
+    document.getElementById(
+      "monthFilter"
+    );
 
   if (
-    !filters.month
+    !monthEl ||
+    !monthEl.value
   ) {
     return {
       raw: 0,
@@ -183,7 +186,7 @@ function calcGrowth(
     year,
     month
   ] =
-    filters.month
+    monthEl.value
       .split("-")
       .map(Number);
 
@@ -196,6 +199,11 @@ function calcGrowth(
     py--;
   }
 
+  const endEl =
+    document.getElementById(
+      "endDate"
+    );
+
   const daysInMonth =
     new Date(
       year,
@@ -207,11 +215,12 @@ function calcGrowth(
     daysInMonth;
 
   if (
-    filters.endDate
+    endEl &&
+    endEl.value
   ) {
     selectedDay =
       Number(
-        filters.endDate.split(
+        endEl.value.split(
           "-"
         )[2]
       );
