@@ -1,6 +1,6 @@
 /* ==========================================
    SALES REPORT / TABLE.JS
-   Final renderer
+   Premium renderer
 ========================================== */
 
 import {
@@ -17,16 +17,16 @@ export function renderSalesTable(
   targetId,
   rows = []
 ) {
-  const el =
+  const root =
     document.getElementById(
       targetId
     );
 
-  if (!el)
+  if (!root)
     return;
 
   if (!rows.length) {
-    el.innerHTML = `
+    root.innerHTML = `
       <div class="placeholder-box large">
         No sales data found
       </div>
@@ -34,12 +34,13 @@ export function renderSalesTable(
     return;
   }
 
-  el.innerHTML = `
+  root.innerHTML = `
     <div class="sales-scroll">
       <table class="sales-table">
 
         <thead>
           <tr>
+            <th>#</th>
             <th>Style ID</th>
             <th>ERP SKU</th>
             <th>Brand</th>
@@ -61,9 +62,13 @@ export function renderSalesTable(
         <tbody>
           ${rows
             .map(
-              (row) =>
-                rowHtml(
-                  row
+              (
+                row,
+                i
+              ) =>
+                renderRow(
+                  row,
+                  i + 1
                 )
             )
             .join("")}
@@ -78,23 +83,18 @@ export function renderSalesTable(
    ROW
 ========================================== */
 
-function rowHtml(
-  row
+function renderRow(
+  row,
+  rank
 ) {
-  const growth =
-    classGrowth(
-      row.growthPct
-    );
-
-  const ret =
-    classReturn(
-      row.returnPct
-    );
-
   return `
     <tr>
 
-      <td class="sticky-col">
+      <td class="sticky-col rank-col">
+        ${rank}
+      </td>
+
+      <td class="sticky-col second-col">
         ${safe(
           row.styleId
         )}
@@ -136,7 +136,9 @@ function rowHtml(
         )}
       </td>
 
-      <td class="${ret}">
+      <td class="${returnClass(
+        row.returnPct
+      )}">
         ${pct(
           row.returnPct
         )}
@@ -160,7 +162,9 @@ function rowHtml(
         )}
       </td>
 
-      <td class="${growth}">
+      <td class="${growthClass(
+        row.growthPct
+      )}">
         ${pct(
           row.growthPct
         )}
@@ -192,7 +196,7 @@ function rowHtml(
    STATES
 ========================================== */
 
-function classGrowth(
+function growthClass(
   v
 ) {
   if (v > 0)
@@ -204,7 +208,7 @@ function classGrowth(
   return "";
 }
 
-function classReturn(
+function returnClass(
   v
 ) {
   if (v >= 20)
