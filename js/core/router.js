@@ -1,12 +1,13 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   SALES TRAFFIC LAZY LOAD
+   FIXED LIVE SOR + TRAFFIC LAZY LOAD
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
+import { renderSorReport } from "../reports/sor/index.js";
 
 import {
   getDataset,
@@ -74,21 +75,17 @@ async function renderTab(tab) {
 
     case "sales":
       await ensureTraffic();
-
       renderSalesReport();
       break;
 
     case "sjit":
       await ensureTraffic();
-
       renderSjitReport();
       break;
 
     case "sor":
-      renderPlaceholder(
-        "sor",
-        "SOR Planning"
-      );
+      await ensureTraffic();
+      renderSorReport();
       break;
 
     case "export":
