@@ -1,105 +1,81 @@
 /* ==========================================
-   APP.JS
-   FIXED DEFAULT CURRENT MONTH LOAD
+   File: js/app.js
+   FULL REPLACE CODE
+   Boot + Traffic Ready
 ========================================== */
 
-import { bootstrapAppData } from "./data/bootstrap.js";
-
-import {
-  populateAllFilters,
-  populateMonthFilterFromData
-} from "./filters/options.js";
-
+import { loadInitialData } from "./data/loader.js";
 import { initEvents } from "./core/events.js";
 import { navigate } from "./core/router.js";
 
+import {
+  initFilters
+} from "./filters/init.js";
+
 /* ==========================================
-   INIT
+   BOOT
 ========================================== */
 
-async function initApp() {
+async function boot() {
   try {
-    await bootstrapAppData();
+    showLoading();
 
-    /* build dropdowns */
-    buildFilters();
+    await loadInitialData();
 
-    /* bind listeners first */
+    initFilters();
+
     initEvents();
 
-    /* now apply current month */
-    setDefaultMonth();
-
-    /* render dashboard */
     navigate(
       "dashboard"
     );
 
+    hideLoading();
   } catch (error) {
     console.error(
-      "App failed",
       error
     );
 
-    showFatal();
-  }
-}
-
-/* ==========================================
-   FILTERS
-========================================== */
-
-function buildFilters() {
-  populateMonthFilterFromData();
-  populateAllFilters();
-}
-
-/* ==========================================
-   DEFAULT MONTH
-========================================== */
-
-function setDefaultMonth() {
-  const month =
-    document.getElementById(
-      "monthFilter"
+    showError(
+      "Failed to load data"
     );
-
-  if (
-    !month ||
-    !month.options.length
-  ) {
-    return;
   }
+}
 
-  /* latest month = first option */
-  month.selectedIndex = 0;
+boot();
 
-  /* trigger month logic */
-  month.dispatchEvent(
-    new Event(
-      "change",
-      { bubbles: true }
-    )
+/* ==========================================
+   UI HELPERS
+========================================== */
+
+function showLoading() {
+  document.body.classList.add(
+    "app-loading"
   );
 }
 
-/* ==========================================
-   FATAL
-========================================== */
-
-function showFatal() {
-  document.body.innerHTML = `
-    <div style="
-      padding:24px;
-      font-family:Arial,sans-serif;
-    ">
-      Failed to load app
-    </div>
-  `;
+function hideLoading() {
+  document.body.classList.remove(
+    "app-loading"
+  );
 }
 
-/* ==========================================
-   START
-========================================== */
+function showError(msg) {
+  const root =
+    document.querySelector(
+      ".app-main"
+    );
 
-initApp();
+  if (!root)
+    return;
+
+  root.innerHTML = `
+    <section class="tab-panel active">
+      <div class="panel-card">
+        <div class="placeholder-box large">
+          ${msg}
+        </div>
+      </div>
+    </section>
+  `;
+}
