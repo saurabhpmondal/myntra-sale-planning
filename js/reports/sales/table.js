@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/sales/table.js
    FULL REPLACE CODE
-   Added Final SOR Stock Column
+   Added Final SOR Sale % + SOR Stock visible
 ========================================== */
 
 import {
@@ -197,9 +197,7 @@ function renderRow(
    STATES
 ========================================== */
 
-function growthClass(
-  v
-) {
+function growthClass(v) {
   if (v > 0)
     return "pos";
 
@@ -209,9 +207,7 @@ function growthClass(
   return "";
 }
 
-function returnClass(
-  v
-) {
+function returnClass(v) {
   if (v >= 20)
     return "neg";
 
@@ -225,9 +221,7 @@ function returnClass(
    SAFE
 ========================================== */
 
-function safe(
-  v
-) {
+function safe(v) {
   return String(
     v || ""
   );
