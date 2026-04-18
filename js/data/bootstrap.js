@@ -3,6 +3,7 @@
    FULL REPLACE CODE
    OPTION A LAZY LOAD READY
    traffic excluded from boot load
+   Added Real Progress Bar
 ========================================== */
 
 import {
@@ -25,6 +26,12 @@ import {
   warn
 } from "../core/logger.js";
 
+import {
+  showProgress,
+  setProgress,
+  hideProgress
+} from "../ui/progress.js";
+
 /* ==========================================
    INIT DATA BOOTSTRAP
 ========================================== */
@@ -32,6 +39,10 @@ import {
 export async function bootstrapAppData() {
   try {
     setLoading(true);
+
+    showProgress(
+      "Loading Data..."
+    );
 
     info(
       "Bootstrapping initial datasets..."
@@ -45,10 +56,57 @@ export async function bootstrapAppData() {
           "traffic"
       );
 
+    const total =
+      sources.length;
+
     const results =
-      await fetchMany(
-        sources
+      [];
+
+    for (
+      let i = 0;
+      i < total;
+      i++
+    ) {
+      const src =
+        sources[i];
+
+      setProgress(
+        Math.round(
+          (i / total) *
+            100
+        ),
+        `Fetching ${src.key.toUpperCase()}`,
+        0
       );
+
+      const res =
+        await fetchMany(
+          [src]
+        );
+
+      const item =
+        res[0] || {
+          key:
+            src.key,
+          rows: [],
+          success: false
+        };
+
+      results.push(
+        item
+      );
+
+      setProgress(
+        Math.round(
+          ((i + 1) /
+            total) *
+            100
+        ),
+        `Fetched ${src.key.toUpperCase()}`,
+        item.rows
+          .length
+      );
+    }
 
     const payload =
       {};
@@ -79,17 +137,35 @@ export async function bootstrapAppData() {
     );
 
     setLastUpdated();
-    setLoaded(true);
+    setLoaded(
+      true
+    );
+
+    setProgress(
+      100,
+      "Completed",
+      0
+    );
 
     info(
       "Bootstrap complete"
+    );
+
+    setTimeout(
+      () =>
+        hideProgress(),
+      350
     );
   } catch (error) {
     warn(
       "Bootstrap failed",
       error
     );
+
+    hideProgress();
   } finally {
-    setLoading(false);
+    setLoading(
+      false
+    );
   }
 }
