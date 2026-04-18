@@ -1,3 +1,39 @@
+window.onerror = function (
+  msg,
+  src,
+  line,
+  col,
+  err
+) {
+  const box =
+    document.createElement("div");
+
+  box.style.position = "fixed";
+  box.style.top = "0";
+  box.style.left = "0";
+  box.style.right = "0";
+  box.style.zIndex = "99999";
+  box.style.background = "#b91c1c";
+  box.style.color = "#fff";
+  box.style.padding = "10px";
+  box.style.fontSize = "12px";
+  box.style.maxHeight = "220px";
+  box.style.overflow = "auto";
+
+  box.innerText =
+    "JS Error:\n" +
+    msg +
+    "\nLine: " +
+    line +
+    "\nFile: " +
+    src;
+
+  document.body.appendChild(
+    box
+  );
+};
+
+
 /* ==========================================
    APP.JS
    Stable Build + Dashboard Binding Layer
