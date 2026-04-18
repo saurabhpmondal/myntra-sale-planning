@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/sor/metrics.js
    FULL REPLACE CODE
-   FIXED ERP STATUS FROM PRODUCT MASTER
+   Added Brand Restriction:
+   Only KALINI + MITERA
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
@@ -31,13 +32,19 @@ export function getSorRows() {
     getActiveDays();
 
   const rows =
-    salesRows.map((r) =>
-      buildPlan(
-        r,
-        days,
-        statusMap
+    salesRows
+      .filter((r) =>
+        isAllowedBrand(
+          r.brand
+        )
       )
-    );
+      .map((r) =>
+        buildPlan(
+          r,
+          days,
+          statusMap
+        )
+      );
 
   return rows.sort(
     (a, b) =>
@@ -192,6 +199,24 @@ function buildStatusMap(
   });
 
   return map;
+}
+
+/* ==========================================
+   BRAND FILTER
+========================================== */
+
+function isAllowedBrand(
+  brand
+) {
+  const b =
+    upper(brand);
+
+  return (
+    b ===
+      "KALINI" ||
+    b ===
+      "MITERA"
+  );
 }
 
 /* ==========================================
