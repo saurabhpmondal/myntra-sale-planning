@@ -1,9 +1,13 @@
 /* ==========================================
    DASHBOARD / KPI.JS
-   POLISHED RETURN + GROWTH KPI
+   FILTER BASED GROWTH KPI
 ========================================== */
 
-import { getDataset } from "../../core/state.js";
+import {
+  getDataset,
+  getFilters
+} from "../../core/state.js";
+
 import { applyGlobalFilters } from "../../filters/filter-engine.js";
 
 import {
@@ -31,7 +35,6 @@ export function renderKpis() {
       "returns"
     );
 
-  /* SALES */
   const revenue =
     sales.reduce(
       (a, r) =>
@@ -120,7 +123,7 @@ export function renderKpis() {
       0
     );
 
-  /* GROWTH */
+  /* FILTER BASED GROWTH */
   const growth =
     calcGrowth(
       salesAll
@@ -158,8 +161,132 @@ export function renderKpis() {
 }
 
 /* ==========================================
-   GROWTH KPI
+   GROWTH
 ========================================== */
+
+function calcGrowth(
+  rows = []
+) {
+  const filters =
+    getFilters();
+
+  if (
+    !filters.month
+  ) {
+    return {
+      raw: 0,
+      text: "-"
+    };
+  }
+
+  const [
+    year,
+    month
+  ] =
+    filters.month
+      .split("-")
+      .map(Number);
+
+  let py = year;
+  let pm =
+    month - 1;
+
+  if (pm === 0) {
+    pm = 12;
+    py--;
+  }
+
+  const daysInMonth =
+    new Date(
+      year,
+      month,
+      0
+    ).getDate();
+
+  let selectedDay =
+    daysInMonth;
+
+  if (
+    filters.endDate
+  ) {
+    selectedDay =
+      Number(
+        filters.endDate.split(
+          "-"
+        )[2]
+      );
+  }
+
+  let current =
+    0;
+  let previous =
+    0;
+
+  rows.forEach((r) => {
+    const y =
+      Number(
+        r.year
+      );
+
+    const m =
+      Number(
+        r.month
+      );
+
+    const val =
+      num(
+        r.final_amount
+      );
+
+    if (
+      y === year &&
+      m === month
+    ) {
+      current +=
+        val;
+    }
+
+    if (
+      y === py &&
+      m === pm
+    ) {
+      previous +=
+        val;
+    }
+  });
+
+  if (
+    previous === 0
+  ) {
+    return {
+      raw: 0,
+      text: "-"
+    };
+  }
+
+  const projected =
+    (current /
+      Math.max(
+        selectedDay,
+        1
+      )) *
+    daysInMonth;
+
+  const pct =
+    (
+      ((projected -
+        previous) /
+        previous) *
+      100
+    ).toFixed(1);
+
+  return {
+    raw:
+      Number(pct),
+    text:
+      pct + "%"
+  };
+}
 
 function renderGrowth(
   growth
@@ -193,111 +320,4 @@ function renderGrowth(
     el.style.color =
       "#64748b";
   }
-}
-
-function calcGrowth(
-  rows = []
-) {
-  if (!rows.length)
-    return {
-      raw: 0,
-      text: "-"
-    };
-
-  const now =
-    new Date();
-
-  const cy =
-    now.getFullYear();
-
-  const cm =
-    now.getMonth() +
-    1;
-
-  const today =
-    now.getDate();
-
-  const days =
-    new Date(
-      cy,
-      cm,
-      0
-    ).getDate();
-
-  let py = cy;
-  let pm = cm - 1;
-
-  if (pm === 0) {
-    pm = 12;
-    py--;
-  }
-
-  let current =
-    0;
-  let previous =
-    0;
-
-  rows.forEach((r) => {
-    const y =
-      Number(
-        r.year
-      );
-
-    const m =
-      Number(
-        r.month
-      );
-
-    const val =
-      num(
-        r.final_amount
-      );
-
-    if (
-      y === cy &&
-      m === cm
-    ) {
-      current +=
-        val;
-    }
-
-    if (
-      y === py &&
-      m === pm
-    ) {
-      previous +=
-        val;
-    }
-  });
-
-  if (
-    previous === 0
-  )
-    return {
-      raw: 0,
-      text: "-"
-    };
-
-  const projected =
-    (current /
-      Math.max(
-        today,
-        1
-      )) *
-    days;
-
-  const pct =
-    (
-      ((projected -
-        previous) /
-        previous) *
-      100
-    ).toFixed(1);
-
-  return {
-    raw:
-      Number(pct),
-    text:
-      pct + "%"
-  };
 }
