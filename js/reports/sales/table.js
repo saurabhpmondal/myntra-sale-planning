@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/sales/table.js
    FULL REPLACE CODE
-   Added Final SOR Sale % + SOR Stock visible
+   Added:
+   Impressions / Clicks / ATC / CTR / CVR
 ========================================== */
 
 import {
@@ -57,6 +58,11 @@ export function renderSalesTable(
             <th>Demand %</th>
             <th>SJIT Stock</th>
             <th>SOR Stock</th>
+            <th>Impressions</th>
+            <th>Clicks</th>
+            <th>ATC</th>
+            <th>CTR %</th>
+            <th>CVR %</th>
           </tr>
         </thead>
 
@@ -186,6 +192,36 @@ function renderRow(
       <td>
         ${count(
           row.sorStock
+        )}
+      </td>
+
+      <td>
+        ${count(
+          row.impressions
+        )}
+      </td>
+
+      <td>
+        ${count(
+          row.clicks
+        )}
+      </td>
+
+      <td>
+        ${count(
+          row.atc
+        )}
+      </td>
+
+      <td>
+        ${pct(
+          row.ctrPct
+        )}
+      </td>
+
+      <td>
+        ${pct(
+          row.cvrPct
         )}
       </td>
 
