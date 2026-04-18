@@ -1,6 +1,6 @@
 /* ==========================================
    EVENTS.JS
-   Global UI Events
+   Final event binder
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -10,36 +10,36 @@ import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 
 /* ==========================================
-   INIT
+   PUBLIC
 ========================================== */
 
 export function initEvents() {
-  bindTabClicks();
+  bindTabs();
   bindFilters();
   bindSearch();
 }
 
 /* ==========================================
-   TAB BUTTONS
+   TABS
 ========================================== */
 
-function bindTabClicks() {
-  const buttons =
+function bindTabs() {
+  const tabs =
     document.querySelectorAll(
       ".tab-btn"
     );
 
-  buttons.forEach(
-    (button) => {
-      button.addEventListener(
+  tabs.forEach(
+    (tab) => {
+      tab.addEventListener(
         "click",
         () => {
-          const tab =
-            button.dataset.tab;
+          const id =
+            tab.dataset.tab;
 
-          if (!tab) return;
-
-          navigate(tab);
+          navigate(
+            id
+          );
         }
       );
     }
@@ -51,31 +51,31 @@ function bindTabClicks() {
 ========================================== */
 
 function bindFilters() {
-  bindMonthFilter();
+  bindMonth();
 
-  bindFilter(
+  bindSingle(
     "startDate",
     "startDate"
   );
 
-  bindFilter(
+  bindSingle(
     "endDate",
     "endDate"
   );
 
-  bindFilter(
+  bindSingle(
     "brandFilter",
     "brand"
   );
 
-  bindFilter(
+  bindSingle(
     "poTypeFilter",
     "poType"
   );
 }
 
-function bindMonthFilter() {
-  const month =
+function bindMonth() {
+  const el =
     document.getElementById(
       "monthFilter"
     );
@@ -90,113 +90,110 @@ function bindMonthFilter() {
       "endDate"
     );
 
-  if (!month)
+  if (!el)
     return;
 
-  month.addEventListener(
+  el.addEventListener(
     "change",
     (event) => {
-      const value =
+      const val =
         event.target
           .value;
 
       setFilter(
         "month",
-        value
+        val
       );
 
       if (
-        !value ||
-        !start ||
-        !end
+        val &&
+        start &&
+        end
       ) {
-        refreshActiveTab();
-        return;
-      }
-
-      const [
-        year,
-        mm
-      ] =
-        value.split(
-          "-"
-        );
-
-      const y =
-        Number(
-          year
-        );
-
-      const m =
-        Number(
+        const [
+          year,
           mm
-        );
-
-      const now =
-        new Date();
-
-      const isCurrent =
-        now.getFullYear() ===
-          y &&
-        now.getMonth() +
-          1 ===
-          m;
-
-      start.value =
-        `${year}-${pad(
-          mm
-        )}-01`;
-
-      if (
-        isCurrent
-      ) {
-        const d =
-          new Date();
-
-        d.setDate(
-          d.getDate() -
-            1
-        );
-
-        end.value =
-          `${d.getFullYear()}-${pad(
-            d.getMonth() +
-              1
-          )}-${pad(
-            d.getDate()
-          )}`;
-      } else {
-        const last =
-          new Date(
-            y,
-            m,
-            0
+        ] =
+          val.split(
+            "-"
           );
 
-        end.value =
+        const y =
+          Number(
+            year
+          );
+
+        const m =
+          Number(
+            mm
+          );
+
+        start.value =
           `${year}-${pad(
             mm
-          )}-${pad(
-            last.getDate()
-          )}`;
+          )}-01`;
+
+        const now =
+          new Date();
+
+        const isCurrent =
+          now.getFullYear() ===
+            y &&
+          now.getMonth() +
+            1 ===
+            m;
+
+        if (
+          isCurrent
+        ) {
+          const d =
+            new Date();
+
+          d.setDate(
+            d.getDate() -
+              1
+          );
+
+          end.value =
+            `${d.getFullYear()}-${pad(
+              d.getMonth() +
+                1
+            )}-${pad(
+              d.getDate()
+            )}`;
+        } else {
+          const last =
+            new Date(
+              y,
+              m,
+              0
+            );
+
+          end.value =
+            `${year}-${pad(
+              mm
+            )}-${pad(
+              last.getDate()
+            )}`;
+        }
+
+        setFilter(
+          "startDate",
+          start.value
+        );
+
+        setFilter(
+          "endDate",
+          end.value
+        );
       }
 
-      setFilter(
-        "startDate",
-        start.value
-      );
-
-      setFilter(
-        "endDate",
-        end.value
-      );
-
-      refreshActiveTab();
+      refresh();
     }
   );
 }
 
-function bindFilter(
+function bindSingle(
   id,
   key
 ) {
@@ -217,7 +214,7 @@ function bindFilter(
           .value
       );
 
-      refreshActiveTab();
+      refresh();
     }
   );
 }
@@ -227,15 +224,15 @@ function bindFilter(
 ========================================== */
 
 function bindSearch() {
-  const input =
+  const el =
     document.getElementById(
       "globalSearch"
     );
 
-  if (!input)
+  if (!el)
     return;
 
-  input.addEventListener(
+  el.addEventListener(
     "input",
     (event) => {
       setFilter(
@@ -243,31 +240,30 @@ function bindSearch() {
         event.target.value.trim()
       );
 
-      refreshActiveTab();
+      refresh();
     }
   );
 
-  input.addEventListener(
+  el.addEventListener(
     "keydown",
     (event) => {
       if (
-        event.key !==
+        event.key ===
         "Enter"
-      )
-        return;
-
-      navigate(
-        "sales"
-      );
+      ) {
+        navigate(
+          "sales"
+        );
+      }
     }
   );
 }
 
 /* ==========================================
-   REFRESH ACTIVE TAB
+   REFRESH ACTIVE REPORT
 ========================================== */
 
-function refreshActiveTab() {
+function refresh() {
   const active =
     document.querySelector(
       ".tab-panel.active"
