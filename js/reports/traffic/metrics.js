@@ -1,15 +1,11 @@
 /* ==========================================
    File: js/reports/traffic/metrics.js
-   TRAFFIC REPORT
-   Core metrics builder
+   FULL REPLACE CODE
+   CLEAN / SYNTAX SAFE
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
-
-import {
-  clean,
-  num
-} from "../sales/helpers.js";
+import { clean, num } from "../sales/helpers.js";
 
 /* ==========================================
    PUBLIC
@@ -17,181 +13,138 @@ import {
 
 export function getTrafficRows() {
   const traffic =
-    getDataset(
-      "traffic"
-    );
+    getDataset("traffic") || [];
 
-  const pm =
-    getDataset(
-      "productMaster"
-    );
+  const productMaster =
+    getDataset("productMaster") || [];
 
-  const sjit =
-    getDataset(
-      "sjitStock"
-    );
+  const sjitStock =
+    getDataset("sjitStock") || [];
 
-  const sor =
-    getDataset(
-      "sorStock"
-    );
+  const sorStock =
+    getDataset("sorStock") || [];
 
-  return buildRows({
-    traffic,
-    pm,
-    sjit,
-    sor
-  });
-}
-
-/* ==========================================
-   BUILD
-========================================== */
-
-function buildRows(data) {
   const map = {};
 
-  data.traffic.forEach(
+  /* ===============================
+     TRAFFIC BASE
+  =============================== */
+
+  traffic.forEach((r) => {
+    const id =
+      clean(r.style_id);
+
+    if (!id) return;
+
+    if (!map[id]) {
+      map[id] =
+        createRow(id);
+    }
+
+    const row =
+      map[id];
+
+    row.brand =
+      row.brand ||
+      clean(r.brand);
+
+    row.impressions +=
+      num(
+        r.impressions
+      );
+
+    row.clicks +=
+      num(
+        r.clicks
+      );
+
+    row.atc +=
+      num(
+        r.add_to_carts
+      );
+
+    row.purchases +=
+      num(
+        r.purchases
+      );
+  });
+
+  /* ===============================
+     ERP MAP
+  =============================== */
+
+  productMaster.forEach(
     (r) => {
       const id =
         clean(
           r.style_id
         );
 
-      if (!id)
-        return;
-
-      if (!map[id]) {
-        map[id] =
-          blank(id);
+      if (
+        map[id]
+      ) {
+        map[id].erp =
+          clean(
+            r.erp_sku
+          );
       }
+    }
+  );
 
-      const row =
-        map[id];
+  /* ===============================
+     SJIT STOCK
+  =============================== */
 
-      row.brand =
-        row.brand ||
+  sjitStock.forEach(
+    (r) => {
+      const id =
         clean(
-          r.brand
+          r.style_id
         );
 
-      row.impressions +=
-        num(
-          r.impressions
-        );
-
-      row.clicks +=
-        num(
-          r.clicks
-        );
-
-      row.atc +=
-        num(
-          r.add_to_carts
-        );
-
-      row.purchases +=
-        num(
-          r.purchases
-        );
+      if (
+        map[id]
+      ) {
+        map[id]
+          .sjitStock +=
+          num(
+            r.sellable_inventory_count
+          );
+      }
     }
   );
 
-  enrichPM(
-    map,
-    data.pm
-  );
+  /* ===============================
+     SOR STOCK
+  =============================== */
 
-  enrichStocks(
-    map,
-    data.sjit,
-    data.sor
-  );
-
-  return finalize(
-    map
-  );
-}
-
-/* ==========================================
-   PRODUCT MASTER
-========================================== */
-
-function enrichPM(
-  map,
-  rows
-) {
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (!map[id])
-      return;
-
-    map[id].erp =
-      clean(
-        r.erp_sku
-      );
-  });
-}
-
-/* ==========================================
-   STOCKS
-========================================== */
-
-function enrichStocks(
-  map,
-  sjit,
-  sor
-) {
-  sjit.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (
-      map[id]
-    ) {
-      map[id]
-        .sjitStock +=
-        num(
-          r.sellable_inventory_count
+  sorStock.forEach(
+    (r) => {
+      const id =
+        clean(
+          r.style_id
         );
+
+      if (
+        map[id]
+      ) {
+        map[id]
+          .sorStock +=
+          num(
+            r.units
+          );
+      }
     }
-  });
+  );
 
-  sor.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    if (
-      map[id]
-    ) {
-      map[id]
-        .sorStock +=
-        num(
-          r.units
-        );
-    }
-  });
-}
-
-/* ==========================================
-   FINALIZE
-========================================== */
-
-function finalize(
-  map
-) {
   const rows =
     Object.values(
       map
     );
+
+  /* ===============================
+     BRAND CLICKS
+  =============================== */
 
   const brandClicks =
     {};
@@ -210,82 +163,60 @@ function finalize(
       r.clicks;
   });
 
-  return rows
-    .map((r) => {
-      r.ctr =
-        safePct(
-          r.clicks,
-          r.impressions
-        );
+  /* ===============================
+     FINAL METRICS
+  =============================== */
 
-      r.cvr =
-        safePct(
-          r.purchases,
-          r.clicks
-        );
+  rows.forEach((r) => {
+    r.ctr =
+      percent(
+        r.clicks,
+        r.impressions
+      );
 
-      r.ppc =
-        safeNum(
-          r.purchases,
-          r.clicks
-        );
+    r.cvr =
+      percent(
+        r.purchases,
+        r.clicks
+      );
 
-      const brand =
-        r.brand ||
-        "Unknown";
+    r.ppc =
+      ratio(
+        r.purchases,
+        r.clicks
+      );
 
-      r.weight =
-        safePct(
-          r.clicks,
-          brandClicks[
-            brand
-          ]
-        );
+    const brand =
+      r.brand ||
+      "Unknown";
 
-      return r;
-    })
-    .sort(
-      (
-        a,
-        b
-      ) =>
-        b.impressions -
-        a.impressions
-    );
+    r.weight =
+      percent(
+        r.clicks,
+        brandClicks[
+          brand
+        ]
+      );
+  });
+
+  /* ===============================
+     SORT
+  =============================== */
+
+  rows.sort(
+    (a, b) =>
+      b.impressions -
+      a.impressions
+  );
+
+  return rows;
 }
 
 /* ==========================================
    HELPERS
 ========================================== */
 
-function safePct(
-  a,
-  b
-) {
-  if (!b)
-    return 0;
-
-  return (
-    (a / b) *
-    100
-  );
-}
-
-function safeNum(
-  a,
-  b
-) {
-  if (!b)
-    return 0;
-
-  return a / b;
-}
-
-/* ==========================================
-   TEMPLATE
-========================================== */
-
-function blank(id) {
+function createRow(id) {
   return {
     styleId: id,
     erp: "",
@@ -304,4 +235,14 @@ function blank(id) {
     sjitStock: 0,
     sorStock: 0
   };
+}
+
+function percent(a, b) {
+  if (!b) return 0;
+  return (a / b) * 100;
+}
+
+function ratio(a, b) {
+  if (!b) return 0;
+  return a / b;
 }
