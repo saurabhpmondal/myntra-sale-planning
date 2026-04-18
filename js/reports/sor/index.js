@@ -1,172 +1,126 @@
 /* ==========================================
-   File: js/core/router.js
-   FULL REPLACE CODE
-   Added Live SOR Report
+   File: js/reports/sor/index.js
+   NEW FILE
+   SOR Planning Report
 ========================================== */
 
-import { renderDashboard } from "../reports/dashboard/index.js";
-import { renderSalesReport } from "../reports/sales/index.js";
-import { renderSjitReport } from "../reports/sjit/index.js";
-import { renderSorReport } from "../reports/sor/index.js";
-
-import {
-  getDataset,
-  setDataset
-} from "./state.js";
-
-import {
-  fetchMany
-} from "../data/fetch-csv.js";
-
-import {
-  getSource
-} from "../data/sources.js";
+import { getSorRows } from "./metrics.js";
+import { renderSorTable } from "./table.js";
 
 /* ==========================================
    PUBLIC
 ========================================== */
 
-export async function navigate(
-  tab = "dashboard"
-) {
-  setActiveTab(tab);
-  await renderTab(tab);
-}
-
-/* ==========================================
-   ACTIVE UI
-========================================== */
-
-function setActiveTab(tab) {
-  const buttons =
-    document.querySelectorAll(
-      ".tab-btn"
-    );
-
-  const panels =
-    document.querySelectorAll(
-      ".tab-panel"
-    );
-
-  buttons.forEach((btn) => {
-    btn.classList.toggle(
-      "active",
-      btn.dataset.tab === tab
-    );
-  });
-
-  panels.forEach((panel) => {
-    panel.classList.toggle(
-      "active",
-      panel.id === tab
-    );
-  });
-}
-
-/* ==========================================
-   TAB RENDER
-========================================== */
-
-async function renderTab(tab) {
-  switch (tab) {
-    case "dashboard":
-      renderDashboard();
-      break;
-
-    case "sales":
-      await ensureTraffic();
-      renderSalesReport();
-      break;
-
-    case "sjit":
-      await ensureTraffic();
-      renderSjitReport();
-      break;
-
-    case "sor":
-      await ensureTraffic();
-      renderSorReport();
-      break;
-
-    case "export":
-      renderPlaceholder(
-        "export",
-        "Export Center"
-      );
-      break;
-
-    default:
-      renderDashboard();
-      break;
-  }
-}
-
-/* ==========================================
-   TRAFFIC LAZY LOAD
-========================================== */
-
-async function ensureTraffic() {
-  const rows =
-    getDataset(
-      "traffic"
-    );
-
-  if (
-    rows &&
-    rows.length
-  ) {
-    return;
-  }
-
-  const src =
-    getSource(
-      "traffic"
-    );
-
-  if (!src)
-    return;
-
-  const result =
-    await fetchMany(
-      [src]
-    );
-
-  if (
-    result &&
-    result[0]
-  ) {
-    setDataset(
-      "traffic",
-      result[0].rows ||
-        []
-    );
-  }
-}
-
-/* ==========================================
-   PLACEHOLDER
-========================================== */
-
-function renderPlaceholder(
-  id,
-  title
-) {
-  const el =
+export function renderSorReport() {
+  const root =
     document.getElementById(
-      id
+      "sor"
     );
 
-  if (!el) return;
+  if (!root)
+    return;
 
-  el.innerHTML = `
+  const rows =
+    getSorRows();
+
+  const totals =
+    getTotals(
+      rows
+    );
+
+  root.innerHTML = `
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <span>Shipment Qty</span>
+        <strong>${fmt(
+          totals.ship
+        )}</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Recall Qty</span>
+        <strong>${fmt(
+          totals.recall
+        )}</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Ship Styles</span>
+        <strong>${fmt(
+          totals.shipStyles
+        )}</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Recall Styles</span>
+        <strong>${fmt(
+          totals.recallStyles
+        )}</strong>
+      </div>
+
+    </div>
+
     <div class="panel-card">
       <h3 class="panel-title">
-        ${title}
+        SOR Planning Engine
       </h3>
 
-      <div class="placeholder-box large">
-        Coming Soon
-      </div>
+      <div id="sorTableWrap"></div>
     </div>
   `;
+
+  renderSorTable(
+    "sorTableWrap",
+    rows
+  );
+}
+
+/* ==========================================
+   TOTALS
+========================================== */
+
+function getTotals(
+  rows
+) {
+  const x = {
+    ship: 0,
+    recall: 0,
+    shipStyles: 0,
+    recallStyles: 0
+  };
+
+  rows.forEach((r) => {
+    x.ship +=
+      r.shipQty;
+
+    x.recall +=
+      r.recallQty;
+
+    if (
+      r.shipQty > 0
+    ) {
+      x.shipStyles++;
+    }
+
+    if (
+      r.recallQty > 0
+    ) {
+      x.recallStyles++;
+    }
+  });
+
+  return x;
+}
+
+/* ==========================================
+   FORMAT
+========================================== */
+
+function fmt(v) {
+  return Number(
+    v || 0
+  ).toLocaleString(
+    "en-IN"
+  );
 }
