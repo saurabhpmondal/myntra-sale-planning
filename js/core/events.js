@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   Async Navigation Ready
+   Added SOR Wiring
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -10,6 +10,7 @@ import { setFilter } from "./state.js";
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
+import { renderSorReport } from "../reports/sor/index.js";
 
 /* ==========================================
    PUBLIC
@@ -269,6 +270,13 @@ function refresh() {
     "sjit"
   ) {
     renderSjitReport();
+  }
+
+  if (
+    id ===
+    "sor"
+  ) {
+    renderSorReport();
   }
 }
 
