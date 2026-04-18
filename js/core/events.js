@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   CLEAN EVENTS
-   Dashboard + Sales + SJIT + SOR + Export
+   Async Navigation Ready
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -35,8 +34,8 @@ function bindTabs() {
   tabs.forEach((tab) => {
     tab.addEventListener(
       "click",
-      () => {
-        navigate(
+      async () => {
+        await navigate(
           tab.dataset.tab
         );
       }
@@ -92,9 +91,9 @@ function bindMonth() {
 
   el.addEventListener(
     "change",
-    (event) => {
+    () => {
       const val =
-        event.target.value;
+        el.value;
 
       setFilter(
         "month",
@@ -112,14 +111,14 @@ function bindMonth() {
         ] =
           val.split("-");
 
+        start.value =
+          `${year}-${pad(mm)}-01`;
+
         const y =
           Number(year);
 
         const m =
           Number(mm);
-
-        start.value =
-          `${year}-${pad(mm)}-01`;
 
         const now =
           new Date();
@@ -185,10 +184,10 @@ function bindSingle(
 
   el.addEventListener(
     "change",
-    (event) => {
+    () => {
       setFilter(
         key,
-        event.target.value
+        el.value
       );
 
       refresh();
@@ -210,10 +209,10 @@ function bindSearch() {
 
   el.addEventListener(
     "input",
-    (event) => {
+    () => {
       setFilter(
         "search",
-        event.target.value.trim()
+        el.value.trim()
       );
 
       refresh();
@@ -222,11 +221,12 @@ function bindSearch() {
 
   el.addEventListener(
     "keydown",
-    (event) => {
+    async (event) => {
       if (
-        event.key === "Enter"
+        event.key ===
+        "Enter"
       ) {
-        navigate(
+        await navigate(
           "sales"
         );
       }
@@ -235,7 +235,7 @@ function bindSearch() {
 }
 
 /* ==========================================
-   REFRESH ACTIVE TAB
+   REFRESH
 ========================================== */
 
 function refresh() {
@@ -244,7 +244,8 @@ function refresh() {
       ".tab-panel.active"
     );
 
-  if (!active) return;
+  if (!active)
+    return;
 
   const id =
     active.id;
@@ -276,8 +277,9 @@ function refresh() {
 ========================================== */
 
 function pad(v) {
-  return String(v).padStart(
-    2,
-    "0"
-  );
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
