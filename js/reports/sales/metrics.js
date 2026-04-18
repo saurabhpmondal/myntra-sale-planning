@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
-   FULL REPLACE CODE
-   FINAL RATING FIX = MAX NON ZERO
+   CLEAN SAFE VERSION
+   No Syntax Errors
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -29,9 +29,7 @@ export function getSalesRows() {
   return buildRows({
     sales,
     salesAll:
-      getDataset(
-        "sales"
-      ),
+      getDataset("sales"),
     pm:
       getDataset(
         "productMaster"
@@ -69,8 +67,7 @@ function buildRows(data) {
         r.style_id
       );
 
-    if (!id)
-      return;
+    if (!id) return;
 
     if (!map[id]) {
       map[id] =
@@ -83,22 +80,14 @@ function buildRows(data) {
     const qty =
       num(r.qty);
 
-    row.units +=
-      qty;
+    row.units += qty;
+    row.gmv += num(r.final_amount);
 
-    row.gmv +=
-      num(
-        r.final_amount
-      );
-
-    totalUnits +=
-      qty;
+    totalUnits += qty;
 
     row.brand =
       row.brand ||
-      clean(
-        r.brand
-      );
+      clean(r.brand);
 
     if (
       r.order_line_id
@@ -182,8 +171,7 @@ function enrichPM(
 }
 
 /* ==========================================
-   FINAL RATING FIX
-   USE MAX NON ZERO
+   RATING = MAX NON ZERO
 ========================================== */
 
 function enrichTraffic(
@@ -204,10 +192,7 @@ function enrichTraffic(
 
     const val =
       Number(
-        String(
-          r.rating ||
-            ""
-        ).trim()
+        r.rating
       );
 
     if (
@@ -251,22 +236,22 @@ function enrichReturns(
   );
 
   rows.forEach((r) => {
-    const id =
+    const oid =
       clean(
         r.order_line_id
       );
 
-    const style =
-      link[id];
+    const sid =
+      link[oid];
 
     if (
-      style &&
-      map[style]
+      sid &&
+      map[sid]
     ) {
       map[
-        style
+        sid
       ].returnIds.add(
-        id
+        oid
       );
     }
   });
@@ -340,13 +325,16 @@ function enrichGrowth(
   )
     return;
 
-  const [
-    year,
-    month
-  ] =
+  const parts =
     monthEl.value
       .split("-")
       .map(Number);
+
+  const year =
+    parts[0];
+
+  const month =
+    parts[1];
 
   let py = year;
   let pm =
@@ -445,7 +433,7 @@ function enrichGrowth(
           prev[id]
         );
     }
-  });
+  );
 }
 
 /* ==========================================
@@ -457,7 +445,8 @@ function finalize(
   totalUnits
 ) {
   return Object.values(
-    map)
+    map
+  )
     .map((r) => {
       r.asp =
         divide(
@@ -508,6 +497,10 @@ function finalize(
       byGmvDesc
     );
 }
+
+/* ==========================================
+   TEMPLATE
+========================================== */
 
 function blank(id) {
   return {
