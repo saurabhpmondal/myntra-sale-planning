@@ -1,104 +1,60 @@
 /* ==========================================
    COMPONENTS.CSS
-   Premium Components UI
+   Global reusable UI
 ========================================== */
 
 /* ==========================================
-   PANELS / CARDS
+   CARDS
 ========================================== */
 
-.panel-card,
+.panel-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  color: #111827;
+}
+
+/* ==========================================
+   KPI
+========================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(150px, 1fr)
+  );
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
 .kpi-card {
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
-  padding: 18px;
-  box-sizing: border-box;
-}
-
-.panel-card {
-  margin-bottom: 18px;
-}
-
-.panel-card.large {
-  min-height: 360px;
-}
-
-.panel-title {
-  margin: 0 0 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eef2f7;
-
-  font-size: 18px;
-  font-weight: 800;
-  color: #111827;
-}
-
-/* ==========================================
-   KPI CARDS
-========================================== */
-
-.kpi-card {
-  min-height: 110px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  padding: 14px;
 }
 
 .kpi-card span {
-  font-size: 13px;
-  font-weight: 700;
-  color: #6b7280;
-  margin-bottom: 8px;
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
 }
 
 .kpi-card strong {
-  font-size: 28px;
+  display: block;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.3px;
   color: #111827;
-}
-
-.kpi-card strong.up {
-  color: #16a34a;
-}
-
-.kpi-card strong.down {
-  color: #dc2626;
-}
-
-.kpi-card strong.flat {
-  color: #2563eb;
-}
-
-/* ==========================================
-   PLACEHOLDER
-========================================== */
-
-.placeholder-box {
-  border: 1px dashed #d1d5db;
-  border-radius: 16px;
-  background: #f9fafb;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-
-  color: #6b7280;
-  font-weight: 600;
-
-  min-height: 220px;
-}
-
-.placeholder-box.small {
-  min-height: 90px;
-}
-
-.placeholder-box.large {
-  min-height: 320px;
 }
 
 /* ==========================================
@@ -113,269 +69,109 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 560px;
+  font-size: 13px;
 }
 
 .data-table th,
 .data-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #eef2f7;
+  padding: 10px;
   text-align: left;
-  font-size: 14px;
+  border-bottom: 1px solid #eef2f7;
+  white-space: nowrap;
 }
 
 .data-table th {
-  position: sticky;
-  top: 0;
-  background: #f8fafc;
-  color: #374151;
-  font-weight: 800;
-  z-index: 2;
-}
-
-.data-table td {
+  font-weight: 700;
   color: #111827;
-  font-weight: 500;
-}
-
-.data-table .num {
-  text-align: right;
-}
-
-.data-table.zebra tbody tr:nth-child(even) {
-  background: #fafbfd;
-}
-
-.data-table tbody tr:hover {
-  background: #f3f6fb;
-}
-
-.data-table.sticky-first td:first-child,
-.data-table.sticky-first th:first-child {
-  position: sticky;
-  left: 0;
-  background: inherit;
-  z-index: 1;
-}
-
-/* ==========================================
-   SEARCH SUGGESTIONS
-========================================== */
-
-.search-suggestions {
-  position: absolute;
-  top: 46px;
-  left: 0;
-  right: 0;
-
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-
-  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.08);
-
-  overflow: hidden;
-  z-index: 999;
 }
 
-.search-suggestions.hidden {
-  display: none;
-}
-
-.search-item {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f1f5f9;
-  cursor: pointer;
-}
-
-.search-item:last-child {
-  border-bottom: none;
-}
-
-.search-item:hover {
+.zebra tbody tr:nth-child(even) {
   background: #f8fafc;
 }
 
-.search-item-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #111827;
-}
+/* ==========================================
+   LAYOUT
+========================================== */
 
-.search-item-sub {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #6b7280;
+.two-col-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(320px, 1fr)
+  );
+  gap: 16px;
 }
 
 /* ==========================================
-   SIMPLE LIST ROWS
+   PLACEHOLDER
 ========================================== */
 
-.dashboard-brand-row,
-.products-result-item,
-.export-history-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #eef2f7;
+.placeholder-box {
+  border: 1px dashed #d1d5db;
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  color: #64748b;
 }
 
-.dashboard-brand-row:last-child,
-.products-result-item:last-child,
-.export-history-item:last-child {
-  border-bottom: none;
-}
-
-.dashboard-brand-row,
-.products-result-item {
+.placeholder-box.large {
+  min-height: 220px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.dashboard-brand-name,
-.products-result-title {
-  font-weight: 700;
-  color: #111827;
-}
-
-.dashboard-brand-metric {
-  color: #6b7280;
-  font-weight: 700;
+  justify-content: center;
 }
 
 /* ==========================================
-   PO TYPE BOXES
+   SALES STATES
 ========================================== */
 
-.dashboard-po-card {
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
-}
-
-.dashboard-po-name {
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 700;
-}
-
-.dashboard-po-value {
-  margin-top: 6px;
-  font-size: 22px;
-  font-weight: 800;
-}
-
-.dashboard-po-card.sjit {
-  border-left: 5px solid #16a34a;
-}
-
-.dashboard-po-card.ppmp {
-  border-left: 5px solid #2563eb;
-}
-
-.dashboard-po-card.sor {
-  border-left: 5px solid #7c3aed;
-}
-
-/* ==========================================
-   EXPORT BUTTONS
-========================================== */
-
-.export-btn {
-  width: 100%;
-  border: none;
-  background: #111827;
-  color: #ffffff;
-
-  border-radius: 12px;
-  padding: 12px 14px;
-
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
-
-  margin-bottom: 10px;
-}
-
-.export-btn:hover {
-  opacity: 0.92;
-}
-
-.export-btn.primary {
-  background: #2563eb;
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width: 640px) {
-  .panel-card,
-  .kpi-card {
-    border-radius: 14px;
-    padding: 14px;
-  }
-
-  .panel-title {
-    font-size: 16px;
-  }
-
-  .kpi-card strong {
-    font-size: 22px;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-}
-
-/* ==========================================
-   SALES REPORT TABLE
-========================================== */
-
-.sales-scroll {
-  overflow-x: auto;
-  width: 100%;
-}
-
-.sales-table {
-  min-width: 1600px;
-}
-
-.sales-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #ffffff;
-  white-space: nowrap;
-}
-
-.sales-table td,
-.sales-table th {
-  white-space: nowrap;
-}
-
-.sales-table .sticky-col {
-  position: sticky;
-  left: 0;
-  z-index: 4;
-  background: #ffffff;
-}
-
-.sales-table tbody tr:nth-child(even) .sticky-col {
-  background: #f8fafc;
-}
-
-.sales-table td.pos {
+.pos {
   color: #16a34a;
   font-weight: 700;
 }
 
-.sales-table td.neg {
+.neg {
   color: #dc2626;
   font-weight: 700;
+}
+
+.warn {
+  color: #d97706;
+  font-weight: 700;
+}
+
+/* ==========================================
+   TAB PANELS
+========================================== */
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 768px) {
+  .panel-card {
+    padding: 14px;
+  }
+
+  .kpi-card strong {
+    font-size: 18px;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px;
+  }
 }
