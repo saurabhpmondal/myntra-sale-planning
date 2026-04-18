@@ -2,6 +2,7 @@
    File: js/core/router.js
    FULL REPLACE CODE
    Added Export Center
+   Added Lazy Load Progress Bar
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
@@ -22,6 +23,11 @@ import {
 import {
   getSource
 } from "../data/sources.js";
+
+import {
+  showProgress,
+  hideProgress
+} from "../ui/progress.js";
 
 /* ==========================================
    PUBLIC
@@ -125,19 +131,27 @@ async function ensureTraffic() {
   if (!src)
     return;
 
-  const result =
-    await fetchMany(
-      [src]
+  try {
+    showProgress(
+      "Loading Traffic Data..."
     );
 
-  if (
-    result &&
-    result[0]
-  ) {
-    setDataset(
-      "traffic",
-      result[0].rows ||
-        []
-    );
+    const result =
+      await fetchMany(
+        [src]
+      );
+
+    if (
+      result &&
+      result[0]
+    ) {
+      setDataset(
+        "traffic",
+        result[0].rows ||
+          []
+      );
+    }
+  } finally {
+    hideProgress();
   }
 }
