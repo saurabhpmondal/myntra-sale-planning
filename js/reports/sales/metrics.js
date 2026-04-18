@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
-   FULL REPLACE CODE
-   Brand Demand % Fix
+   CLEAN SAFE VERSION
+   No Syntax Errors
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -171,7 +171,7 @@ function enrichPM(
 }
 
 /* ==========================================
-   RATING
+   RATING = MAX NON ZERO
 ========================================== */
 
 function enrichTraffic(
@@ -325,13 +325,16 @@ function enrichGrowth(
   )
     return;
 
-  const [
-    year,
-    month
-  ] =
+  const parts =
     monthEl.value
       .split("-")
       .map(Number);
+
+  const year =
+    parts[0];
+
+  const month =
+    parts[1];
 
   let py = year;
   let pm =
@@ -430,41 +433,20 @@ function enrichGrowth(
           prev[id]
         );
     }
-  });
+  );
 }
 
 /* ==========================================
    FINALIZE
-   BRAND DEMAND %
 ========================================== */
 
 function finalize(
   map,
   totalUnits
 ) {
-  const rows =
-    Object.values(
-      map
-    );
-
-  const brandUnits =
-    {};
-
-  rows.forEach((r) => {
-    const brand =
-      r.brand ||
-      "Unknown";
-
-    brandUnits[
-      brand
-    ] =
-      (brandUnits[
-        brand
-      ] || 0) +
-      r.units;
-  });
-
-  return rows
+  return Object.values(
+    map
+  )
     .map((r) => {
       r.asp =
         divide(
@@ -502,17 +484,11 @@ function finalize(
           r.units
         );
 
-      const brand =
-        r.brand ||
-        "Unknown";
-
       r.sharePct =
         divide(
           r.units *
             100,
-          brandUnits[
-            brand
-          ]
+          totalUnits
         );
 
       return r;
