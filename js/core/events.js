@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   SAFE MERGED EVENTS
-   Dashboard + Sales + Traffic + SJIT
+   CLEAN EVENTS
+   Dashboard + Sales + SJIT + SOR + Export
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -10,7 +10,6 @@ import { setFilter } from "./state.js";
 
 import { renderDashboard } from "../reports/dashboard/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
-import { renderTrafficReport } from "../reports/traffic/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 
 /* ==========================================
@@ -126,10 +125,8 @@ function bindMonth() {
           new Date();
 
         const isCurrent =
-          now.getFullYear() ===
-            y &&
-          now.getMonth() + 1 ===
-            m;
+          now.getFullYear() === y &&
+          now.getMonth() + 1 === m;
 
         if (
           isCurrent
@@ -227,8 +224,7 @@ function bindSearch() {
     "keydown",
     (event) => {
       if (
-        event.key ===
-        "Enter"
+        event.key === "Enter"
       ) {
         navigate(
           "sales"
@@ -261,19 +257,15 @@ function refresh() {
   }
 
   if (
-    id === "sales"
+    id ===
+    "sales"
   ) {
     renderSalesReport();
   }
 
   if (
-    id === "traffic"
-  ) {
-    renderTrafficReport();
-  }
-
-  if (
-    id === "sjit"
+    id ===
+    "sjit"
   ) {
     renderSjitReport();
   }
