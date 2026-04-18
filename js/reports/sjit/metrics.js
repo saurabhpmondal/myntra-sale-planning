@@ -1,11 +1,11 @@
 /* ==========================================
    File: js/reports/sjit/metrics.js
    FULL REPLACE CODE
-   BUILT ON SALES ENGINE
-   Uses last 30 days sales equivalent
+   SALES ENGINE + ACTIVE DAY DRR
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
+import { getFilters } from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
@@ -15,9 +15,15 @@ export function getSjitRows() {
   const salesRows =
     getSalesRows() || [];
 
+  const days =
+    getActiveDays();
+
   const rows =
     salesRows.map((r) =>
-      buildPlan(r)
+      buildPlan(
+        r,
+        days
+      )
     );
 
   return rows.sort(
@@ -29,10 +35,13 @@ export function getSjitRows() {
 }
 
 /* ==========================================
-   BUILD PLAN
+   BUILD
 ========================================== */
 
-function buildPlan(r) {
+function buildPlan(
+  r,
+  days
+) {
   const gross =
     num(r.units);
 
@@ -52,9 +61,10 @@ function buildPlan(r) {
         returns
     );
 
-  /* assume current sales filter = last 30d base */
   const drr =
-    net / 30;
+    days > 0
+      ? net / days
+      : 0;
 
   const stock =
     num(
@@ -63,8 +73,7 @@ function buildPlan(r) {
 
   const sc =
     drr > 0
-      ? stock /
-        drr
+      ? stock / drr
       : 0;
 
   const target =
@@ -98,8 +107,7 @@ function buildPlan(r) {
       badRating
     )
   ) {
-    recall =
-      stock;
+    recall = stock;
   } else if (
     sc > 60
   ) {
@@ -127,8 +135,7 @@ function buildPlan(r) {
     erp:
       r.erp || "",
     status:
-      r.status ||
-      "",
+      r.status || "",
     brand:
       r.brand || "",
     rating:
@@ -160,6 +167,43 @@ function buildPlan(r) {
     units:
       gross
   };
+}
+
+/* ==========================================
+   ACTIVE DAYS
+========================================== */
+
+function getActiveDays() {
+  const f =
+    getFilters();
+
+  if (
+    f.startDate &&
+    f.endDate
+  ) {
+    const s =
+      new Date(
+        f.startDate
+      );
+
+    const e =
+      new Date(
+        f.endDate
+      );
+
+    const diff =
+      Math.floor(
+        (e - s) /
+          86400000
+      ) + 1;
+
+    return Math.max(
+      1,
+      diff
+    );
+  }
+
+  return 30;
 }
 
 /* ==========================================
