@@ -1,114 +1,78 @@
 /* ==========================================
    ROUTER.JS
-   Tab Navigation Router
-   Keeps UI switching isolated
+   App tab router
 ========================================== */
 
-import { TAB_KEYS } from "./config.js";
-import {
-  setActiveTab,
-  getActiveTab
-} from "./state.js";
+import { renderDashboard } from "../reports/dashboard/index.js";
+import { renderSalesReport } from "../reports/sales/index.js";
 
 /* ==========================================
-   INIT ROUTER
+   PUBLIC
 ========================================== */
 
-export function initRouter() {
-  bindTabButtons();
-  activateInitialTab();
+export function navigate(tab = "dashboard") {
+  setActiveTab(tab);
+  renderTab(tab);
 }
 
 /* ==========================================
-   TAB BUTTON EVENTS
+   CORE
 ========================================== */
 
-function bindTabButtons() {
-  const buttons = document.querySelectorAll(".tab-btn");
+function renderTab(tab) {
+  const app =
+    document.getElementById(
+      "reportRoot"
+    );
 
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const tabKey = button.dataset.tab;
+  if (!app) return;
 
-      if (!tabKey) return;
+  switch (tab) {
+    case "sales":
+      app.innerHTML = `
+        <section
+          id="salesReportRoot"
+          class="report-shell"
+        ></section>
+      `;
 
-      navigate(tabKey);
-    });
-  });
-}
+      renderSalesReport();
+      break;
 
-/* ==========================================
-   INITIAL TAB
-========================================== */
+    case "dashboard":
+    default:
+      app.innerHTML = `
+        <section
+          id="dashboardRoot"
+          class="report-shell"
+        ></section>
+      `;
 
-function activateInitialTab() {
-  const current = getActiveTab();
-
-  if (TAB_KEYS.includes(current)) {
-    renderTab(current);
-    return;
+      renderDashboard();
+      break;
   }
-
-  renderTab("dashboard");
 }
 
 /* ==========================================
-   NAVIGATE
+   UI
 ========================================== */
 
-export function navigate(tabKey = "dashboard") {
-  if (!TAB_KEYS.includes(tabKey)) return;
+function setActiveTab(tab) {
+  const buttons =
+    document.querySelectorAll(
+      ".tab-btn"
+    );
 
-  setActiveTab(tabKey);
-  renderTab(tabKey);
+  buttons.forEach(
+    (btn) => {
+      const active =
+        btn.dataset.tab ===
+        tab;
 
-  scrollToTop();
-}
-
-/* ==========================================
-   RENDER TAB
-========================================== */
-
-export function renderTab(tabKey) {
-  updateButtons(tabKey);
-  updatePanels(tabKey);
-}
-
-/* ==========================================
-   BUTTON STATE
-========================================== */
-
-function updateButtons(activeKey) {
-  const buttons = document.querySelectorAll(".tab-btn");
-
-  buttons.forEach((button) => {
-    const isActive = button.dataset.tab === activeKey;
-
-    button.classList.toggle("active", isActive);
-  });
-}
-
-/* ==========================================
-   PANEL STATE
-========================================== */
-
-function updatePanels(activeKey) {
-  const panels = document.querySelectorAll(".tab-panel");
-
-  panels.forEach((panel) => {
-    const isActive = panel.id === activeKey;
-
-    panel.classList.toggle("active", isActive);
-  });
-}
-
-/* ==========================================
-   HELPERS
-========================================== */
-
-function scrollToTop() {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+      btn.classList.toggle(
+        "active",
+        active
+      );
+    }
+  );
 }
