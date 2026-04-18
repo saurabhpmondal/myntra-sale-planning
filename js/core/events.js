@@ -1,11 +1,13 @@
 /* ==========================================
    EVENTS.JS
-   Global UI Event Binder
-   FIXED MONTH → DATE SYNC
+   Global UI Events
 ========================================== */
 
 import { navigate } from "./router.js";
 import { setFilter } from "./state.js";
+
+import { renderDashboard } from "../reports/dashboard/index.js";
+import { renderSalesReport } from "../reports/sales/index.js";
 
 /* ==========================================
    INIT
@@ -18,7 +20,7 @@ export function initEvents() {
 }
 
 /* ==========================================
-   TABS
+   TAB BUTTONS
 ========================================== */
 
 function bindTabClicks() {
@@ -33,15 +35,11 @@ function bindTabClicks() {
         "click",
         () => {
           const tab =
-            button.dataset
-              .tab;
+            button.dataset.tab;
 
-          if (!tab)
-            return;
+          if (!tab) return;
 
-          navigate(
-            tab
-          );
+          navigate(tab);
         }
       );
     }
@@ -75,10 +73,6 @@ function bindFilters() {
     "poType"
   );
 }
-
-/* ==========================================
-   MONTH FILTER
-========================================== */
 
 function bindMonthFilter() {
   const month =
@@ -115,8 +109,10 @@ function bindMonthFilter() {
         !value ||
         !start ||
         !end
-      )
+      ) {
+        refreshActiveTab();
         return;
+      }
 
       const [
         year,
@@ -146,13 +142,11 @@ function bindMonthFilter() {
           1 ===
           m;
 
-      /* start always first */
       start.value =
         `${year}-${pad(
           mm
         )}-01`;
 
-      /* end */
       if (
         isCurrent
       ) {
@@ -187,7 +181,6 @@ function bindMonthFilter() {
           )}`;
       }
 
-      /* sync state */
       setFilter(
         "startDate",
         start.value
@@ -197,33 +190,34 @@ function bindMonthFilter() {
         "endDate",
         end.value
       );
+
+      refreshActiveTab();
     }
   );
 }
 
-/* ==========================================
-   NORMAL FILTERS
-========================================== */
-
 function bindFilter(
-  elementId,
-  stateKey
+  id,
+  key
 ) {
   const el =
     document.getElementById(
-      elementId
+      id
     );
 
-  if (!el) return;
+  if (!el)
+    return;
 
   el.addEventListener(
     "change",
     (event) => {
       setFilter(
-        stateKey,
+        key,
         event.target
           .value
       );
+
+      refreshActiveTab();
     }
   );
 }
@@ -248,6 +242,8 @@ function bindSearch() {
         "search",
         event.target.value.trim()
       );
+
+      refreshActiveTab();
     }
   );
 
@@ -260,24 +256,41 @@ function bindSearch() {
       )
         return;
 
-      const keyword =
-        input.value.trim();
-
-      if (
-        !keyword
-      )
-        return;
-
-      setFilter(
-        "search",
-        keyword
-      );
-
       navigate(
-        "products"
+        "sales"
       );
     }
   );
+}
+
+/* ==========================================
+   REFRESH ACTIVE TAB
+========================================== */
+
+function refreshActiveTab() {
+  const active =
+    document.querySelector(
+      ".tab-panel.active"
+    );
+
+  if (!active)
+    return;
+
+  const id =
+    active.id;
+
+  if (
+    id ===
+    "dashboard"
+  ) {
+    renderDashboard();
+  }
+
+  if (
+    id === "sales"
+  ) {
+    renderSalesReport();
+  }
 }
 
 /* ==========================================
