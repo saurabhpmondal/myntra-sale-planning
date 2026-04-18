@@ -1,6 +1,6 @@
 /* ==========================================
    SALES REPORT / HELPERS.JS
-   Shared helpers for sales module
+   Final utilities
 ========================================== */
 
 /* ==========================================
@@ -11,8 +11,26 @@ export function num(v) {
   return Number(v || 0);
 }
 
-export function round(v, d = 1) {
-  return Number(v || 0).toFixed(d);
+export function clean(v) {
+  return String(
+    v || ""
+  ).trim();
+}
+
+export function divide(
+  a,
+  b
+) {
+  const x =
+    Number(a || 0);
+
+  const y =
+    Number(b || 0);
+
+  if (!y)
+    return 0;
+
+  return x / y;
 }
 
 /* ==========================================
@@ -42,7 +60,10 @@ export function count(v) {
   );
 }
 
-export function pct(v, d = 1) {
+export function pct(
+  v,
+  d = 1
+) {
   return (
     Number(v || 0).toFixed(
       d
@@ -51,26 +72,7 @@ export function pct(v, d = 1) {
 }
 
 /* ==========================================
-   SAFE DIVIDE
-========================================== */
-
-export function divide(
-  a,
-  b
-) {
-  const x =
-    Number(a || 0);
-
-  const y =
-    Number(b || 0);
-
-  if (!y) return 0;
-
-  return x / y;
-}
-
-/* ==========================================
-   GROWTH %
+   GROWTH
 ========================================== */
 
 export function growthPct(
@@ -84,8 +86,8 @@ export function growthPct(
     Number(previous || 0);
 
   if (
-    p === 0 &&
-    c === 0
+    c === 0 &&
+    p === 0
   )
     return 0;
 
@@ -99,6 +101,13 @@ export function growthPct(
     );
   }
 
+  if (
+    p > 0 &&
+    c === 0
+  ) {
+    return -100;
+  }
+
   return (
     ((c - p) / p) *
     100
@@ -106,16 +115,8 @@ export function growthPct(
 }
 
 /* ==========================================
-   STYLE HELPERS
+   SORT
 ========================================== */
-
-export function clean(
-  v
-) {
-  return String(
-    v || ""
-  ).trim();
-}
 
 export function byGmvDesc(
   a,
