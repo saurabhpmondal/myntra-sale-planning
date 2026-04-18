@@ -1,8 +1,8 @@
 /* ==========================================
    FETCH-CSV.JS
    FULL REPLACE CODE
-   CSV Downloader + Parser Entry
-   Added Real Download Progress Support
+   FIXED LOADER ROW COUNT
+   Shows live downloaded KB + final rows
 ========================================== */
 
 import {
@@ -39,9 +39,7 @@ export async function fetchCSV(
         "no-store"
     });
 
-  if (
-    !response.ok
-  ) {
+  if (!response.ok) {
     throw new Error(
       `Failed to fetch CSV (${response.status})`
     );
@@ -54,7 +52,7 @@ export async function fetchCSV(
       )
     ) || 0;
 
-  /* fallback if stream unsupported */
+  /* fallback */
   if (
     !response.body ||
     !response.body.getReader
@@ -62,15 +60,16 @@ export async function fetchCSV(
     const text =
       await response.text();
 
+    const rows =
+      parseCSV(text);
+
     setProgress(
       100,
       label,
-      0
+      rows.length
     );
 
-    return parseCSV(
-      text
-    );
+    return rows;
   }
 
   const reader =
@@ -103,6 +102,13 @@ export async function fetchCSV(
         }
       );
 
+    const approxRows =
+      Math.max(
+        1,
+        text.split("\n")
+          .length - 1
+      );
+
     if (total > 0) {
       const pct =
         Math.round(
@@ -114,7 +120,13 @@ export async function fetchCSV(
       setProgress(
         pct,
         label,
-        0
+        approxRows
+      );
+    } else {
+      setProgress(
+        0,
+        label,
+        approxRows
       );
     }
   }
@@ -122,15 +134,16 @@ export async function fetchCSV(
   text +=
     decoder.decode();
 
+  const rows =
+    parseCSV(text);
+
   setProgress(
     100,
     label,
-    0
+    rows.length
   );
 
-  return parseCSV(
-    text
-  );
+  return rows;
 }
 
 /* ==========================================
@@ -148,7 +161,7 @@ export async function fetchDataset(
     const rows =
       await fetchCSV(
         source.url,
-        `Downloading ${source.key.toUpperCase()}`
+        `Fetching ${source.key.toUpperCase()}`
       );
 
     return {
