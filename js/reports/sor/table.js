@@ -1,17 +1,13 @@
 /* ==========================================
    File: js/reports/sor/table.js
-   NEW FILE
-   SOR Planning Table
+   FULL REPLACE CODE
+   FIXED MISSING CLOSING BRACE
 ========================================== */
 
 import {
   count,
   pct
 } from "../sales/helpers.js";
-
-/* ==========================================
-   PUBLIC
-========================================== */
 
 export function renderSorTable(
   targetId,
@@ -22,8 +18,7 @@ export function renderSorTable(
       targetId
     );
 
-  if (!root)
-    return;
+  if (!root) return;
 
   if (!rows.length) {
     root.innerHTML = `
@@ -37,7 +32,6 @@ export function renderSorTable(
   root.innerHTML = `
     <div class="sales-scroll">
       <table class="sales-table">
-
         <thead>
           <tr>
             <th>#</th>
@@ -59,28 +53,14 @@ export function renderSorTable(
         </thead>
 
         <tbody>
-          ${rows
-            .map(
-              (
-                row,
-                i
-              ) =>
-                renderRow(
-                  row,
-                  i + 1
-                )
-            )
-            .join("")}
+          ${rows.map((row,i)=>
+            renderRow(row,i+1)
+          ).join("")}
         </tbody>
-
       </table>
     </div>
   `;
 }
-
-/* ==========================================
-   ROW
-========================================== */
 
 function renderRow(
   row,
@@ -88,102 +68,24 @@ function renderRow(
 ) {
   return `
     <tr>
-
-      <td class="sticky-col rank-col">
-        ${rank}
-      </td>
-
-      <td class="sticky-col second-col">
-        ${safe(
-          row.styleId
-        )}
-      </td>
-
-      <td>
-        ${safe(
-          row.erp
-        )}
-      </td>
-
-      <td>
-        ${safe(
-          row.status
-        )}
-      </td>
-
-      <td>
-        ${safe(
-          row.brand
-        )}
-      </td>
-
-      <td>
-        ${row.rating.toFixed(
-          1
-        )}
-      </td>
-
-      <td>
-        ${count(
-          row.gross
-        )}
-      </td>
-
-      <td>
-        ${count(
-          row.returns
-        )}
-      </td>
-
-      <td>
-        ${count(
-          row.net
-        )}
-      </td>
-
-      <td>
-        ${pct(
-          row.returnPct
-        )}
-      </td>
-
-      <td>
-        ${row.drr.toFixed(
-          2
-        )}
-      </td>
-
-      <td>
-        ${count(
-          row.stock
-        )}
-      </td>
-
-      <td>
-        ${row.sc.toFixed(
-          1
-        )}
-      </td>
-
-      <td class="pos">
-        ${count(
-          row.shipQty
-        )}
-      </td>
-
-      <td class="neg">
-        ${count(
-          row.recallQty
-        )}
-      </td>
-
+      <td class="sticky-col rank-col">${rank}</td>
+      <td class="sticky-col second-col">${safe(row.styleId)}</td>
+      <td>${safe(row.erp)}</td>
+      <td>${safe(row.status)}</td>
+      <td>${safe(row.brand)}</td>
+      <td>${row.rating.toFixed(1)}</td>
+      <td>${count(row.gross)}</td>
+      <td>${count(row.returns)}</td>
+      <td>${count(row.net)}</td>
+      <td>${pct(row.returnPct)}</td>
+      <td>${row.drr.toFixed(2)}</td>
+      <td>${count(row.stock)}</td>
+      <td>${row.sc.toFixed(1)}</td>
+      <td class="pos">${count(row.shipQty)}</td>
+      <td class="neg">${count(row.recallQty)}</td>
     </tr>
   `;
 }
-
-/* ==========================================
-   SAFE
-========================================== */
 
 function safe(v) {
   return String(
