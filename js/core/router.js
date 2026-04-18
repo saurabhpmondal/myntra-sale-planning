@@ -1,6 +1,6 @@
 /* ==========================================
    ROUTER.JS
-   App tab router
+   Central tab router
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
@@ -10,57 +10,45 @@ import { renderSalesReport } from "../reports/sales/index.js";
    PUBLIC
 ========================================== */
 
-export function navigate(tab = "dashboard") {
-  setActiveTab(tab);
+export function navigate(
+  tab = "dashboard"
+) {
+  activateTab(tab);
   renderTab(tab);
 }
 
 /* ==========================================
-   CORE
+   RENDER
 ========================================== */
 
 function renderTab(tab) {
-  const app =
-    document.getElementById(
-      "reportRoot"
-    );
-
-  if (!app) return;
-
   switch (tab) {
     case "sales":
-      app.innerHTML = `
-        <section
-          id="salesReportRoot"
-          class="report-shell"
-        ></section>
-      `;
-
       renderSalesReport();
       break;
 
     case "dashboard":
-    default:
-      app.innerHTML = `
-        <section
-          id="dashboardRoot"
-          class="report-shell"
-        ></section>
-      `;
-
       renderDashboard();
+      break;
+
+    default:
       break;
   }
 }
 
 /* ==========================================
-   UI
+   UI ACTIVE STATES
 ========================================== */
 
-function setActiveTab(tab) {
+function activateTab(tab) {
   const buttons =
     document.querySelectorAll(
       ".tab-btn"
+    );
+
+  const panels =
+    document.querySelectorAll(
+      ".tab-panel"
     );
 
   buttons.forEach(
@@ -70,6 +58,19 @@ function setActiveTab(tab) {
         tab;
 
       btn.classList.toggle(
+        "active",
+        active
+      );
+    }
+  );
+
+  panels.forEach(
+    (panel) => {
+      const active =
+        panel.id ===
+        tab;
+
+      panel.classList.toggle(
         "active",
         active
       );
