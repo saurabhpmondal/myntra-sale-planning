@@ -1,6 +1,7 @@
 /* ==========================================
-   SALES REPORT / HELPERS.JS
-   Final utilities
+   File: js/reports/sales/helpers.js
+   FULL REPLACE CODE
+   FINAL JOIN KEY FIX
 ========================================== */
 
 /* ==========================================
@@ -8,24 +9,67 @@
 ========================================== */
 
 export function num(v) {
-  return Number(v || 0);
+  const n =
+    Number(
+      String(v || "")
+        .replace(/,/g, "")
+        .trim()
+    );
+
+  return isNaN(n)
+    ? 0
+    : n;
 }
+
+/* ==========================================
+   FINAL CLEAN
+========================================== */
 
 export function clean(v) {
   return String(
     v || ""
-  ).trim();
+  )
+    /* remove BOM */
+    .replace(
+      /\uFEFF/g,
+      ""
+    )
+
+    /* remove commas */
+    .replace(
+      /,/g,
+      ""
+    )
+
+    /* trim spaces */
+    .trim()
+
+    /* remove trailing .0 */
+    .replace(
+      /\.0+$/,
+      ""
+    )
+
+    /* collapse double spaces */
+    .replace(
+      /\s+/g,
+      " "
+    );
 }
+
+/* ==========================================
+   SAFE DIVIDE
+========================================== */
 
 export function divide(
   a,
   b
 ) {
   const x =
-    Number(a || 0);
+    num(a);
 
   const y =
-    Number(b || 0);
+    num(b);
 
   if (!y)
     return 0;
@@ -34,45 +78,7 @@ export function divide(
 }
 
 /* ==========================================
-   FORMATTERS
-========================================== */
-
-export function money(v) {
-  const n =
-    Number(v || 0);
-
-  return (
-    "₹" +
-    n.toLocaleString(
-      "en-IN",
-      {
-        maximumFractionDigits: 0
-      }
-    )
-  );
-}
-
-export function count(v) {
-  return Number(
-    v || 0
-  ).toLocaleString(
-    "en-IN"
-  );
-}
-
-export function pct(
-  v,
-  d = 1
-) {
-  return (
-    Number(v || 0).toFixed(
-      d
-    ) + "%"
-  );
-}
-
-/* ==========================================
-   GROWTH
+   GROWTH %
 ========================================== */
 
 export function growthPct(
@@ -80,25 +86,23 @@ export function growthPct(
   previous
 ) {
   const c =
-    Number(current || 0);
+    num(current);
 
   const p =
-    Number(previous || 0);
+    num(previous);
 
   if (
     c === 0 &&
     p === 0
-  )
+  ) {
     return 0;
+  }
 
   if (
     p === 0 &&
     c > 0
   ) {
-    return (
-      ((c - 1) / 1) *
-      100
-    );
+    return 100;
   }
 
   if (
@@ -125,5 +129,39 @@ export function byGmvDesc(
   return (
     num(b.gmv) -
     num(a.gmv)
+  );
+}
+
+/* ==========================================
+   FORMATTERS
+========================================== */
+
+export function money(v) {
+  return (
+    "₹" +
+    Math.round(
+      num(v)
+    ).toLocaleString(
+      "en-IN"
+    )
+  );
+}
+
+export function count(v) {
+  return Math.round(
+    num(v)
+  ).toLocaleString(
+    "en-IN"
+  );
+}
+
+export function pct(
+  v,
+  d = 1
+) {
+  return (
+    num(v).toFixed(
+      d
+    ) + "%"
   );
 }
