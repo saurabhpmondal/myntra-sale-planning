@@ -1,229 +1,122 @@
 /* ==========================================
-   File: js/reports/daily-pulse/metrics.js
-   FULL REPLACE CODE
    DAILY PULSE ENGINE
+   SAFE NORMALIZED VERSION
 ========================================== */
 
-import { getDataset } from "../../core/state.js";
-import { getFilters } from "../../core/state.js";
-
-/* ==========================================
-   PUBLIC
-========================================== */
+import { getDataset, getFilters } from "../../core/state.js";
 
 export function getDailyPulseRows(
   sortBy = "MTD",
   order = "HIGH",
   limit = 50
 ) {
-  const sales =
-    getDataset("sales") || [];
+  const sales = getDataset("sales") || [];
+  const pm = getDataset("productMaster") || [];
 
-  const pm =
-    getDataset(
-      "productMaster"
-    ) || [];
-
-  const dates =
-    getVisibleDates(
-      sales
-    );
-
-  const pmMap =
-    buildPmMap(pm);
+  const dates = getVisibleDates(sales);
+  const pmMap = buildPmMap(pm);
 
   const map = {};
 
   sales.forEach((r) => {
-    const styleId =
-      clean(
-        r.style_id
-      );
-
-    if (!styleId)
-      return;
-
-    const date =
-      clean(
-        r.order_date
-      );
-
-    if (
-      !dates.includes(
-        date
-      )
-    )
-      return;
-
-    if (!map[styleId]) {
-      map[styleId] =
-        blankRow(
-          styleId,
-          pmMap[
-            styleId
-          ],
-          dates
-        );
-    }
-
-    const row =
-      map[styleId];
-
-    const qty =
-      num(r.qty);
-
-    row.days[
-      date
-    ] += qty;
-
-    row.mtd += qty;
-  });
-
-  const rows =
-    Object.values(
-      map
-    ).map((r) =>
-      finalizeRow(
-        r,
-        dates
-      )
+    const styleId = clean(
+      r.styleId ||
+      r.style_id
     );
 
-  sortRows(
-    rows,
-    sortBy,
-    order
+    if (!styleId) return;
+
+    const date = clean(
+      r.date ||
+      r.order_date
+    );
+
+    if (!dates.includes(date)) return;
+
+    if (!map[styleId]) {
+      map[styleId] = blankRow(
+        styleId,
+        pmMap[styleId],
+        dates
+      );
+    }
+
+    const qty = num(
+      r.units ||
+      r.qty
+    );
+
+    map[styleId].days[date] += qty;
+    map[styleId].mtd += qty;
+  });
+
+  const rows = Object.values(map).map((r) =>
+    finalizeRow(r, dates)
   );
 
+  sortRows(rows, sortBy, order);
+
   return {
-    rows:
-      rows.slice(
-        0,
-        limit
-      ),
-    total:
-      rows.length,
+    rows: rows.slice(0, limit),
+    total: rows.length,
     dates
   };
 }
 
-/* ==========================================
-   DATES
-========================================== */
+/* ========================================== */
 
-function getVisibleDates(
-  sales
-) {
-  const f =
-    getFilters();
+function getVisibleDates(rows) {
+  const f = getFilters();
 
-  let rows = sales;
+  let arr = rows;
 
-  if (
-    f.startDate &&
-    f.endDate
-  ) {
-    rows =
-      rows.filter(
-        (r) =>
-          clean(
-            r.order_date
-          ) >=
-            f.startDate &&
-          clean(
-            r.order_date
-          ) <=
-            f.endDate
-      );
-  } else if (
-    f.month
-  ) {
-    rows =
-      rows.filter(
-        (r) =>
-          clean(
-            r.order_date
-          ).startsWith(
-            f.month
-          )
-      );
+  if (f.startDate && f.endDate) {
+    arr = arr.filter((r) => {
+      const d = clean(r.date || r.order_date);
+      return d >= f.startDate && d <= f.endDate;
+    });
   }
 
-  return [
-    ...new Set(
-      rows.map((r) =>
-        clean(
-          r.order_date
-        )
-      )
+  return [...new Set(
+    arr.map((r) =>
+      clean(r.date || r.order_date)
     )
-  ].sort();
+  )].sort();
 }
 
-/* ==========================================
-   PM MAP
-========================================== */
-
-function buildPmMap(
-  rows
-) {
+function buildPmMap(rows) {
   const map = {};
 
   rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
+    const id = clean(
+      r.styleId ||
+      r.style_id
+    );
 
-    if (!id)
-      return;
+    if (!id) return;
 
     map[id] = {
-      erp:
-        clean(
-          r.erp_sku
-        ),
-      brand:
-        clean(
-          r.brand
-        ),
-      status:
-        clean(
-          r.status
-        )
+      erp: clean(
+        r.erp ||
+        r.erp_sku
+      ),
+      brand: clean(r.brand),
+      status: clean(r.status)
     };
   });
 
   return map;
 }
 
-/* ==========================================
-   BUILD
-========================================== */
-
-function blankRow(
-  styleId,
-  pm,
-  dates
-) {
+function blankRow(styleId, pm, dates) {
   const days = {};
-
-  dates.forEach(
-    (d) =>
-      (days[d] = 0)
-  );
+  dates.forEach((d) => days[d] = 0);
 
   return {
     styleId,
-    erp:
-      pm?.erp || "",
-    brand:
-      pm?.brand ||
-      "",
-    status:
-      pm?.status ||
-      "",
-
+    erp: pm?.erp || "",
+    brand: pm?.brand || "",
+    status: pm?.status || "",
     mtd: 0,
     drr: 0,
     trend: "→",
@@ -231,106 +124,40 @@ function blankRow(
   };
 }
 
-function finalizeRow(
-  row,
-  dates
-) {
-  const vals =
-    dates.map(
-      (d) =>
-        row.days[d]
-    );
-
-  const active =
-    vals.length || 1;
-
+function finalizeRow(row, dates) {
   row.drr =
-    row.mtd /
-    active;
+    row.mtd / Math.max(1, dates.length);
 
-  row.trend =
-    getTrend(vals);
+  const vals = dates.map((d) => row.days[d]);
+  row.trend = getTrend(vals);
 
   return row;
 }
 
-/* ==========================================
-   SORT
-========================================== */
-
-function sortRows(
-  rows,
-  sortBy,
-  order
-) {
+function sortRows(rows, sortBy, order) {
   const key =
-    sortBy ===
-    "DRR"
+    sortBy === "DRR"
       ? "drr"
       : "mtd";
 
-  rows.sort(
-    (a, b) =>
-      b[key] -
-      a[key]
-  );
+  rows.sort((a, b) => b[key] - a[key]);
 
-  if (
-    order ===
-    "LOW"
-  ) {
-    rows.reverse();
-  }
+  if (order === "LOW") rows.reverse();
 }
 
-/* ==========================================
-   TREND
-========================================== */
+function getTrend(vals) {
+  if (vals.length < 2) return "→";
 
-function getTrend(
-  vals
-) {
-  const last =
-    vals.slice(-3);
+  const a = num(vals[vals.length - 2]);
+  const b = num(vals[vals.length - 1]);
 
-  if (
-    last.length <
-    2
-  )
-    return "→";
-
-  const first =
-    num(last[0]);
-
-  const end =
-    num(
-      last[
-        last.length -
-          1
-      ]
-    );
-
-  if (
-    end > first
-  )
-    return "↗";
-
-  if (
-    end < first
-  )
-    return "↘";
-
+  if (b > a) return "↗";
+  if (b < a) return "↘";
   return "→";
 }
 
-/* ==========================================
-   HELPERS
-========================================== */
-
 function clean(v) {
-  return String(
-    v || ""
-  ).trim();
+  return String(v || "").trim();
 }
 
 function num(v) {
