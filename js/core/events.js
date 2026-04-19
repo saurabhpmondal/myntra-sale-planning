@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/core/events.js
    FULL REPLACE CODE
-   Added Export Refresh Wiring
+   Added Style X-Ray Refresh Support
 ========================================== */
 
 import { navigate } from "./router.js";
@@ -12,6 +12,7 @@ import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 import { renderSorReport } from "../reports/sor/index.js";
 import { renderExportCenter } from "../reports/export/index.js";
+import { renderXrayReport } from "../reports/xray/index.js";
 
 /* ==========================================
    PUBLIC
@@ -229,7 +230,7 @@ function bindSearch() {
         "Enter"
       ) {
         await navigate(
-          "sales"
+          "xray"
         );
       }
     }
@@ -263,6 +264,9 @@ function refresh() {
 
   if (id === "sor")
     renderSorReport();
+
+  if (id === "xray")
+    renderXrayReport();
 
   if (id === "export")
     renderExportCenter();
