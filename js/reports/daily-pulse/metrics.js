@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   FIX DATE COLUMNS FINAL
+   USES SALES ENGINE ONLY
+   Date values from trusted filtered sales data
 ========================================== */
 
 import {
@@ -9,9 +10,12 @@ import {
 } from "../sales/metrics.js";
 
 import {
-  getDataset,
-  getFilters
+  getDataset
 } from "../../core/state.js";
+
+import {
+  applyGlobalFilters
+} from "../../filters/filter-engine.js";
 
 /* ========================================== */
 
@@ -23,63 +27,44 @@ export function getDailyPulseRows(
   const rows =
     getSalesRows() || [];
 
-  const rawSales =
-    getDataset("sales") || [];
-
-  const filters =
-    getFilters();
+  const filteredSales =
+    applyGlobalFilters(
+      getDataset(
+        "sales"
+      ) || []
+    );
 
   const dates =
-    buildDates(filters);
+    getDatesFromFilteredSales(
+      filteredSales
+    );
 
   const dayMap =
     buildDayMap(
-      rawSales,
+      filteredSales,
       dates
     );
 
   const finalRows =
     rows.map((r) => {
-      const styleId =
-        pick(
-          r,
-          [
-            "styleId",
-            "style_id"
-          ]
+      const units =
+        num(
+          r.units
         );
 
-      const units =
-        num(r.units);
-
       return {
-        styleId,
+        styleId:
+          r.styleId ||
+          "",
 
         erp:
-          pick(
-            r,
-            [
-              "erp",
-              "erpSku",
-              "erp_sku"
-            ]
-          ),
+          r.erp || "",
 
         brand:
-          pick(
-            r,
-            ["brand"]
-          ),
+          r.brand || "",
 
         status:
-          pick(
-            r,
-            [
-              "status",
-              "erpStatus",
-              "erp_status"
-            ]
-          ),
+          "",
 
         mtd: units,
 
@@ -91,19 +76,13 @@ export function getDailyPulseRows(
           ),
 
         trend:
-          growthTrend(
-            pick(
-              r,
-              [
-                "growthPct",
-                "growth"
-              ]
-            )
+          trend(
+            r.growthPct
           ),
 
         days:
           dayMap[
-            styleId
+            r.styleId
           ] ||
           blankDays(
             dates
@@ -130,140 +109,27 @@ export function getDailyPulseRows(
 }
 
 /* ==========================================
-   DATE BUILDER
+   TRUSTED FILTERED SALES DATES
 ========================================== */
 
-function buildDates(f) {
-  if (
-    f.startDate &&
-    f.endDate
-  ) {
-    return rangeDates(
-      f.startDate,
-      f.endDate
-    );
-  }
-
-  if (f.month) {
-    const [
-      y,
-      m
-    ] =
-      f.month.split(
-        "-"
-      );
-
-    const start =
-      `${y}-${m}-01`;
-
-    const now =
-      new Date();
-
-    const current =
-      Number(y) ===
-        now.getFullYear() &&
-      Number(m) ===
-        now.getMonth() +
-          1;
-
-    let end;
-
-    if (
-      current
-    ) {
-      const d =
-        new Date();
-
-      d.setDate(
-        d.getDate() -
-          1
-      );
-
-      end =
-        formatDate(d);
-    } else {
-      const last =
-        new Date(
-          Number(y),
-          Number(m),
-          0
-        );
-
-      end =
-        formatDate(
-          last
-        );
-    }
-
-    return rangeDates(
-      start,
-      end
-    );
-  }
-
-  /* fallback current month */
-  const n =
-    new Date();
-
-  const y =
-    n.getFullYear();
-
-  const m =
-    String(
-      n.getMonth() +
-        1
-    ).padStart(
-      2,
-      "0"
-    );
-
-  const start =
-    `${y}-${m}-01`;
-
-  const d =
-    new Date();
-
-  d.setDate(
-    d.getDate() -
-      1
-  );
-
-  return rangeDates(
-    start,
-    formatDate(d)
-  );
-}
-
-function rangeDates(
-  start,
-  end
+function getDatesFromFilteredSales(
+  rows
 ) {
-  const out = [];
-
-  let d =
-    new Date(start);
-
-  const last =
-    new Date(end);
-
-  while (
-    d <= last
-  ) {
-    out.push(
-      formatDate(d)
-    );
-
-    d.setDate(
-      d.getDate() +
-        1
-    );
-  }
-
-  return out;
+  return [
+    ...new Set(
+      rows.map((r) =>
+        clean(
+          r.order_date
+        )
+      )
+    )
+  ]
+    .filter(Boolean)
+    .sort();
 }
 
 /* ==========================================
-   DAILY MAP
+   DAY MAP
 ========================================== */
 
 function buildDayMap(
@@ -276,57 +142,33 @@ function buildDayMap(
   const map = {};
 
   rows.forEach((r) => {
-    const styleId =
-      pick(
-        r,
-        [
-          "styleId",
-          "style_id"
-        ]
+    const id =
+      clean(
+        r.style_id
       );
 
     const date =
-      pick(
-        r,
-        [
-          "date",
-          "order_date"
-        ]
+      clean(
+        r.order_date
       );
 
     if (
-      !styleId ||
+      !id ||
       !valid.has(
         date
       )
     )
       return;
 
-    if (
-      !map[
-        styleId
-      ]
-    ) {
-      map[
-        styleId
-      ] =
+    if (!map[id]) {
+      map[id] =
         blankDays(
           dates
         );
     }
 
-    map[
-      styleId
-    ][date] +=
-      num(
-        pick(
-          r,
-          [
-            "units",
-            "qty"
-          ]
-        )
-      );
+    map[id][date] +=
+      num(r.qty);
   });
 
   return map;
@@ -367,13 +209,12 @@ function sortRows(
   if (
     order ===
     "LOW"
-  )
+  ) {
     rows.reverse();
+  }
 }
 
-function growthTrend(
-  v
-) {
+function trend(v) {
   const n =
     num(v);
 
@@ -386,52 +227,12 @@ function growthTrend(
   return "→";
 }
 
-function pick(
-  obj,
-  keys
-) {
-  for (const k of keys) {
-    if (
-      obj &&
-      obj[k] !==
-        undefined &&
-      obj[k] !==
-        null &&
-      obj[k] !== ""
-    ) {
-      return obj[k];
-    }
-  }
-
-  return "";
+function clean(v) {
+  return String(
+    v || ""
+  ).trim();
 }
 
 function num(v) {
   return Number(v) || 0;
-}
-
-function formatDate(
-  d
-) {
-  const y =
-    d.getFullYear();
-
-  const m =
-    String(
-      d.getMonth() +
-        1
-    ).padStart(
-      2,
-      "0"
-    );
-
-  const day =
-    String(
-      d.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
-
-  return `${y}-${m}-${day}`;
 }
