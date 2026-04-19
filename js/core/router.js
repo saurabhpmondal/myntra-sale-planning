@@ -83,8 +83,9 @@ async function renderTab(tab) {
       break;
 
     case "daily-pulse":
-      renderDailyPulseReport();
-      break;
+  document.getElementById("daily-pulse").innerHTML =
+    '<div class="panel-card"><h3 class="panel-title">Daily Pulse Live</h3></div>';
+  break;
 
     case "sales":
       await ensureTraffic();
