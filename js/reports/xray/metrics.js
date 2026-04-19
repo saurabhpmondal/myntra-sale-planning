@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   FIXED APP BREAK ISSUE
-   Removed circular dependency with SJIT/SOR metrics
+   TRUSTED SOURCE VERSION
+   Uses sales/sjit/sor outputs directly
 ========================================== */
 
 import {
@@ -10,8 +10,12 @@ import {
 } from "../sales/metrics.js";
 
 import {
-  getDataset
-} from "../../core/state.js";
+  getSjitRows
+} from "../sjit/metrics.js";
+
+import {
+  getSorRows
+} from "../sor/metrics.js";
 
 /* ==========================================
    PUBLIC
@@ -20,8 +24,9 @@ import {
 export function getXrayData(
   keyword = ""
 ) {
-  const sales =
-    getSalesRows() || [];
+  const rows =
+    getSalesRows() ||
+    [];
 
   const needle =
     String(
@@ -33,19 +38,11 @@ export function getXrayData(
   if (!needle)
     return null;
 
-  const ranked =
-    [...sales].sort(
-      (a, b) =>
-        num(b.units) -
-        num(a.units)
-    );
-
   const row =
-    ranked.find(
+    rows.find(
       (r) =>
         String(
           r.styleId ||
-          r.style_id ||
           ""
         )
           .toLowerCase()
@@ -57,149 +54,127 @@ export function getXrayData(
   if (!row)
     return null;
 
-  const styleId =
-    row.styleId ||
-    row.style_id ||
-    "";
-
   const rank =
-    ranked.findIndex(
-      (r) =>
+    rows.findIndex(
+      (x) =>
         String(
-          r.styleId ||
-          r.style_id ||
-          ""
-        ) === styleId
+          x.styleId
+        ) ===
+        String(
+          row.styleId
+        )
     ) + 1;
 
-  const units =
-    num(row.units);
-
-  const gmv =
-    num(
-      row.gmv ||
-      row.revenue
-    );
-
-  const asp =
-    units > 0
-      ? gmv / units
-      : 0;
-
-  const growth =
-    num(
-      row.growth
-    );
-
-  const returnPct =
-    num(
-      row.returnPct
-    );
-
-  const drr =
-    num(
-      row.drr
-    ) ||
-    units / 30;
-
-  const brand =
-    row.brand || "";
-
-  const brandUnits =
-    sales
-      .filter(
-        (x) =>
-          String(
-            x.brand || ""
-          ) === brand
-      )
-      .reduce(
-        (sum, x) =>
-          sum +
-          num(
-            x.units
-          ),
-        0
-      );
-
-  const dw =
-    brandUnits > 0
-      ? (units /
-          brandUnits) *
-        100
-      : 0;
-
-  /* SAFE RAW DATA LOOKUP */
   const sjitRows =
-    getDataset(
-      "sjitStock"
-    ) || [];
+    getSjitRows() ||
+    [];
 
   const sorRows =
-    getDataset(
-      "sorStock"
-    ) || [];
+    getSorRows() ||
+    [];
 
-  const sjitStock =
-    sumByStyle(
-      sjitRows,
-      styleId
-    );
-
-  const sorStock =
-    sumByStyle(
-      sorRows,
-      styleId
-    );
-
-  const sjitSc =
-    drr > 0
-      ? sjitStock / drr
-      : 0;
-
-  const sorSc =
-    drr > 0
-      ? sorStock / drr
-      : 0;
-
-  const shipQty =
-    sjitSc < 45
-      ? Math.max(
-          0,
-          Math.round(
-            drr * 45 -
-              sjitStock
-          )
+  const sjit =
+    sjitRows.find(
+      (r) =>
+        sameStyle(
+          r,
+          row
         )
-      : 0;
+    ) || {};
+
+  const sor =
+    sorRows.find(
+      (r) =>
+        sameStyle(
+          r,
+          row
+        )
+    ) || {};
 
   return {
-    styleId,
+    styleId:
+      row.styleId || "",
+
     erp:
-      row.erp ||
-      row.erp_sku ||
-      "",
-    brand,
+      row.erp || "",
+
+    brand:
+      row.brand || "",
+
     rank,
 
-    units,
-    gmv,
-    asp,
-    dw,
-    growth,
-    returnPct,
-    drr,
+    gmv:
+      num(
+        row.gmv
+      ),
 
-    sjitStock,
-    sorStock,
-    sjitSc,
-    sorSc,
-    shipQty,
+    units:
+      num(
+        row.units
+      ),
+
+    asp:
+      num(
+        row.asp
+      ),
+
+    dw:
+      num(
+        row.sharePct
+      ),
+
+    growth:
+      num(
+        row.growthPct
+      ),
+
+    returnPct:
+      num(
+        row.returnPct
+      ),
+
+    drr:
+      num(
+        row.units
+      ) / 30,
+
+    sjitStock:
+      num(
+        row.sjitStock
+      ),
+
+    sorStock:
+      num(
+        row.sorStock
+      ),
+
+    sjitSc:
+      num(
+        sjit.sc ||
+        sjit.stockCover
+      ),
+
+    sorSc:
+      num(
+        sor.sc ||
+        sor.stockCover
+      ),
+
+    shipQty:
+      num(
+        sjit.northQty ||
+        0
+      ) +
+      num(
+        sjit.southQty ||
+        0
+      ),
 
     actions:
       buildActions(
-        shipQty,
-        returnPct
+        row,
+        sjit,
+        sor
       )
   };
 }
@@ -209,24 +184,47 @@ export function getXrayData(
 ========================================== */
 
 function buildActions(
-  shipQty,
-  returnPct
+  row,
+  sjit,
+  sor
 ) {
   const out =
     [];
 
+  const ship =
+    num(
+      sjit.northQty
+    ) +
+    num(
+      sjit.southQty
+    );
+
   if (
-    shipQty > 0
+    ship > 0
   ) {
     out.push(
       `⚡ Ship ${fmt(
-        shipQty
+        ship
       )} units`
     );
   }
 
   if (
-    returnPct > 20
+    num(
+      sor.recallQty
+    ) > 0
+  ) {
+    out.push(
+      `⚠ Recall ${fmt(
+        sor.recallQty
+      )} units`
+    );
+  }
+
+  if (
+    num(
+      row.returnPct
+    ) > 20
   ) {
     out.push(
       "↩ High returns risk"
@@ -246,30 +244,22 @@ function buildActions(
    HELPERS
 ========================================== */
 
-function sumByStyle(
-  rows,
-  styleId
+function sameStyle(
+  a,
+  b
 ) {
-  return rows
-    .filter(
-      (r) =>
-        String(
-          r.style_id ||
-          r.styleId ||
-          ""
-        ) ===
-        String(styleId)
+  return (
+    String(
+      a.styleId ||
+      a.style_id ||
+      ""
+    ) ===
+    String(
+      b.styleId ||
+      b.style_id ||
+      ""
     )
-    .reduce(
-      (sum, r) =>
-        sum +
-        num(
-          r.stock ||
-          r.qty ||
-          r.quantity
-        ),
-      0
-    );
+  );
 }
 
 function num(v) {
