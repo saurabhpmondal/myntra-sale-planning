@@ -1,10 +1,12 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   Added Style X-Ray Tab
+   Added Daily Pulse Tab
+   SAFE VERSION
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
+import { renderDailyPulseReport } from "../reports/daily-pulse/index.js";
 import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 import { renderSorReport } from "../reports/sor/index.js";
@@ -78,6 +80,10 @@ async function renderTab(tab) {
   switch (tab) {
     case "dashboard":
       renderDashboard();
+      break;
+
+    case "daily-pulse":
+      renderDailyPulseReport();
       break;
 
     case "sales":
