@@ -1,238 +1,144 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   v6.1 EXPANDED METRICS
-   Trusted source only
+   v6.1 FINAL STABLE
+   Uses ONLY existing trusted engines
 ========================================== */
 
-import {
-  getSalesRows
-} from "../sales/metrics.js";
-
-import {
-  getSjitRows
-} from "../sjit/metrics.js";
-
-import {
-  getSorRows
-} from "../sor/metrics.js";
+import { getSalesRows } from "../sales/metrics.js";
+import { getSjitRows } from "../sjit/metrics.js";
+import { getSorRows } from "../sor/metrics.js";
+import { getDataset } from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
 ========================================== */
 
-export function getXrayData(
-  keyword = ""
-) {
-  const rows =
-    getSalesRows() || [];
+export function getXrayData(keyword = "") {
+  const needle = String(keyword || "")
+    .trim()
+    .toLowerCase();
 
-  const needle =
-    String(
-      keyword || ""
-    )
-      .trim()
-      .toLowerCase();
+  if (!needle) return null;
 
-  if (!needle)
-    return null;
+  const salesRows = getSalesRows() || [];
 
-  const row =
-    rows.find(
-      (r) =>
-        String(
-          r.styleId || ""
-        )
-          .toLowerCase()
-          .includes(
-            needle
-          )
-    );
+  const row = salesRows.find((r) =>
+    String(r.styleId || "")
+      .toLowerCase()
+      .includes(needle)
+  );
 
-  if (!row)
-    return null;
+  if (!row) return null;
 
   const rank =
-    rows.findIndex(
+    salesRows.findIndex(
       (x) =>
-        String(
-          x.styleId
-        ) ===
-        String(
-          row.styleId
-        )
+        String(x.styleId) ===
+        String(row.styleId)
     ) + 1;
 
   const sjit =
-    (getSjitRows() || [])
-      .find((r) =>
-        sameStyle(r, row)
-      ) || {};
+    (getSjitRows() || []).find((r) =>
+      sameStyle(r, row)
+    ) || {};
 
   const sor =
-    (getSorRows() || [])
-      .find((r) =>
-        sameStyle(r, row)
-      ) || {};
+    (getSorRows() || []).find((r) =>
+      sameStyle(r, row)
+    ) || {};
 
-  const units =
-    num(row.units);
+  const pm =
+    (getDataset("productMaster") || []).find(
+      (r) =>
+        String(
+          r.style_id || ""
+        ).trim() ===
+        String(row.styleId).trim()
+    ) || {};
+
+  const trend = buildTrend(
+    num(row.units),
+    num(row.growthPct)
+  );
+
+  const risks = buildRisks(
+    row,
+    sjit,
+    sor
+  );
+
+  const actions = buildActions(
+    row,
+    sjit,
+    sor
+  );
 
   return {
-    styleId:
-      row.styleId || "",
-
-    erp:
-      row.erp || "",
-
-    brand:
-      row.brand || "",
-
+    styleId: row.styleId || "",
+    erp: row.erp || "",
+    brand: row.brand || "",
     rank,
 
     /* SALES */
-    gmv:
-      num(row.gmv),
-
-    units,
-
-    asp:
-      num(row.asp),
-
-    dw:
-      num(
-        row.sharePct
-      ),
-
-    growth:
-      num(
-        row.growthPct
-      ),
-
-    returnPct:
-      num(
-        row.returnPct
-      ),
-
-    drr:
-      units / 30,
-
-    /* STOCK */
-    sjitStock:
-      num(
-        row.sjitStock
-      ),
-
-    sorStock:
-      num(
-        row.sorStock
-      ),
-
-    sjitSc:
-      num(
-        sjit.sc ||
-        sjit.stockCover
-      ),
-
-    sorSc:
-      num(
-        sor.sc ||
-        sor.stockCover
-      ),
-
-    shipQty:
-      num(
-        sjit.northQty
-      ) +
-      num(
-        sjit.southQty
-      ),
-
-    recallQty:
-      num(
-        sor.recallQty
-      ),
-
-    northQty:
-      num(
-        sjit.northQty
-      ),
-
-    southQty:
-      num(
-        sjit.southQty
-      ),
+    gmv: num(row.gmv),
+    units: num(row.units),
+    asp: num(row.asp),
+    dw: num(row.sharePct),
+    growth: num(row.growthPct),
+    returnPct: num(row.returnPct),
 
     /* TRAFFIC */
-    impressions:
-      num(
-        row.impressions
-      ),
-
-    clicks:
-      num(
-        row.clicks
-      ),
-
-    atc:
-      num(
-        row.atc
-      ),
-
-    ctr:
-      num(
-        row.ctrPct
-      ),
-
-    cvr:
-      num(
-        row.cvrPct
-      ),
+    impressions: num(row.impressions),
+    clicks: num(row.clicks),
+    atc: num(row.atc),
+    ctr: num(row.ctrPct),
+    cvr: num(row.cvrPct),
 
     /* PO MIX */
-    ppmpPct:
-      num(
-        row.ppmpPct
-      ),
+    ppmpPct: num(row.ppmpPct),
+    sjitPct: num(row.sjitPct),
+    sorPct: num(row.sorPct),
 
-    sjitPct:
-      num(
-        row.sjitPct
-      ),
+    /* STOCK */
+    drr: num(sjit.drr || sor.drr),
+    sjitStock: num(row.sjitStock),
+    sorStock: num(row.sorStock),
+    sjitSc: num(sjit.sc),
+    sorSc: num(sor.sc),
+    northQty: num(sjit.northQty),
+    southQty: num(sjit.southQty),
+    shipQty:
+      num(sjit.northQty) +
+      num(sjit.southQty),
+    recallQty: num(sor.recallQty),
 
-    sorPct:
-      num(
-        row.sorPct
-      ),
+    /* PM */
+    status:
+      pm.status ||
+      pm.erp_status ||
+      "",
+    mrp:
+      num(pm.mrp),
+    tp:
+      num(pm.tp),
+    launchDate:
+      pm.launch_date ||
+      pm.launchDate ||
+      "",
+    liveDate:
+      pm.live_date ||
+      pm.liveDate ||
+      "",
 
-    /* TREND */
-    trend:
-      buildTrend(
-        units,
-        num(
-          row.growthPct
-        )
-      ),
-
-    /* RISKS */
-    risks:
-      buildRisks(
-        row,
-        sjit,
-        sor
-      ),
-
-    actions:
-      buildActions(
-        row,
-        sjit,
-        sor
-      )
+    trend,
+    risks,
+    actions
   };
 }
 
 /* ==========================================
-   TREND
+   TREND (display only)
 ========================================== */
 
 function buildTrend(
@@ -240,7 +146,10 @@ function buildTrend(
   growth
 ) {
   const base =
-    units / 12;
+    Math.max(
+      1,
+      units / 12
+    );
 
   const out = [];
 
@@ -254,17 +163,11 @@ function buildTrend(
       (0.8 +
         i * 0.03);
 
-    if (
-      growth < 0
-    ) {
-      val *=
-        0.9;
-    }
+    if (growth < 0)
+      val *= 0.9;
 
     out.push(
-      Math.round(
-        val
-      )
+      Math.round(val)
     );
   }
 
@@ -280,24 +183,28 @@ function buildRisks(
   sjit,
   sor
 ) {
-  const out =
-    [];
+  const out = [];
 
   if (
-    num(
-      sjit.sc ||
-        sjit.stockCover
-    ) < 15
+    num(sjit.sc) > 0 &&
+    num(sjit.sc) < 15
   ) {
     out.push(
-      "Low SJIT Stock"
+      "Low SJIT Cover"
     );
   }
 
   if (
-    num(
-      row.returnPct
-    ) > 20
+    num(sor.sc) > 45
+  ) {
+    out.push(
+      "High SOR Stock"
+    );
+  }
+
+  if (
+    num(row.returnPct) >
+    20
   ) {
     out.push(
       "High Returns"
@@ -305,22 +212,11 @@ function buildRisks(
   }
 
   if (
-    num(
-      row.growthPct
-    ) < 0
+    num(row.growthPct) <
+    0
   ) {
     out.push(
       "Negative Growth"
-    );
-  }
-
-  if (
-    num(
-      row.ctrPct
-    ) < 1
-  ) {
-    out.push(
-      "Weak CTR"
     );
   }
 
@@ -336,31 +232,21 @@ function buildActions(
   sjit,
   sor
 ) {
-  const out =
-    [];
+  const out = [];
 
   const ship =
-    num(
-      sjit.northQty
-    ) +
-    num(
-      sjit.southQty
-    );
+    num(sjit.northQty) +
+    num(sjit.southQty);
 
-  if (
-    ship > 0
-  ) {
+  if (ship > 0) {
     out.push(
-      `Ship ${fmt(
-        ship
-      )} units`
+      `Ship ${fmt(ship)} units`
     );
   }
 
   if (
-    num(
-      sor.recallQty
-    ) > 0
+    num(sor.recallQty) >
+    0
   ) {
     out.push(
       `Recall ${fmt(
@@ -370,9 +256,8 @@ function buildActions(
   }
 
   if (
-    num(
-      row.growthPct
-    ) < 0
+    num(row.growthPct) <
+    0
   ) {
     out.push(
       "Boost visibility"
@@ -399,13 +284,13 @@ function sameStyle(
   return (
     String(
       a.styleId ||
-      a.style_id ||
-      ""
+        a.style_id ||
+        ""
     ) ===
     String(
       b.styleId ||
-      b.style_id ||
-      ""
+        b.style_id ||
+        ""
     )
   );
 }
