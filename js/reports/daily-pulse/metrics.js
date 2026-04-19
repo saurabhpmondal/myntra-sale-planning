@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   SAFE DATE COLUMNS VERSION
-   Uses trusted sales engine + global filters
+   FIX DATE COLUMNS FINAL
 ========================================== */
 
 import {
@@ -51,14 +50,7 @@ export function getDailyPulseRows(
         );
 
       const units =
-        num(
-          pick(
-            r,
-            [
-              "units"
-            ]
-          )
-        );
+        num(r.units);
 
       return {
         styleId,
@@ -84,7 +76,8 @@ export function getDailyPulseRows(
             r,
             [
               "status",
-              "erpStatus"
+              "erpStatus",
+              "erp_status"
             ]
           ),
 
@@ -137,30 +130,124 @@ export function getDailyPulseRows(
 }
 
 /* ==========================================
-   DATE RANGE FROM GLOBAL FILTERS
+   DATE BUILDER
 ========================================== */
 
 function buildDates(f) {
   if (
-    !f.startDate ||
-    !f.endDate
-  )
-    return [];
+    f.startDate &&
+    f.endDate
+  ) {
+    return rangeDates(
+      f.startDate,
+      f.endDate
+    );
+  }
 
+  if (f.month) {
+    const [
+      y,
+      m
+    ] =
+      f.month.split(
+        "-"
+      );
+
+    const start =
+      `${y}-${m}-01`;
+
+    const now =
+      new Date();
+
+    const current =
+      Number(y) ===
+        now.getFullYear() &&
+      Number(m) ===
+        now.getMonth() +
+          1;
+
+    let end;
+
+    if (
+      current
+    ) {
+      const d =
+        new Date();
+
+      d.setDate(
+        d.getDate() -
+          1
+      );
+
+      end =
+        formatDate(d);
+    } else {
+      const last =
+        new Date(
+          Number(y),
+          Number(m),
+          0
+        );
+
+      end =
+        formatDate(
+          last
+        );
+    }
+
+    return rangeDates(
+      start,
+      end
+    );
+  }
+
+  /* fallback current month */
+  const n =
+    new Date();
+
+  const y =
+    n.getFullYear();
+
+  const m =
+    String(
+      n.getMonth() +
+        1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const start =
+    `${y}-${m}-01`;
+
+  const d =
+    new Date();
+
+  d.setDate(
+    d.getDate() -
+      1
+  );
+
+  return rangeDates(
+    start,
+    formatDate(d)
+  );
+}
+
+function rangeDates(
+  start,
+  end
+) {
   const out = [];
 
   let d =
-    new Date(
-      f.startDate
-    );
+    new Date(start);
 
-  const end =
-    new Date(
-      f.endDate
-    );
+  const last =
+    new Date(end);
 
   while (
-    d <= end
+    d <= last
   ) {
     out.push(
       formatDate(d)
@@ -176,7 +263,7 @@ function buildDates(f) {
 }
 
 /* ==========================================
-   DAILY MAP FROM RAW SALES
+   DAILY MAP
 ========================================== */
 
 function buildDayMap(
