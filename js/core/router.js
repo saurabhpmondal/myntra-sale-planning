@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   Added Export Center
-   Added Lazy Load Progress Bar
+   Added Style X-Ray Tab
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
@@ -10,6 +9,7 @@ import { renderSalesReport } from "../reports/sales/index.js";
 import { renderSjitReport } from "../reports/sjit/index.js";
 import { renderSorReport } from "../reports/sor/index.js";
 import { renderExportCenter } from "../reports/export/index.js";
+import { renderXrayReport } from "../reports/xray/index.js";
 
 import {
   getDataset,
@@ -93,6 +93,11 @@ async function renderTab(tab) {
     case "sor":
       await ensureTraffic();
       renderSorReport();
+      break;
+
+    case "xray":
+      await ensureTraffic();
+      renderXrayReport();
       break;
 
     case "export":
