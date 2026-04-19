@@ -1,17 +1,15 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   V6.6 SAFE UPGRADE
+   V6.7.1 FIXED
+   Restored local search support
+   Real filtered trend
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
 import { getSjitRows } from "../sjit/metrics.js";
 import { getSorRows } from "../sor/metrics.js";
 import { getDataset } from "../../core/state.js";
-
-/* ==========================================
-   PUBLIC
-========================================== */
 
 export function getXrayData(keyword = "") {
   const needle = String(keyword || "")
@@ -57,68 +55,148 @@ export function getXrayData(keyword = "") {
         String(row.styleId).trim()
     ) || {};
 
-  return {
-    styleId: row.styleId || "",
-    myntraUrl: `https://www.myntra.com/${row.styleId}`,
+  const returns =
+    Math.round(
+      num(row.units) *
+        num(row.returnPct) /
+        100
+    );
 
-    erp: row.erp || "",
-    brand: row.brand || "",
+  const net =
+    Math.max(
+      0,
+      num(row.units) - returns
+    );
+
+  return {
+    styleId:
+      row.styleId || "",
+
+    myntraUrl:
+      "https://www.myntra.com/" +
+      row.styleId,
+
+    erp:
+      row.erp || "",
+
+    brand:
+      row.brand || "",
+
     rank,
 
-    gmv: num(row.gmv),
-    units: num(row.units),
-    asp: num(row.asp),
-    dw: num(row.sharePct),
-    growth: num(row.growthPct),
-    returnPct: num(row.returnPct),
+    gmv:
+      num(row.gmv),
 
-    impressions: num(row.impressions),
-    clicks: num(row.clicks),
-    atc: num(row.atc),
-    ctr: num(row.ctrPct),
-    cvr: num(row.cvrPct),
+    units:
+      num(row.units),
 
-    ppmpPct: num(row.ppmpPct),
-    sjitPct: num(row.sjitPct),
-    sorPct: num(row.sorPct),
+    returnUnits:
+      returns,
 
-    drr: num(sjit.drr || sor.drr),
-    sjitStock: num(row.sjitStock),
-    sorStock: num(row.sorStock),
-    sjitSc: num(sjit.sc),
-    sorSc: num(sor.sc),
-    northQty: num(sjit.northQty),
-    southQty: num(sjit.southQty),
+    netUnits:
+      net,
+
+    asp:
+      num(row.asp),
+
+    dw:
+      num(row.sharePct),
+
+    growth:
+      num(row.growthPct),
+
+    returnPct:
+      num(row.returnPct),
+
+    impressions:
+      num(row.impressions),
+
+    clicks:
+      num(row.clicks),
+
+    atc:
+      num(row.atc),
+
+    ctr:
+      num(row.ctrPct),
+
+    cvr:
+      num(row.cvrPct),
+
+    ppmpPct:
+      num(row.ppmpPct),
+
+    sjitPct:
+      num(row.sjitPct),
+
+    sorPct:
+      num(row.sorPct),
+
+    drr:
+      num(
+        sjit.drr || sor.drr
+      ),
+
+    sjitStock:
+      num(row.sjitStock),
+
+    sorStock:
+      num(row.sorStock),
+
+    sjitSc:
+      num(sjit.sc),
+
+    sorSc:
+      num(sor.sc),
+
     shipQty:
-      num(sjit.northQty) +
-      num(sjit.southQty),
-    recallQty: num(sor.recallQty),
+      num(
+        sjit.totalQty ||
+        sjit.shipQty
+      ),
+
+    recallQty:
+      num(sor.recallQty),
 
     status:
-      pm.status ||
-      pm.erp_status ||
-      "",
-    mrp: num(pm.mrp),
-    tp: num(pm.tp),
+      pm.status || "",
+
+    mrp:
+      num(pm.mrp),
+
+    tp:
+      num(pm.tp),
+
     launchDate:
-      pm.launch_date ||
-      "",
+      pm.launch_date || "",
+
     liveDate:
-      pm.live_date ||
-      "",
+      pm.live_date || "",
 
     trend:
-      buildRealTrend(
+      buildTrend(
         row.styleId
+      ),
+
+    risks:
+      buildRisks(
+        row,
+        sjit,
+        sor
+      ),
+
+    actions:
+      buildActions(
+        row,
+        sjit,
+        sor
       )
   };
 }
 
-/* ==========================================
-   REAL TREND FROM SALES DATA
-========================================== */
+/* ========================================== */
 
-function buildRealTrend(styleId) {
+function buildTrend(styleId) {
   const rows =
     getDataset("sales") || [];
 
@@ -128,14 +206,14 @@ function buildRealTrend(styleId) {
     if (
       String(
         r.style_id || ""
-      ).trim() !==
-      String(styleId).trim()
-    ) return;
+      ) !==
+      String(styleId)
+    )
+      return;
 
     const d =
       String(
         r.order_date ||
-        r.date ||
         ""
       ).trim();
 
@@ -146,28 +224,103 @@ function buildRealTrend(styleId) {
       num(r.qty);
   });
 
-  const vals =
-    Object.keys(map)
-      .sort()
-      .slice(-12)
-      .map(
-        (k) => map[k]
-      );
-
-  if (!vals.length) {
-    return [
-      2, 4, 6, 8,
-      5, 7, 9, 6,
-      8, 10, 7, 9
-    ];
-  }
-
-  return vals;
+  return Object.keys(map)
+    .sort()
+    .map((k) => ({
+      date: k,
+      value: map[k]
+    }));
 }
 
-/* ==========================================
-   HELPERS
-========================================== */
+function buildRisks(
+  row,
+  sjit,
+  sor
+) {
+  const out = [];
+
+  if (
+    num(sjit.sc) > 0 &&
+    num(sjit.sc) < 15
+  )
+    out.push(
+      "Low SJIT Cover"
+    );
+
+  if (
+    num(sor.sc) > 45
+  )
+    out.push(
+      "High SOR Stock"
+    );
+
+  if (
+    num(row.returnPct) >
+    20
+  )
+    out.push(
+      "High Returns"
+    );
+
+  if (
+    num(row.growthPct) <
+    0
+  )
+    out.push(
+      "Negative Growth"
+    );
+
+  return out;
+}
+
+function buildActions(
+  row,
+  sjit,
+  sor
+) {
+  const out = [];
+
+  if (
+    num(
+      sjit.totalQty
+    ) > 0
+  )
+    out.push(
+      "Ship " +
+        fmt(
+          sjit.totalQty
+        ) +
+        " units"
+    );
+
+  if (
+    num(
+      sor.recallQty
+    ) > 0
+  )
+    out.push(
+      "Recall " +
+        fmt(
+          sor.recallQty
+        ) +
+        " units"
+    );
+
+  if (
+    num(row.growthPct) <
+    0
+  )
+    out.push(
+      "Boost visibility"
+    );
+
+  if (!out.length)
+    out.push(
+      "Healthy style"
+    );
+
+  return out;
+}
 
 function sameStyle(a, b) {
   return (
@@ -186,4 +339,12 @@ function sameStyle(a, b) {
 
 function num(v) {
   return Number(v) || 0;
+}
+
+function fmt(v) {
+  return Number(
+    v || 0
+  ).toLocaleString(
+    "en-IN"
+  );
 }
