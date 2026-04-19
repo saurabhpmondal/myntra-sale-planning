@@ -1,12 +1,10 @@
 /* ==========================================
    File: js/reports/xray/index.js
    FULL REPLACE CODE
-   SAFE RENDER + INTERNAL SEARCH BOX
+   v6.1 FINAL UI
 ========================================== */
 
-import {
-  getXrayData
-} from "./metrics.js";
+import { getXrayData } from "./metrics.js";
 
 /* ==========================================
    PUBLIC
@@ -18,8 +16,7 @@ export function renderXrayReport() {
       "xray"
     );
 
-  if (!root)
-    return;
+  if (!root) return;
 
   const keyword =
     getSearch();
@@ -41,14 +38,15 @@ export function renderXrayReport() {
       <div style="
         display:flex;
         gap:10px;
-        margin-top:12px;
         flex-wrap:wrap;
+        margin-top:12px;
       ">
         <input
           id="xraySearch"
-          type="text"
+          value="${safe(
+            keyword
+          )}"
           placeholder="Search Style ID"
-          value="${keyword}"
           style="
             flex:1;
             min-width:220px;
@@ -94,129 +92,257 @@ export function renderXrayReport() {
 ========================================== */
 
 function renderData(
-  data
+  d
 ) {
   return `
     <div class="xray-hero">
-
       <div class="xray-title">
         ${safe(
-          data.styleId
+          d.styleId
         )}
       </div>
 
       <div class="xray-sub">
         ${safe(
-          data.erp
+          d.erp
         )} • ${safe(
-    data.brand
+    d.brand
   )}
       </div>
 
       <div class="xray-rank">
         🏆 Rank #${fmt(
-          data.rank
+          d.rank
         )}
       </div>
-
     </div>
 
-    <div class="kpi-grid">
-
-      ${card(
-        "💰 GMV",
-        money(
-          data.gmv
+    ${section(
+      "📊 Sales",
+      [
+        card(
+          "GMV",
+          money(d.gmv)
+        ),
+        card(
+          "Units",
+          fmt(d.units)
+        ),
+        card(
+          "ASP",
+          money(d.asp)
+        ),
+        card(
+          "DW",
+          pct(d.dw)
+        ),
+        card(
+          "Growth",
+          pct(
+            d.growth
+          )
+        ),
+        card(
+          "Return%",
+          pct(
+            d.returnPct
+          )
         )
-      )}
+      ]
+    )}
 
-      ${card(
-        "📦 Units",
-        fmt(
-          data.units
+    ${section(
+      "📦 Stock & Planning",
+      [
+        card(
+          "DRR",
+          num1(d.drr)
+        ),
+        card(
+          "SJIT Stock",
+          fmt(
+            d.sjitStock
+          )
+        ),
+        card(
+          "SOR Stock",
+          fmt(
+            d.sorStock
+          )
+        ),
+        card(
+          "SJIT SC",
+          num1(
+            d.sjitSc
+          )
+        ),
+        card(
+          "SOR SC",
+          num1(
+            d.sorSc
+          )
+        ),
+        card(
+          "Ship Qty",
+          fmt(
+            d.shipQty
+          )
+        ),
+        card(
+          "Recall",
+          fmt(
+            d.recallQty
+          )
         )
-      )}
+      ]
+    )}
 
-      ${card(
-        "🏷 ASP",
-        money(
-          data.asp
+    ${section(
+      "🚦 Traffic Funnel",
+      [
+        card(
+          "Impr.",
+          fmt(
+            d.impressions
+          )
+        ),
+        card(
+          "Clicks",
+          fmt(
+            d.clicks
+          )
+        ),
+        card(
+          "ATC",
+          fmt(d.atc)
+        ),
+        card(
+          "CTR",
+          pct(d.ctr)
+        ),
+        card(
+          "CVR",
+          pct(d.cvr)
         )
-      )}
+      ]
+    )}
 
-      ${card(
-        "🎯 DW",
-        pct(
-          data.dw
+    ${section(
+      "🏭 PO Mix",
+      [
+        card(
+          "PPMP",
+          pct(
+            d.ppmpPct
+          )
+        ),
+        card(
+          "SJIT",
+          pct(
+            d.sjitPct
+          )
+        ),
+        card(
+          "SOR",
+          pct(
+            d.sorPct
+          )
         )
-      )}
+      ]
+    )}
 
-      ${card(
-        "📈 Growth",
-        pct(
-          data.growth
+    ${section(
+      "🏷 Product Info",
+      [
+        card(
+          "Status",
+          safe(
+            d.status
+          ) || "-"
+        ),
+        card(
+          "MRP",
+          money(d.mrp)
+        ),
+        card(
+          "TP",
+          money(d.tp)
+        ),
+        card(
+          "Launch",
+          safe(
+            d.launchDate
+          ) || "-"
+        ),
+        card(
+          "Live",
+          safe(
+            d.liveDate
+          ) || "-"
         )
-      )}
+      ]
+    )}
 
-      ${card(
-        "↩ Return%",
-        pct(
-          data.returnPct
+    <div class="panel-card">
+      <h3 class="panel-title">
+        📈 Mini Trend
+      </h3>
+
+      <div style="
+        display:flex;
+        gap:6px;
+        align-items:flex-end;
+        height:90px;
+      ">
+        ${(
+          d.trend ||
+          []
         )
-      )}
-
-      ${card(
-        "🔥 DRR",
-        num2(
-          data.drr
-        )
-      )}
-
-      ${card(
-        "🚚 SJIT",
-        fmt(
-          data.sjitStock
-        )
-      )}
-
-      ${card(
-        "🏬 SOR",
-        fmt(
-          data.sorStock
-        )
-      )}
-
-      ${card(
-        "⏳ SJIT SC",
-        num1(
-          data.sjitSc
-        )
-      )}
-
-      ${card(
-        "⏳ SOR SC",
-        num1(
-          data.sorSc
-        )
-      )}
-
-      ${card(
-        "⚡ Ship",
-        fmt(
-          data.shipQty
-        )
-      )}
-
+          .map(
+            (v) =>
+              `<div style="
+                flex:1;
+                background:#0f172a;
+                border-radius:6px 6px 0 0;
+                height:${Math.max(
+                  8,
+                  v
+                )}%;
+              "></div>`
+          )
+          .join("")}
+      </div>
     </div>
 
     <div class="panel-card">
       <h3 class="panel-title">
-        Top Actions
+        ⚠ Risks
       </h3>
 
       <div class="xray-actions">
         ${(
-          data.actions ||
+          d.risks ||
+          []
+        )
+          .map(
+            (x) =>
+              `<div class="xray-action">${safe(
+                x
+              )}</div>`
+          )
+          .join("") ||
+        `<div class="xray-action">No major risk</div>`}
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <h3 class="panel-title">
+        ✅ Actions
+      </h3>
+
+      <div class="xray-actions">
+        ${(
+          d.actions ||
           []
         )
           .map(
@@ -281,10 +407,9 @@ function runSearch() {
       ? input.value.trim()
       : "";
 
-  if (global) {
+  if (global)
     global.value =
       val;
-  }
 
   renderXrayReport();
 }
@@ -292,6 +417,34 @@ function runSearch() {
 /* ==========================================
    HELPERS
 ========================================== */
+
+function section(
+  title,
+  cards
+) {
+  return `
+    <div class="panel-card">
+      <h3 class="panel-title">
+        ${title}
+      </h3>
+      <div class="kpi-grid">
+        ${cards.join("")}
+      </div>
+    </div>
+  `;
+}
+
+function card(
+  label,
+  value
+) {
+  return `
+    <div class="kpi-card">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
 
 function getSearch() {
   const el =
@@ -312,18 +465,6 @@ function emptyBox(
       <div class="placeholder-box large">
         ${text}
       </div>
-    </div>
-  `;
-}
-
-function card(
-  label,
-  value
-) {
-  return `
-    <div class="kpi-card">
-      <span>${label}</span>
-      <strong>${value}</strong>
     </div>
   `;
 }
@@ -360,10 +501,4 @@ function num1(v) {
   return Number(
     v || 0
   ).toFixed(1);
-}
-
-function num2(v) {
-  return Number(
-    v || 0
-  ).toFixed(2);
 }
