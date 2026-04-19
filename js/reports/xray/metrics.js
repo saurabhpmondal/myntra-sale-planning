@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   FIXED DW (Demand Weight)
+   Added Growth / Returns / DRR / SC / Ship
 ========================================== */
 
 import {
@@ -94,9 +94,7 @@ export function getXrayData(
     ) || {};
 
   const units =
-    num(
-      row.units
-    );
+    num(row.units);
 
   const gmv =
     num(
@@ -106,14 +104,29 @@ export function getXrayData(
 
   const asp =
     units > 0
-      ? gmv /
-        units
+      ? gmv / units
       : 0;
 
-  /* ======================================
-     DW FIX
-     style units / brand units
-  ====================================== */
+  const returns =
+    num(
+      row.returns
+    );
+
+  const returnPct =
+    num(
+      row.returnPct
+    );
+
+  const drr =
+    num(
+      row.drr
+    ) ||
+    units / 30;
+
+  const growth =
+    num(
+      row.growth
+    );
 
   const brand =
     row.brand || "";
@@ -123,12 +136,8 @@ export function getXrayData(
       .filter(
         (x) =>
           String(
-            x.brand ||
-            ""
-          ) ===
-          String(
-            brand
-          )
+            x.brand || ""
+          ) === brand
       )
       .reduce(
         (sum, x) =>
@@ -145,6 +154,33 @@ export function getXrayData(
           brandUnits) *
         100
       : 0;
+
+  const sjitStock =
+    num(
+      sjit.stock
+    );
+
+  const sorStock =
+    num(
+      sor.stock
+    );
+
+  const sjitSc =
+    drr > 0
+      ? sjitStock /
+        drr
+      : 0;
+
+  const sorSc =
+    drr > 0
+      ? sorStock /
+        drr
+      : 0;
+
+  const shipQty =
+    num(
+      sjit.totalQty
+    );
 
   return {
     styleId:
@@ -166,15 +202,16 @@ export function getXrayData(
     asp,
     dw,
 
-    sjitStock:
-      num(
-        sjit.stock
-      ),
+    returns,
+    returnPct,
+    drr,
+    growth,
 
-    sorStock:
-      num(
-        sor.stock
-      ),
+    sjitStock,
+    sorStock,
+    sjitSc,
+    sorSc,
+    shipQty,
 
     actions:
       buildActions(
@@ -231,9 +268,7 @@ function buildActions(
     );
   }
 
-  if (
-    !out.length
-  ) {
+  if (!out.length) {
     out.push(
       "✅ Healthy style"
     );
