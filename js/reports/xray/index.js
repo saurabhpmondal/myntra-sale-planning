@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/index.js
    FULL REPLACE CODE
-   V6.6 UI UPGRADE
+   V6.7 POLISH UI
 ========================================== */
 
 import { getXrayData } from "./metrics.js";
@@ -25,49 +25,6 @@ export function renderXrayReport() {
       : null;
 
   root.innerHTML = `
-    <div class="panel-card">
-      <h3 class="panel-title">
-        🔍 Style X-Ray
-      </h3>
-
-      <div style="
-        display:flex;
-        gap:10px;
-        flex-wrap:wrap;
-        margin-top:12px;
-      ">
-        <input
-          id="xraySearch"
-          value="${safe(
-            keyword
-          )}"
-          placeholder="Search Style ID"
-          style="
-            flex:1;
-            min-width:220px;
-            padding:10px 12px;
-            border:1px solid #ddd;
-            border-radius:12px;
-          "
-        />
-
-        <button
-          id="xrayBtn"
-          style="
-            padding:10px 16px;
-            border:none;
-            border-radius:12px;
-            background:#0f172a;
-            color:#fff;
-            font-weight:700;
-            cursor:pointer;
-          "
-        >
-          Analyze
-        </button>
-      </div>
-    </div>
-
     ${
       data
         ? renderData(
@@ -76,84 +33,23 @@ export function renderXrayReport() {
         : emptyBox(
             keyword
               ? "No style found"
-              : "Search any style to begin"
+              : "Search style to begin"
           )
     }
   `;
-
-  bindSearch();
 }
 
 /* ==========================================
-   DATA VIEW
+   MAIN VIEW
 ========================================== */
 
 function renderData(d) {
   return `
-    <div style="
-      background:linear-gradient(135deg,#0f172a,#1e293b);
-      color:#fff;
-      border-radius:18px;
-      padding:18px;
-      margin-top:14px;
-    ">
-
-      <a
-        href="${d.myntraUrl}"
-        target="_blank"
-        style="
-          color:#fff;
-          text-decoration:none;
-        "
-      >
-        <div style="
-          font-size:34px;
-          font-weight:800;
-        ">
-          ${safe(
-            d.styleId
-          )} ↗
-        </div>
-      </a>
-
-      <div style="
-        margin-top:8px;
-        display:flex;
-        gap:14px;
-        flex-wrap:wrap;
-        font-size:14px;
-        opacity:.9;
-      ">
-        <div>
-          ERP: <b>${safe(
-            d.erp
-          )}</b>
-        </div>
-
-        <div>
-          Brand: <b>${safe(
-            d.brand
-          )}</b>
-        </div>
-      </div>
-
-      <div style="
-        margin-top:12px;
-        display:inline-block;
-        padding:7px 12px;
-        border-radius:999px;
-        background:rgba(255,255,255,.12);
-        font-size:13px;
-        font-weight:700;
-      ">
-        🏆 Rank #${fmt(
-          d.rank
-        )}
-      </div>
-    </div>
+    ${hero(d)}
 
     ${section(
       "🏷 Product Info",
+      tint("slate"),
       [
         card("Status", d.status),
         card("MRP", money(d.mrp)),
@@ -169,10 +65,11 @@ function renderData(d) {
       ]
     )}
 
-    ${trendCard(d)}
+    ${trend(d)}
 
     ${section(
       "📊 Sales",
+      tint("green"),
       [
         card(
           "GMV",
@@ -207,19 +104,20 @@ function renderData(d) {
 
     ${section(
       "📦 Stock & Planning",
+      tint("amber"),
       [
         card(
           "DRR",
           num1(d.drr)
         ),
         card(
-          "SJIT Stock",
+          "SJIT",
           fmt(
             d.sjitStock
           )
         ),
         card(
-          "SOR Stock",
+          "SOR",
           fmt(
             d.sorStock
           )
@@ -253,6 +151,7 @@ function renderData(d) {
 
     ${section(
       "🚦 Funnel",
+      tint("blue"),
       [
         card(
           "Impr.",
@@ -281,10 +180,11 @@ function renderData(d) {
       ]
     )}
 
-    ${donutBlock(d)}
+    ${donut(d)}
 
     ${section(
       "🏭 PO Mix",
+      tint("purple"),
       [
         card(
           "PPMP",
@@ -310,10 +210,97 @@ function renderData(d) {
 }
 
 /* ==========================================
+   HERO
+========================================== */
+
+function hero(d) {
+  return `
+    <div style="
+      margin-top:14px;
+      padding:18px;
+      border-radius:20px;
+      color:#fff;
+      background:
+      linear-gradient(
+        135deg,
+        #0f172a,
+        #1e3a8a,
+        #0f172a
+      );
+      box-shadow:
+      0 12px 30px rgba(15,23,42,.18);
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:14px;
+      align-items:center;
+    ">
+
+      <div>
+        <a
+          href="${d.myntraUrl}"
+          target="_blank"
+          style="
+            color:#fff;
+            text-decoration:none;
+          "
+        >
+          <div style="
+            font-size:36px;
+            font-weight:900;
+            line-height:1;
+          ">
+            ${safe(
+              d.styleId
+            )} ↗
+          </div>
+        </a>
+
+        <div style="
+          margin-top:12px;
+          display:inline-block;
+          background:rgba(255,255,255,.14);
+          padding:7px 12px;
+          border-radius:999px;
+          font-size:13px;
+          font-weight:700;
+        ">
+          🏆 Rank #${fmt(
+            d.rank
+          )}
+        </div>
+      </div>
+
+      <div style="
+        text-align:right;
+      ">
+        <div style="
+          font-size:24px;
+          font-weight:800;
+        ">
+          ${safe(
+            d.brand
+          )}
+        </div>
+
+        <div style="
+          margin-top:6px;
+          opacity:.9;
+          font-size:14px;
+        ">
+          ERP: ${safe(
+            d.erp
+          )}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ==========================================
    TREND
 ========================================== */
 
-function trendCard(d) {
+function trend(d) {
   const max =
     Math.max(
       ...(d.trend || [1])
@@ -326,10 +313,10 @@ function trendCard(d) {
       </h3>
 
       <div style="
+        height:110px;
         display:flex;
         gap:7px;
         align-items:flex-end;
-        height:110px;
         margin-top:10px;
       ">
         ${(d.trend || [])
@@ -337,8 +324,15 @@ function trendCard(d) {
             (v) =>
               `<div style="
                 flex:1;
-                border-radius:10px 10px 0 0;
-                background:linear-gradient(180deg,#3b82f6,#1d4ed8);
+                border-radius:12px 12px 0 0;
+                background:
+                linear-gradient(
+                  180deg,
+                  #60a5fa,
+                  #2563eb
+                );
+                box-shadow:
+                0 6px 14px rgba(37,99,235,.25);
                 height:${Math.max(
                   10,
                   (v / max) *
@@ -356,13 +350,11 @@ function trendCard(d) {
    DONUT
 ========================================== */
 
-function donutBlock(d) {
+function donut(d) {
   const a =
     d.ppmpPct;
   const b =
     d.sjitPct;
-  const c =
-    d.sorPct;
 
   return `
     <div class="panel-card">
@@ -371,38 +363,28 @@ function donutBlock(d) {
       </h3>
 
       <div style="
-        margin:16px auto;
         width:160px;
         height:160px;
+        margin:18px auto;
         border-radius:50%;
         background:
         conic-gradient(
-          #7c3aed 0 ${a}%,
+          #9333ea 0 ${a}%,
           #2563eb ${a}% ${a +
     b}%,
-          #16a34a ${a +
+          #84cc16 ${a +
     b}% 100%
         );
         position:relative;
+        box-shadow:
+        0 10px 24px rgba(0,0,0,.08);
       ">
         <div style="
           position:absolute;
-          inset:28px;
-          border-radius:50%;
+          inset:26px;
           background:#fff;
+          border-radius:50%;
         "></div>
-      </div>
-
-      <div style="
-        display:flex;
-        gap:12px;
-        justify-content:center;
-        flex-wrap:wrap;
-        font-size:13px;
-      ">
-        <div>🟣 PPMP</div>
-        <div>🔵 SJIT</div>
-        <div>🟢 SOR</div>
       </div>
     </div>
   `;
@@ -414,13 +396,15 @@ function donutBlock(d) {
 
 function section(
   title,
+  bg,
   cards
 ) {
   return `
-    <div class="panel-card">
+    <div class="panel-card" style="${bg}">
       <h3 class="panel-title">
         ${title}
       </h3>
+
       <div class="kpi-grid">
         ${cards.join("")}
       </div>
@@ -428,79 +412,33 @@ function section(
   `;
 }
 
+function tint(type) {
+  if (type === "green")
+    return "background:linear-gradient(180deg,#ffffff,#f0fdf4);";
+  if (type === "amber")
+    return "background:linear-gradient(180deg,#ffffff,#fffbeb);";
+  if (type === "blue")
+    return "background:linear-gradient(180deg,#ffffff,#eff6ff);";
+  if (type === "purple")
+    return "background:linear-gradient(180deg,#ffffff,#faf5ff);";
+
+  return "background:linear-gradient(180deg,#ffffff,#f8fafc);";
+}
+
 function card(
   label,
   value
 ) {
   return `
-    <div class="kpi-card">
+    <div class="kpi-card" style="
+      border-radius:16px;
+      box-shadow:
+      0 8px 18px rgba(15,23,42,.05);
+    ">
       <span>${label}</span>
       <strong>${value}</strong>
     </div>
   `;
-}
-
-function bindSearch() {
-  const btn =
-    document.getElementById(
-      "xrayBtn"
-    );
-
-  const input =
-    document.getElementById(
-      "xraySearch"
-    );
-
-  if (
-    btn &&
-    input
-  ) {
-    btn.onclick =
-      runSearch;
-
-    input.onkeydown =
-      (e) => {
-        if (
-          e.key ===
-          "Enter"
-        )
-          runSearch();
-      };
-  }
-}
-
-function runSearch() {
-  const input =
-    document.getElementById(
-      "xraySearch"
-    );
-
-  const global =
-    document.getElementById(
-      "globalSearch"
-    );
-
-  const val =
-    input
-      ? input.value.trim()
-      : "";
-
-  if (global)
-    global.value =
-      val;
-
-  renderXrayReport();
-}
-
-function getSearch() {
-  const el =
-    document.getElementById(
-      "globalSearch"
-    );
-
-  return el
-    ? el.value.trim()
-    : "";
 }
 
 function emptyBox(
@@ -513,6 +451,17 @@ function emptyBox(
       </div>
     </div>
   `;
+}
+
+function getSearch() {
+  const el =
+    document.getElementById(
+      "globalSearch"
+    );
+
+  return el
+    ? el.value.trim()
+    : "";
 }
 
 function safe(v) {
