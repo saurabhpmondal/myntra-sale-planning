@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/daily-pulse/index.js
    FULL REPLACE CODE
-   SAFE UI VERSION
+   DATE COLUMN UI VERSION
 ========================================== */
 
 import {
@@ -53,10 +53,7 @@ export function renderDailyPulseReport() {
         margin-top:12px;
       ">
 
-        <select
-          id="dpSort"
-          style="${sel()}"
-        >
+        <select id="dpSort" style="${sel()}">
           <option value="MTD" ${
             sortBy ===
             "MTD"
@@ -72,10 +69,7 @@ export function renderDailyPulseReport() {
           }>DRR</option>
         </select>
 
-        <select
-          id="dpOrder"
-          style="${sel()}"
-        >
+        <select id="dpOrder" style="${sel()}">
           <option value="HIGH" ${
             order ===
             "HIGH"
@@ -140,6 +134,19 @@ export function renderDailyPulseReport() {
             ${th(
               "Trend"
             )}
+
+            ${data.dates
+              .map(
+                (
+                  d
+                ) =>
+                  th(
+                    dayNo(
+                      d
+                    )
+                  )
+              )
+              .join("")}
           </tr>
         </thead>
 
@@ -147,7 +154,10 @@ export function renderDailyPulseReport() {
           ${data.rows
             .map(
               (r) =>
-                row(r)
+                row(
+                  r,
+                  data.dates
+                )
             )
             .join("")}
         </tbody>
@@ -186,7 +196,13 @@ export function renderDailyPulseReport() {
 
 /* ========================================== */
 
-function row(r) {
+function row(
+  r,
+  dates
+) {
+  let prev =
+    null;
+
   return `
     <tr>
       ${td(
@@ -210,9 +226,58 @@ function row(r) {
           r.trend
         )
       )}
+
+      ${dates
+        .map((d) => {
+          const v =
+            r.days[d] ||
+            0;
+
+          let bg =
+            "#fff";
+
+          if (
+            prev !==
+            null
+          ) {
+            if (
+              v > prev
+            )
+              bg =
+                "#dcfce7";
+
+            else if (
+              v < prev
+            )
+              bg =
+                "#fee2e2";
+
+            else
+              bg =
+                "#f8fafc";
+          }
+
+          prev = v;
+
+          return `
+            <td style="
+              padding:8px 10px;
+              border-bottom:1px solid #eef2f7;
+              text-align:center;
+              background:${bg};
+              font-weight:600;
+            ">
+              ${fmt(v)}
+            </td>
+          `;
+        })
+        .join("")}
+
     </tr>
   `;
 }
+
+/* ========================================== */
 
 function th(t) {
   return `
@@ -293,6 +358,12 @@ function trend(t) {
     return `<span style="color:#dc2626;">↘</span>`;
 
   return `<span style="color:#64748b;">→</span>`;
+}
+
+function dayNo(d) {
+  return String(
+    d
+  ).slice(-2);
 }
 
 function fmt(v) {
