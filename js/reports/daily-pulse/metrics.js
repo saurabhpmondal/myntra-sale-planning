@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   FINAL STRICT VERSION
-   Uses existing sales engine + manual raw date filter
+   STRICT FIX
+   Restores MTD + DRR from trusted sales engine
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
@@ -15,11 +15,9 @@ export function getDailyPulseRows(
   order = "HIGH",
   limit = 50
 ) {
-  /* trusted visible rows */
   const baseRows =
     getSalesRows() || [];
 
-  /* raw rows for daily split */
   const rawSales =
     getDataset("sales") || [];
 
@@ -51,17 +49,14 @@ export function getDailyPulseRows(
             r.style_id
         );
 
+      const units =
+        num(r.units);
+
       const days =
         dayMap[
           styleId
         ] ||
         blankDays(
-          dates
-        );
-
-      const mtd =
-        sumDays(
-          days,
           dates
         );
 
@@ -80,11 +75,14 @@ export function getDailyPulseRows(
           clean(
             r.status
           ),
-        mtd,
+        mtd: units,
         drr:
           divide(
-            mtd,
-            dates.length
+            units,
+            Math.max(
+              1,
+              dates.length
+            )
           ),
         trend:
           getTrend(
@@ -114,7 +112,7 @@ export function getDailyPulseRows(
 }
 
 /* ==========================================
-   RAW FILTERS
+   FILTER RAW SALES
 ========================================== */
 
 function applyPulseFilters(
@@ -124,7 +122,7 @@ function applyPulseFilters(
   return rows.filter(
     (r) => {
       const dt =
-        clean(
+        normDate(
           r.order_date
         );
 
@@ -143,7 +141,6 @@ function applyPulseFilters(
           r.po_type
         );
 
-      /* month */
       if (
         f.month &&
         !dt.startsWith(
@@ -152,7 +149,6 @@ function applyPulseFilters(
       )
         return false;
 
-      /* start */
       if (
         f.startDate &&
         dt <
@@ -160,7 +156,6 @@ function applyPulseFilters(
       )
         return false;
 
-      /* end */
       if (
         f.endDate &&
         dt >
@@ -168,7 +163,6 @@ function applyPulseFilters(
       )
         return false;
 
-      /* brand */
       if (
         f.brand &&
         f.brand !==
@@ -178,7 +172,6 @@ function applyPulseFilters(
       )
         return false;
 
-      /* po */
       if (
         f.poType &&
         f.poType !==
@@ -188,7 +181,6 @@ function applyPulseFilters(
       )
         return false;
 
-      /* search */
       if (
         f.search
       ) {
@@ -231,7 +223,7 @@ function getDates(
   return [
     ...new Set(
       rows.map((r) =>
-        clean(
+        normDate(
           r.order_date
         )
       )
@@ -258,7 +250,7 @@ function buildDayMap(
       );
 
     const dt =
-      clean(
+      normDate(
         r.order_date
       );
 
@@ -298,22 +290,8 @@ function blankDays(
 }
 
 /* ==========================================
-   CALCS
+   TREND / SORT
 ========================================== */
-
-function sumDays(
-  days,
-  dates
-) {
-  return dates.reduce(
-    (t, d) =>
-      t +
-      num(
-        days[d]
-      ),
-    0
-  );
-}
 
 function getTrend(
   days,
@@ -398,4 +376,49 @@ function divide(
   return b
     ? a / b
     : 0;
+}
+
+function normDate(v) {
+  const s =
+    clean(v);
+
+  if (!s)
+    return "";
+
+  if (
+    s.includes("-")
+  ) {
+    return s.slice(
+      0,
+      10
+    );
+  }
+
+  if (
+    s.includes("/")
+  ) {
+    const p =
+      s.split("/");
+
+    if (
+      p.length ===
+      3
+    ) {
+      return `${p[2]}-${pad(
+        p[1]
+      )}-${pad(
+        p[0]
+      )}`;
+    }
+  }
+
+  return s;
+}
+
+function pad(v) {
+  return String(v)
+    .padStart(
+      2,
+      "0"
+    );
 }
