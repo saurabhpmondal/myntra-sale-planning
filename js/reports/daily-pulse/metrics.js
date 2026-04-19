@@ -1,13 +1,8 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   USES SALES ENGINE ONLY
-   Date values from trusted filtered sales data
+   STRICT FIX - REAL DAILY DATA
 ========================================== */
-
-import {
-  getSalesRows
-} from "../sales/metrics.js";
 
 import {
   getDataset
@@ -24,10 +19,7 @@ export function getDailyPulseRows(
   order = "HIGH",
   limit = 50
 ) {
-  const rows =
-    getSalesRows() || [];
-
-  const filteredSales =
+  const sales =
     applyGlobalFilters(
       getDataset(
         "sales"
@@ -35,84 +27,112 @@ export function getDailyPulseRows(
     );
 
   const dates =
-    getDatesFromFilteredSales(
-      filteredSales
+    getVisibleDates(
+      sales
     );
 
-  const dayMap =
-    buildDayMap(
-      filteredSales,
-      dates
-    );
+  const map = {};
 
-  const finalRows =
-    rows.map((r) => {
-      const units =
-        num(
-          r.units
+  sales.forEach((r) => {
+    const id =
+      clean(
+        r.style_id
+      );
+
+    if (!id)
+      return;
+
+    const dt =
+      clean(
+        r.order_date
+      );
+
+    if (
+      !dates.includes(
+        dt
+      )
+    )
+      return;
+
+    if (!map[id]) {
+      map[id] =
+        blankRow(
+          id,
+          dates
+        );
+    }
+
+    const row =
+      map[id];
+
+    const qty =
+      num(r.qty);
+
+    row.days[dt] +=
+      qty;
+
+    row.mtd += qty;
+
+    if (
+      !row.brand
+    )
+      row.brand =
+        clean(
+          r.brand
         );
 
-      return {
-        styleId:
-          r.styleId ||
-          "",
+    if (
+      !row.erp &&
+      r.erp_sku
+    )
+      row.erp =
+        clean(
+          r.erp_sku
+        );
 
-        erp:
-          r.erp || "",
+    if (
+      !row.status &&
+      r.status
+    )
+      row.status =
+        clean(
+          r.status
+        );
+  });
 
-        brand:
-          r.brand || "",
-
-        status:
-          "",
-
-        mtd: units,
-
-        drr:
-          units /
-          Math.max(
-            1,
-            dates.length
-          ),
-
-        trend:
-          trend(
-            r.growthPct
-          ),
-
-        days:
-          dayMap[
-            r.styleId
-          ] ||
-          blankDays(
-            dates
-          )
-      };
-    });
+  const rows =
+    Object.values(
+      map
+    ).map((r) =>
+      finalizeRow(
+        r,
+        dates
+      )
+    );
 
   sortRows(
-    finalRows,
+    rows,
     sortBy,
     order
   );
 
   return {
     rows:
-      finalRows.slice(
+      rows.slice(
         0,
         limit
       ),
     total:
-      finalRows.length,
+      rows.length,
     dates
   };
 }
 
 /* ==========================================
-   TRUSTED FILTERED SALES DATES
+   DATES
 ========================================== */
 
-function getDatesFromFilteredSales(
+function getVisibleDates(
   rows
 ) {
   return [
@@ -129,65 +149,93 @@ function getDatesFromFilteredSales(
 }
 
 /* ==========================================
-   DAY MAP
+   BUILD
 ========================================== */
 
-function buildDayMap(
-  rows,
+function blankRow(
+  id,
   dates
 ) {
-  const valid =
-    new Set(dates);
-
-  const map = {};
-
-  rows.forEach((r) => {
-    const id =
-      clean(
-        r.style_id
-      );
-
-    const date =
-      clean(
-        r.order_date
-      );
-
-    if (
-      !id ||
-      !valid.has(
-        date
-      )
-    )
-      return;
-
-    if (!map[id]) {
-      map[id] =
-        blankDays(
-          dates
-        );
-    }
-
-    map[id][date] +=
-      num(r.qty);
-  });
-
-  return map;
-}
-
-/* ========================================== */
-
-function blankDays(
-  dates
-) {
-  const obj = {};
+  const days = {};
 
   dates.forEach(
     (d) =>
-      (obj[d] = 0)
+      (days[d] = 0)
   );
 
-  return obj;
+  return {
+    styleId: id,
+    erp: "",
+    brand: "",
+    status: "",
+    mtd: 0,
+    drr: 0,
+    trend: "→",
+    days
+  };
 }
+
+function finalizeRow(
+  row,
+  dates
+) {
+  row.drr =
+    row.mtd /
+    Math.max(
+      1,
+      dates.length
+    );
+
+  row.trend =
+    calcTrend(
+      row,
+      dates
+    );
+
+  return row;
+}
+
+/* ==========================================
+   TREND
+========================================== */
+
+function calcTrend(
+  row,
+  dates
+) {
+  if (
+    dates.length < 2
+  )
+    return "→";
+
+  const last =
+    row.days[
+      dates[
+        dates.length -
+          1
+      ]
+    ] || 0;
+
+  const prev =
+    row.days[
+      dates[
+        dates.length -
+          2
+      ]
+    ] || 0;
+
+  if (last > prev)
+    return "↗";
+
+  if (last < prev)
+    return "↘";
+
+  return "→";
+}
+
+/* ==========================================
+   SORT
+========================================== */
 
 function sortRows(
   rows,
@@ -214,18 +262,9 @@ function sortRows(
   }
 }
 
-function trend(v) {
-  const n =
-    num(v);
-
-  if (n > 0)
-    return "↗";
-
-  if (n < 0)
-    return "↘";
-
-  return "→";
-}
+/* ==========================================
+   HELPERS
+========================================== */
 
 function clean(v) {
   return String(
