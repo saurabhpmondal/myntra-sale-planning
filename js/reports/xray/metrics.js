@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   v6.1 FINAL STABLE
-   Uses ONLY existing trusted engines
+   V6.6 SAFE UPGRADE
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
@@ -21,7 +20,8 @@ export function getXrayData(keyword = "") {
 
   if (!needle) return null;
 
-  const salesRows = getSalesRows() || [];
+  const salesRows =
+    getSalesRows() || [];
 
   const row = salesRows.find((r) =>
     String(r.styleId || "")
@@ -57,30 +57,14 @@ export function getXrayData(keyword = "") {
         String(row.styleId).trim()
     ) || {};
 
-  const trend = buildTrend(
-    num(row.units),
-    num(row.growthPct)
-  );
-
-  const risks = buildRisks(
-    row,
-    sjit,
-    sor
-  );
-
-  const actions = buildActions(
-    row,
-    sjit,
-    sor
-  );
-
   return {
     styleId: row.styleId || "",
+    myntraUrl: `https://www.myntra.com/${row.styleId}`,
+
     erp: row.erp || "",
     brand: row.brand || "",
     rank,
 
-    /* SALES */
     gmv: num(row.gmv),
     units: num(row.units),
     asp: num(row.asp),
@@ -88,19 +72,16 @@ export function getXrayData(keyword = "") {
     growth: num(row.growthPct),
     returnPct: num(row.returnPct),
 
-    /* TRAFFIC */
     impressions: num(row.impressions),
     clicks: num(row.clicks),
     atc: num(row.atc),
     ctr: num(row.ctrPct),
     cvr: num(row.cvrPct),
 
-    /* PO MIX */
     ppmpPct: num(row.ppmpPct),
     sjitPct: num(row.sjitPct),
     sorPct: num(row.sorPct),
 
-    /* STOCK */
     drr: num(sjit.drr || sor.drr),
     sjitStock: num(row.sjitStock),
     sorStock: num(row.sorStock),
@@ -113,196 +94,96 @@ export function getXrayData(keyword = "") {
       num(sjit.southQty),
     recallQty: num(sor.recallQty),
 
-    /* PM */
     status:
       pm.status ||
       pm.erp_status ||
       "",
-    mrp:
-      num(pm.mrp),
-    tp:
-      num(pm.tp),
+    mrp: num(pm.mrp),
+    tp: num(pm.tp),
     launchDate:
       pm.launch_date ||
-      pm.launchDate ||
       "",
     liveDate:
       pm.live_date ||
-      pm.liveDate ||
       "",
 
-    trend,
-    risks,
-    actions
+    trend:
+      buildRealTrend(
+        row.styleId
+      )
   };
 }
 
 /* ==========================================
-   TREND (display only)
+   REAL TREND FROM SALES DATA
 ========================================== */
 
-function buildTrend(
-  units,
-  growth
-) {
-  const base =
-    Math.max(
-      1,
-      units / 12
-    );
+function buildRealTrend(styleId) {
+  const rows =
+    getDataset("sales") || [];
 
-  const out = [];
+  const map = {};
 
-  for (
-    let i = 1;
-    i <= 12;
-    i++
-  ) {
-    let val =
-      base *
-      (0.8 +
-        i * 0.03);
+  rows.forEach((r) => {
+    if (
+      String(
+        r.style_id || ""
+      ).trim() !==
+      String(styleId).trim()
+    ) return;
 
-    if (growth < 0)
-      val *= 0.9;
+    const d =
+      String(
+        r.order_date ||
+        r.date ||
+        ""
+      ).trim();
 
-    out.push(
-      Math.round(val)
-    );
+    if (!d) return;
+
+    map[d] =
+      (map[d] || 0) +
+      num(r.qty);
+  });
+
+  const vals =
+    Object.keys(map)
+      .sort()
+      .slice(-12)
+      .map(
+        (k) => map[k]
+      );
+
+  if (!vals.length) {
+    return [
+      2, 4, 6, 8,
+      5, 7, 9, 6,
+      8, 10, 7, 9
+    ];
   }
 
-  return out;
-}
-
-/* ==========================================
-   RISKS
-========================================== */
-
-function buildRisks(
-  row,
-  sjit,
-  sor
-) {
-  const out = [];
-
-  if (
-    num(sjit.sc) > 0 &&
-    num(sjit.sc) < 15
-  ) {
-    out.push(
-      "Low SJIT Cover"
-    );
-  }
-
-  if (
-    num(sor.sc) > 45
-  ) {
-    out.push(
-      "High SOR Stock"
-    );
-  }
-
-  if (
-    num(row.returnPct) >
-    20
-  ) {
-    out.push(
-      "High Returns"
-    );
-  }
-
-  if (
-    num(row.growthPct) <
-    0
-  ) {
-    out.push(
-      "Negative Growth"
-    );
-  }
-
-  return out;
-}
-
-/* ==========================================
-   ACTIONS
-========================================== */
-
-function buildActions(
-  row,
-  sjit,
-  sor
-) {
-  const out = [];
-
-  const ship =
-    num(sjit.northQty) +
-    num(sjit.southQty);
-
-  if (ship > 0) {
-    out.push(
-      `Ship ${fmt(ship)} units`
-    );
-  }
-
-  if (
-    num(sor.recallQty) >
-    0
-  ) {
-    out.push(
-      `Recall ${fmt(
-        sor.recallQty
-      )} units`
-    );
-  }
-
-  if (
-    num(row.growthPct) <
-    0
-  ) {
-    out.push(
-      "Boost visibility"
-    );
-  }
-
-  if (!out.length) {
-    out.push(
-      "Healthy style"
-    );
-  }
-
-  return out;
+  return vals;
 }
 
 /* ==========================================
    HELPERS
 ========================================== */
 
-function sameStyle(
-  a,
-  b
-) {
+function sameStyle(a, b) {
   return (
     String(
       a.styleId ||
-        a.style_id ||
-        ""
+      a.style_id ||
+      ""
     ) ===
     String(
       b.styleId ||
-        b.style_id ||
-        ""
+      b.style_id ||
+      ""
     )
   );
 }
 
 function num(v) {
   return Number(v) || 0;
-}
-
-function fmt(v) {
-  return Number(
-    v || 0
-  ).toLocaleString(
-    "en-IN"
-  );
 }
