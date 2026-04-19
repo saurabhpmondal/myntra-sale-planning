@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/index.js
-   NEW FILE
-   Style X-Ray Report UI
+   FULL REPLACE CODE
+   Added More KPIs + Better Hero
 ========================================== */
 
 import {
@@ -21,25 +21,15 @@ export function renderXrayReport() {
   if (!root)
     return;
 
-  root.innerHTML = `
-    <div class="panel-card">
-
-      <h3 class="panel-title">
-        🔍 Style X-Ray
-      </h3>
-
-      <div class="placeholder-box large">
-        Search Style ID above to begin analysis
-      </div>
-
-    </div>
-  `;
-
   const keyword =
     getSearch();
 
-  if (!keyword)
+  if (!keyword) {
+    root.innerHTML = emptyBox(
+      "Search Style ID above to begin analysis"
+    );
     return;
+  }
 
   const data =
     getXrayData(
@@ -47,17 +37,10 @@ export function renderXrayReport() {
     );
 
   if (!data) {
-    root.innerHTML = `
-      <div class="panel-card">
-        <h3 class="panel-title">
-          🔍 Style X-Ray
-        </h3>
-
-        <div class="placeholder-box large">
-          No style found
-        </div>
-      </div>
-    `;
+    root.innerHTML =
+      emptyBox(
+        "No style found"
+      );
     return;
   }
 
@@ -75,7 +58,7 @@ export function renderXrayReport() {
       </div>
 
       <div class="xray-rank">
-        🏆 Rank #${fmt(
+        🏆 BESTSELLER #${fmt(
           data.rank
         )}
       </div>
@@ -84,47 +67,18 @@ export function renderXrayReport() {
 
     <div class="kpi-grid">
 
-      ${card(
-        "💰 GMV",
-        money(
-          data.gmv
-        )
-      )}
-
-      ${card(
-        "📦 Units",
-        fmt(
-          data.units
-        )
-      )}
-
-      ${card(
-        "🏷 ASP",
-        money(
-          data.asp
-        )
-      )}
-
-      ${card(
-        "🎯 DW",
-        pct(
-          data.dw
-        )
-      )}
-
-      ${card(
-        "🚚 SJIT",
-        fmt(
-          data.sjitStock
-        )
-      )}
-
-      ${card(
-        "🏬 SOR",
-        fmt(
-          data.sorStock
-        )
-      )}
+      ${card("💰 GMV", money(data.gmv))}
+      ${card("📦 Units", fmt(data.units))}
+      ${card("🏷 ASP", money(data.asp))}
+      ${card("🎯 DW", pct(data.dw))}
+      ${card("📈 Growth", pct(data.growth))}
+      ${card("↩ Return%", pct(data.returnPct))}
+      ${card("🔥 DRR", num2(data.drr))}
+      ${card("🚚 SJIT", fmt(data.sjitStock))}
+      ${card("🏬 SOR", fmt(data.sorStock))}
+      ${card("⏳ SJIT SC", num1(data.sjitSc))}
+      ${card("⏳ SOR SC", num1(data.sorSc))}
+      ${card("⚡ Ship", fmt(data.shipQty))}
 
     </div>
 
@@ -160,6 +114,20 @@ function getSearch() {
     : "";
 }
 
+function emptyBox(text) {
+  return `
+    <div class="panel-card">
+      <h3 class="panel-title">
+        🔍 Style X-Ray
+      </h3>
+
+      <div class="placeholder-box large">
+        ${text}
+      </div>
+    </div>
+  `;
+}
+
 function card(
   label,
   value
@@ -182,9 +150,7 @@ function fmt(v) {
 
 function money(v) {
   return `₹${fmt(
-    Math.round(
-      v || 0
-    )
+    Math.round(v || 0)
   )}`;
 }
 
@@ -192,4 +158,16 @@ function pct(v) {
   return `${Number(
     v || 0
   ).toFixed(1)}%`;
+}
+
+function num1(v) {
+  return Number(
+    v || 0
+  ).toFixed(1);
+}
+
+function num2(v) {
+  return Number(
+    v || 0
+  ).toFixed(2);
 }
