@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/index.js
    FULL REPLACE CODE
-   v6.1 FINAL UI
+   V6.5 POLISHED UI
 ========================================== */
 
 import { getXrayData } from "./metrics.js";
@@ -52,7 +52,7 @@ export function renderXrayReport() {
             min-width:220px;
             padding:10px 12px;
             border:1px solid #ddd;
-            border-radius:10px;
+            border-radius:12px;
           "
         />
 
@@ -61,8 +61,11 @@ export function renderXrayReport() {
           style="
             padding:10px 16px;
             border:none;
-            border-radius:10px;
+            border-radius:12px;
             cursor:pointer;
+            background:#0f172a;
+            color:#fff;
+            font-weight:700;
           "
         >
           Analyze
@@ -95,14 +98,30 @@ function renderData(
   d
 ) {
   return `
-    <div class="xray-hero">
-      <div class="xray-title">
+    <div style="
+      background:
+      linear-gradient(135deg,#0f172a,#1e293b,#0b1220);
+      color:#fff;
+      border-radius:18px;
+      padding:18px;
+      margin-top:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    ">
+      <div style="
+        font-size:34px;
+        font-weight:800;
+        line-height:1;
+      ">
         ${safe(
           d.styleId
         )}
       </div>
 
-      <div class="xray-sub">
+      <div style="
+        margin-top:8px;
+        opacity:.85;
+        font-size:14px;
+      ">
         ${safe(
           d.erp
         )} • ${safe(
@@ -110,7 +129,15 @@ function renderData(
   )}
       </div>
 
-      <div class="xray-rank">
+      <div style="
+        margin-top:12px;
+        display:inline-block;
+        padding:7px 12px;
+        border-radius:999px;
+        background:rgba(255,255,255,.12);
+        font-size:13px;
+        font-weight:700;
+      ">
         🏆 Rank #${fmt(
           d.rank
         )}
@@ -118,35 +145,80 @@ function renderData(
     </div>
 
     ${section(
+      "🏷 Product Info",
+      [
+        card(
+          "Status",
+          safe(
+            d.status
+          ) || "-",
+          "#1d4ed8"
+        ),
+        card(
+          "MRP",
+          money(d.mrp),
+          "#7c3aed"
+        ),
+        card(
+          "TP",
+          money(d.tp),
+          "#0891b2"
+        ),
+        card(
+          "Launch",
+          safe(
+            d.launchDate
+          ) || "-",
+          "#0f766e"
+        ),
+        card(
+          "Live",
+          safe(
+            d.liveDate
+          ) || "-",
+          "#15803d"
+        )
+      ]
+    )}
+
+    ${section(
       "📊 Sales",
       [
         card(
           "GMV",
-          money(d.gmv)
+          money(d.gmv),
+          "#15803d"
         ),
         card(
           "Units",
-          fmt(d.units)
+          fmt(d.units),
+          "#0f766e"
         ),
         card(
           "ASP",
-          money(d.asp)
+          money(d.asp),
+          "#0369a1"
         ),
         card(
           "DW",
-          pct(d.dw)
+          pct(d.dw),
+          "#7c3aed"
         ),
         card(
           "Growth",
           pct(
             d.growth
-          )
+          ),
+          d.growth >= 0
+            ? "#15803d"
+            : "#b91c1c"
         ),
         card(
           "Return%",
           pct(
             d.returnPct
-          )
+          ),
+          "#b45309"
         )
       ]
     )}
@@ -156,43 +228,50 @@ function renderData(
       [
         card(
           "DRR",
-          num1(d.drr)
+          num1(d.drr),
+          "#1d4ed8"
         ),
         card(
           "SJIT Stock",
           fmt(
             d.sjitStock
-          )
+          ),
+          "#0f766e"
         ),
         card(
           "SOR Stock",
           fmt(
             d.sorStock
-          )
+          ),
+          "#9333ea"
         ),
         card(
           "SJIT SC",
           num1(
             d.sjitSc
-          )
+          ),
+          "#0369a1"
         ),
         card(
           "SOR SC",
           num1(
             d.sorSc
-          )
+          ),
+          "#7c2d12"
         ),
         card(
-          "Ship Qty",
+          "Ship",
           fmt(
             d.shipQty
-          )
+          ),
+          "#15803d"
         ),
         card(
           "Recall",
           fmt(
             d.recallQty
-          )
+          ),
+          "#b91c1c"
         )
       ]
     )}
@@ -204,25 +283,30 @@ function renderData(
           "Impr.",
           fmt(
             d.impressions
-          )
+          ),
+          "#1d4ed8"
         ),
         card(
           "Clicks",
           fmt(
             d.clicks
-          )
+          ),
+          "#0891b2"
         ),
         card(
           "ATC",
-          fmt(d.atc)
+          fmt(d.atc),
+          "#7c3aed"
         ),
         card(
           "CTR",
-          pct(d.ctr)
+          pct(d.ctr),
+          "#15803d"
         ),
         card(
           "CVR",
-          pct(d.cvr)
+          pct(d.cvr),
+          "#0f766e"
         )
       ]
     )}
@@ -234,55 +318,51 @@ function renderData(
           "PPMP",
           pct(
             d.ppmpPct
-          )
+          ),
+          "#7c3aed"
         ),
         card(
           "SJIT",
           pct(
             d.sjitPct
-          )
+          ),
+          "#0369a1"
         ),
         card(
           "SOR",
           pct(
             d.sorPct
-          )
+          ),
+          "#15803d"
         )
       ]
     )}
 
-    ${section(
-      "🏷 Product Info",
-      [
-        card(
-          "Status",
-          safe(
-            d.status
-          ) || "-"
-        ),
-        card(
-          "MRP",
-          money(d.mrp)
-        ),
-        card(
-          "TP",
-          money(d.tp)
-        ),
-        card(
-          "Launch",
-          safe(
-            d.launchDate
-          ) || "-"
-        ),
-        card(
-          "Live",
-          safe(
-            d.liveDate
-          ) || "-"
-        )
-      ]
+    ${trendCard(d)}
+
+    ${tagSection(
+      "⚠ Risks",
+      d.risks || []
     )}
 
+    ${tagSection(
+      "✅ Actions",
+      d.actions || []
+    )}
+  `;
+}
+
+/* ==========================================
+   TREND
+========================================== */
+
+function trendCard(d) {
+  const max =
+    Math.max(
+      ...(d.trend || [1])
+    );
+
+  return `
     <div class="panel-card">
       <h3 class="panel-title">
         📈 Mini Trend
@@ -290,68 +370,132 @@ function renderData(
 
       <div style="
         display:flex;
-        gap:6px;
+        gap:7px;
         align-items:flex-end;
-        height:90px;
+        height:110px;
+        margin-top:10px;
       ">
-        ${(
-          d.trend ||
-          []
-        )
+        ${(d.trend || [])
           .map(
             (v) =>
               `<div style="
                 flex:1;
-                background:#0f172a;
-                border-radius:6px 6px 0 0;
+                border-radius:10px 10px 0 0;
+                background:linear-gradient(180deg,#3b82f6,#1d4ed8);
                 height:${Math.max(
-                  8,
-                  v
+                  10,
+                  (v / max) *
+                    100
                 )}%;
+                box-shadow:0 6px 18px rgba(59,130,246,.25);
               "></div>`
           )
           .join("")}
       </div>
     </div>
+  `;
+}
 
+/* ==========================================
+   TAG BLOCK
+========================================== */
+
+function tagSection(
+  title,
+  rows
+) {
+  return `
     <div class="panel-card">
       <h3 class="panel-title">
-        ⚠ Risks
+        ${title}
       </h3>
 
-      <div class="xray-actions">
-        ${(
-          d.risks ||
-          []
-        )
-          .map(
-            (x) =>
-              `<div class="xray-action">${safe(
-                x
-              )}</div>`
-          )
-          .join("") ||
-        `<div class="xray-action">No major risk</div>`}
+      <div style="
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:10px;
+      ">
+        ${
+          rows.length
+            ? rows
+                .map(
+                  (x) =>
+                    `<div style="
+                      padding:10px 14px;
+                      border-radius:999px;
+                      background:#f8fafc;
+                      border:1px solid #e5e7eb;
+                      font-size:13px;
+                      font-weight:600;
+                    ">${safe(
+                      x
+                    )}</div>`
+                )
+                .join("")
+            : `<div style="
+                color:#64748b;
+              ">None</div>`
+        }
       </div>
     </div>
+  `;
+}
 
+/* ==========================================
+   SECTION
+========================================== */
+
+function section(
+  title,
+  cards
+) {
+  return `
     <div class="panel-card">
       <h3 class="panel-title">
-        ✅ Actions
+        ${title}
       </h3>
 
-      <div class="xray-actions">
-        ${(
-          d.actions ||
-          []
-        )
-          .map(
-            (x) =>
-              `<div class="xray-action">${safe(
-                x
-              )}</div>`
-          )
-          .join("")}
+      <div class="kpi-grid">
+        ${cards.join("")}
+      </div>
+    </div>
+  `;
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+function card(
+  label,
+  value,
+  color
+) {
+  return `
+    <div style="
+      background:linear-gradient(135deg,#ffffff,#f8fafc);
+      border:1px solid #eef2f7;
+      border-top:4px solid ${color};
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+    ">
+      <div style="
+        font-size:12px;
+        color:#64748b;
+        margin-bottom:8px;
+      ">
+        ${label}
+      </div>
+
+      <div style="
+        font-size:28px;
+        font-weight:800;
+        color:#0f172a;
+        line-height:1.1;
+      ">
+        ${value}
       </div>
     </div>
   `;
@@ -417,34 +561,6 @@ function runSearch() {
 /* ==========================================
    HELPERS
 ========================================== */
-
-function section(
-  title,
-  cards
-) {
-  return `
-    <div class="panel-card">
-      <h3 class="panel-title">
-        ${title}
-      </h3>
-      <div class="kpi-grid">
-        ${cards.join("")}
-      </div>
-    </div>
-  `;
-}
-
-function card(
-  label,
-  value
-) {
-  return `
-    <div class="kpi-card">
-      <span>${label}</span>
-      <strong>${value}</strong>
-    </div>
-  `;
-}
 
 function getSearch() {
   const el =
