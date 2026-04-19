@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/reports/sales/metrics.js
    FULL REPLACE CODE
-   Added:
-   Impressions / Clicks / ATC / CTR / CVR
+   FIXED DEMAND WEIGHT (DW)
+   Brand level contribution by selected period
 ========================================== */
 
 import { getDataset } from "../../core/state.js";
@@ -60,7 +60,6 @@ export function getSalesRows() {
 
 function buildRows(data) {
   const map = {};
-  let totalUnits = 0;
 
   data.sales.forEach((r) => {
     const id =
@@ -86,8 +85,6 @@ function buildRows(data) {
       num(
         r.final_amount
       );
-
-    totalUnits += qty;
 
     row.brand =
       row.brand ||
@@ -145,8 +142,7 @@ function buildRows(data) {
   );
 
   return finalize(
-    map,
-    totalUnits
+    map
   );
 }
 
@@ -175,7 +171,7 @@ function enrichPM(
 }
 
 /* ==========================================
-   TRAFFIC + RATING
+   TRAFFIC
 ========================================== */
 
 function enrichTraffic(
@@ -196,23 +192,6 @@ function enrichTraffic(
 
     const row =
       map[id];
-
-    const rating =
-      Number(
-        r.rating
-      );
-
-    if (
-      !isNaN(
-        rating
-      ) &&
-      rating > 0 &&
-      rating >
-        row.rating
-    ) {
-      row.rating =
-        rating;
-    }
 
     row.impressions +=
       num(
@@ -458,75 +437,97 @@ function enrichGrowth(
 ========================================== */
 
 function finalize(
-  map,
-  totalUnits
+  map
 ) {
-  return Object.values(
-    map
-  )
-    .map((r) => {
-      r.asp =
-        divide(
-          r.gmv,
-          r.units
-        );
-
-      r.returnPct =
-        divide(
-          r.returnIds
-            .size *
-            100,
-          r.soldIds
-            .size
-        );
-
-      r.ppmpPct =
-        divide(
-          r.ppmp *
-            100,
-          r.units
-        );
-
-      r.sjitPct =
-        divide(
-          r.sjitSale *
-            100,
-          r.units
-        );
-
-      r.sorPct =
-        divide(
-          r.sorSale *
-            100,
-          r.units
-        );
-
-      r.sharePct =
-        divide(
-          r.units *
-            100,
-          totalUnits
-        );
-
-      r.ctrPct =
-        divide(
-          r.clicks *
-            100,
-          r.impressions
-        );
-
-      r.cvrPct =
-        divide(
-          r.units *
-            100,
-          r.clicks
-        );
-
-      return r;
-    })
-    .sort(
-      byGmvDesc
+  const rows =
+    Object.values(
+      map
     );
+
+  const totalUnits =
+    rows.reduce(
+      (sum, r) =>
+        sum + r.units,
+      0
+    );
+
+  const brandTotals =
+    {};
+
+  rows.forEach((r) => {
+    const b =
+      r.brand || "";
+
+    brandTotals[b] =
+      (brandTotals[b] ||
+        0) + r.units;
+  });
+
+  rows.forEach((r) => {
+    r.asp =
+      divide(
+        r.gmv,
+        r.units
+      );
+
+    r.returnPct =
+      divide(
+        r.returnIds
+          .size *
+          100,
+        r.soldIds
+          .size
+      );
+
+    r.ppmpPct =
+      divide(
+        r.ppmp *
+          100,
+        r.units
+      );
+
+    r.sjitPct =
+      divide(
+        r.sjitSale *
+          100,
+        r.units
+      );
+
+    r.sorPct =
+      divide(
+        r.sorSale *
+          100,
+        r.units
+      );
+
+    /* TRUE BRAND DEMAND WEIGHT */
+    r.sharePct =
+      divide(
+        r.units *
+          100,
+        brandTotals[
+          r.brand
+        ]
+      );
+
+    r.ctrPct =
+      divide(
+        r.clicks *
+          100,
+        r.impressions
+      );
+
+    r.cvrPct =
+      divide(
+        r.units *
+          100,
+        r.clicks
+      );
+  });
+
+  return rows.sort(
+    byGmvDesc
+  );
 }
 
 /* ==========================================
@@ -538,7 +539,6 @@ function blank(id) {
     styleId: id,
     erp: "",
     brand: "",
-    rating: 0,
 
     gmv: 0,
     units: 0,
