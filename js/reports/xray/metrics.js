@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   TRUSTED SOURCE VERSION
-   Uses sales/sjit/sor outputs directly
+   v6.1 EXPANDED METRICS
+   Trusted source only
 ========================================== */
 
 import {
@@ -25,8 +25,7 @@ export function getXrayData(
   keyword = ""
 ) {
   const rows =
-    getSalesRows() ||
-    [];
+    getSalesRows() || [];
 
   const needle =
     String(
@@ -42,8 +41,7 @@ export function getXrayData(
     rows.find(
       (r) =>
         String(
-          r.styleId ||
-          ""
+          r.styleId || ""
         )
           .toLowerCase()
           .includes(
@@ -65,31 +63,20 @@ export function getXrayData(
         )
     ) + 1;
 
-  const sjitRows =
-    getSjitRows() ||
-    [];
-
-  const sorRows =
-    getSorRows() ||
-    [];
-
   const sjit =
-    sjitRows.find(
-      (r) =>
-        sameStyle(
-          r,
-          row
-        )
-    ) || {};
+    (getSjitRows() || [])
+      .find((r) =>
+        sameStyle(r, row)
+      ) || {};
 
   const sor =
-    sorRows.find(
-      (r) =>
-        sameStyle(
-          r,
-          row
-        )
-    ) || {};
+    (getSorRows() || [])
+      .find((r) =>
+        sameStyle(r, row)
+      ) || {};
+
+  const units =
+    num(row.units);
 
   return {
     styleId:
@@ -103,20 +90,14 @@ export function getXrayData(
 
     rank,
 
+    /* SALES */
     gmv:
-      num(
-        row.gmv
-      ),
+      num(row.gmv),
 
-    units:
-      num(
-        row.units
-      ),
+    units,
 
     asp:
-      num(
-        row.asp
-      ),
+      num(row.asp),
 
     dw:
       num(
@@ -134,10 +115,9 @@ export function getXrayData(
       ),
 
     drr:
-      num(
-        row.units
-      ) / 30,
+      units / 30,
 
+    /* STOCK */
     sjitStock:
       num(
         row.sjitStock
@@ -162,12 +142,84 @@ export function getXrayData(
 
     shipQty:
       num(
-        sjit.northQty ||
-        0
+        sjit.northQty
       ) +
       num(
-        sjit.southQty ||
-        0
+        sjit.southQty
+      ),
+
+    recallQty:
+      num(
+        sor.recallQty
+      ),
+
+    northQty:
+      num(
+        sjit.northQty
+      ),
+
+    southQty:
+      num(
+        sjit.southQty
+      ),
+
+    /* TRAFFIC */
+    impressions:
+      num(
+        row.impressions
+      ),
+
+    clicks:
+      num(
+        row.clicks
+      ),
+
+    atc:
+      num(
+        row.atc
+      ),
+
+    ctr:
+      num(
+        row.ctrPct
+      ),
+
+    cvr:
+      num(
+        row.cvrPct
+      ),
+
+    /* PO MIX */
+    ppmpPct:
+      num(
+        row.ppmpPct
+      ),
+
+    sjitPct:
+      num(
+        row.sjitPct
+      ),
+
+    sorPct:
+      num(
+        row.sorPct
+      ),
+
+    /* TREND */
+    trend:
+      buildTrend(
+        units,
+        num(
+          row.growthPct
+        )
+      ),
+
+    /* RISKS */
+    risks:
+      buildRisks(
+        row,
+        sjit,
+        sor
       ),
 
     actions:
@@ -177,6 +229,102 @@ export function getXrayData(
         sor
       )
   };
+}
+
+/* ==========================================
+   TREND
+========================================== */
+
+function buildTrend(
+  units,
+  growth
+) {
+  const base =
+    units / 12;
+
+  const out = [];
+
+  for (
+    let i = 1;
+    i <= 12;
+    i++
+  ) {
+    let val =
+      base *
+      (0.8 +
+        i * 0.03);
+
+    if (
+      growth < 0
+    ) {
+      val *=
+        0.9;
+    }
+
+    out.push(
+      Math.round(
+        val
+      )
+    );
+  }
+
+  return out;
+}
+
+/* ==========================================
+   RISKS
+========================================== */
+
+function buildRisks(
+  row,
+  sjit,
+  sor
+) {
+  const out =
+    [];
+
+  if (
+    num(
+      sjit.sc ||
+        sjit.stockCover
+    ) < 15
+  ) {
+    out.push(
+      "Low SJIT Stock"
+    );
+  }
+
+  if (
+    num(
+      row.returnPct
+    ) > 20
+  ) {
+    out.push(
+      "High Returns"
+    );
+  }
+
+  if (
+    num(
+      row.growthPct
+    ) < 0
+  ) {
+    out.push(
+      "Negative Growth"
+    );
+  }
+
+  if (
+    num(
+      row.ctrPct
+    ) < 1
+  ) {
+    out.push(
+      "Weak CTR"
+    );
+  }
+
+  return out;
 }
 
 /* ==========================================
@@ -203,7 +351,7 @@ function buildActions(
     ship > 0
   ) {
     out.push(
-      `⚡ Ship ${fmt(
+      `Ship ${fmt(
         ship
       )} units`
     );
@@ -215,7 +363,7 @@ function buildActions(
     ) > 0
   ) {
     out.push(
-      `⚠ Recall ${fmt(
+      `Recall ${fmt(
         sor.recallQty
       )} units`
     );
@@ -223,17 +371,17 @@ function buildActions(
 
   if (
     num(
-      row.returnPct
-    ) > 20
+      row.growthPct
+    ) < 0
   ) {
     out.push(
-      "↩ High returns risk"
+      "Boost visibility"
     );
   }
 
   if (!out.length) {
     out.push(
-      "✅ Healthy style"
+      "Healthy style"
     );
   }
 
