@@ -1,13 +1,13 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   REAL DATE-WISE DAILY PULSE
+   SAFE RECOVERY VERSION
+   Uses trusted sales engine
 ========================================== */
 
 import {
-  getDataset,
-  getFilters
-} from "../../core/state.js";
+  getSalesRows
+} from "../sales/metrics.js";
 
 /* ==========================================
    PUBLIC
@@ -18,107 +18,76 @@ export function getDailyPulseRows(
   order = "HIGH",
   limit = 50
 ) {
-  const sales =
-    getDataset("sales") || [];
-
-  const products =
-    getDataset(
-      "productMaster"
-    ) || [];
-
-  const filters =
-    getFilters();
-
-  const dates =
-    buildDates(filters);
-
-  const pMap =
-    buildProductMap(
-      products
-    );
-
-  const map = {};
-
-  sales.forEach((r) => {
-    const date =
-      val(
-        r.order_date
-      );
-
-    if (
-      !dates.includes(
-        date
-      )
-    )
-      return;
-
-    const styleId =
-      val(
-        r.style_id
-      );
-
-    if (!styleId)
-      return;
-
-    if (!map[styleId]) {
-      const p =
-        pMap[
-          styleId
-        ] || {};
-
-      map[
-        styleId
-      ] = {
-        styleId,
-        erp:
-          p.erp ||
-          "",
-        brand:
-          p.brand ||
-          "",
-        status:
-          p.status ||
-          "",
-        mtd: 0,
-        drr: 0,
-        trend: "→",
-        days: {}
-      };
-
-      dates.forEach(
-        (d) =>
-          (map[
-            styleId
-          ].days[d] = 0)
-      );
-    }
-
-    const qty =
-      num(
-        r.qty ||
-          r.units
-      );
-
-    map[
-      styleId
-    ].days[
-      date
-    ] += qty;
-
-    map[
-      styleId
-    ].mtd += qty;
-  });
+  const base =
+    getSalesRows() || [];
 
   const rows =
-    Object.values(
-      map
-    ).map((r) =>
-      finalize(
-        r,
-        dates
-      )
-    );
+    base.map((r) => {
+      const units =
+        num(
+          r.units
+        );
+
+      const drr =
+        units / 30;
+
+      return {
+        styleId:
+          pick(
+            r,
+            [
+              "styleId",
+              "style_id",
+              "style"
+            ]
+          ),
+
+        erp:
+          pick(
+            r,
+            [
+              "erp",
+              "erpSku",
+              "erp_sku"
+            ]
+          ),
+
+        brand:
+          pick(
+            r,
+            [
+              "brand"
+            ]
+          ),
+
+        status:
+          pick(
+            r,
+            [
+              "status",
+              "erpStatus",
+              "erp_status"
+            ]
+          ),
+
+        mtd: units,
+        drr,
+
+        trend:
+          growthTrend(
+            pick(
+              r,
+              [
+                "growthPct",
+                "growth",
+                "growth_pct"
+              ]
+            )
+          ),
+
+        days: {}
+      };
+    });
 
   sortRows(
     rows,
@@ -132,135 +101,12 @@ export function getDailyPulseRows(
         0,
         limit
       ),
+
     total:
       rows.length,
-    dates
+
+    dates: []
   };
-}
-
-/* ==========================================
-   BUILD DATE RANGE
-========================================== */
-
-function buildDates(
-  f
-) {
-  const start =
-    f.startDate;
-
-  const end =
-    f.endDate;
-
-  if (
-    !start ||
-    !end
-  )
-    return [];
-
-  const out =
-    [];
-
-  let d =
-    new Date(start);
-
-  const last =
-    new Date(end);
-
-  while (
-    d <= last
-  ) {
-    out.push(
-      formatDate(d)
-    );
-
-    d.setDate(
-      d.getDate() +
-        1
-    );
-  }
-
-  return out;
-}
-
-/* ==========================================
-   PRODUCT MAP
-========================================== */
-
-function buildProductMap(
-  rows
-) {
-  const map = {};
-
-  rows.forEach((r) => {
-    const id =
-      val(
-        r.style_id
-      );
-
-    if (!id)
-      return;
-
-    map[id] = {
-      erp:
-        val(
-          r.erp_sku
-        ),
-      brand:
-        val(
-          r.brand
-        ),
-      status:
-        val(
-          r.erp_status
-        )
-    };
-  });
-
-  return map;
-}
-
-/* ==========================================
-   FINALIZE
-========================================== */
-
-function finalize(
-  row,
-  dates
-) {
-  const days =
-    dates.length || 1;
-
-  row.drr =
-    row.mtd / days;
-
-  const vals =
-    dates.map(
-      (d) =>
-        row.days[d]
-    );
-
-  const a =
-    vals[
-      vals.length -
-        2
-    ] || 0;
-
-  const b =
-    vals[
-      vals.length -
-        1
-    ] || 0;
-
-  if (b > a)
-    row.trend =
-      "↗";
-  else if (
-    b < a
-  )
-    row.trend =
-      "↘";
-
-  return row;
 }
 
 /* ==========================================
@@ -296,38 +142,41 @@ function sortRows(
    HELPERS
 ========================================== */
 
-function val(v) {
-  return String(
-    v || ""
-  ).trim();
+function pick(
+  obj,
+  keys
+) {
+  for (const k of keys) {
+    if (
+      obj &&
+      obj[k] !==
+        undefined &&
+      obj[k] !==
+        null &&
+      obj[k] !== ""
+    ) {
+      return obj[k];
+    }
+  }
+
+  return "";
+}
+
+function growthTrend(
+  v
+) {
+  const n =
+    num(v);
+
+  if (n > 0)
+    return "↗";
+
+  if (n < 0)
+    return "↘";
+
+  return "→";
 }
 
 function num(v) {
   return Number(v) || 0;
-}
-
-function formatDate(
-  d
-) {
-  const y =
-    d.getFullYear();
-
-  const m =
-    String(
-      d.getMonth() +
-        1
-    ).padStart(
-      2,
-      "0"
-    );
-
-  const day =
-    String(
-      d.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
-
-  return `${y}-${m}-${day}`;
 }
