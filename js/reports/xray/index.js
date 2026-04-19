@@ -1,7 +1,6 @@
 /* ==========================================
    File: js/reports/xray/index.js
-   FULL REPLACE CODE
-   V6.7.1 FIXED UI
+   GOLD MASTER SAFE VERSION
 ========================================== */
 
 import { getXrayData } from "./metrics.js";
@@ -46,7 +45,7 @@ export function renderXrayReport() {
             flex:1;
             min-width:220px;
             padding:10px 12px;
-            border:1px solid #ddd;
+            border:1px solid #dbe3ee;
             border-radius:12px;
           "
         />
@@ -152,12 +151,18 @@ function renderData(d) {
           pct(
             d.growth
           )
+        ),
+        card(
+          "Return%",
+          pct(
+            d.returnPct
+          )
         )
       ]
     )}
 
     ${section(
-      "📦 Stock",
+      "📦 Stock & Planning",
       [
         card(
           "DRR",
@@ -176,6 +181,18 @@ function renderData(d) {
           )
         ),
         card(
+          "SJIT SC",
+          num1(
+            d.sjitSc
+          )
+        ),
+        card(
+          "SOR SC",
+          num1(
+            d.sorSc
+          )
+        ),
+        card(
           "Ship",
           fmt(
             d.shipQty
@@ -191,37 +208,43 @@ function renderData(d) {
     )}
 
     ${section(
-      "🍩 PO Mix",
+      "🚦 Traffic Funnel",
       [
         card(
-          "PPMP",
-          pct(
-            d.ppmpPct
+          "Impr.",
+          fmt(
+            d.impressions
           )
         ),
         card(
-          "SJIT",
-          pct(
-            d.sjitPct
+          "Clicks",
+          fmt(
+            d.clicks
           )
         ),
         card(
-          "SOR",
-          pct(
-            d.sorPct
-          )
+          "ATC",
+          fmt(d.atc)
+        ),
+        card(
+          "CTR",
+          pct(d.ctr)
+        ),
+        card(
+          "CVR",
+          pct(d.cvr)
         )
       ]
     )}
 
-    ${poVisual(d)}
+    ${poMix(d)}
 
-    ${tagSection(
+    ${tags(
       "⚠ Risks",
       d.risks
     )}
 
-    ${tagSection(
+    ${tags(
       "✅ Actions",
       d.actions
     )}
@@ -241,12 +264,15 @@ function hero(d) {
       linear-gradient(
         135deg,
         #0f172a,
-        #1e3a8a
+        #1e3a8a,
+        #0f172a
       );
       display:grid;
       grid-template-columns:1fr auto;
       gap:14px;
       align-items:center;
+      box-shadow:
+      0 12px 28px rgba(15,23,42,.18);
     ">
 
       <div>
@@ -259,7 +285,7 @@ function hero(d) {
           "
         >
           <div style="
-            font-size:34px;
+            font-size:36px;
             font-weight:900;
           ">
             ${d.styleId} ↗
@@ -309,15 +335,13 @@ function hero(d) {
   `;
 }
 
-/* ========================================== */
-
 function trend(d) {
-  const vals =
+  const rows =
     d.trend || [];
 
   const max =
     Math.max(
-      ...vals.map(
+      ...rows.map(
         (x) =>
           x.value
       ),
@@ -331,13 +355,13 @@ function trend(d) {
       </h3>
 
       <div style="
-        height:110px;
         display:flex;
         gap:6px;
         align-items:flex-end;
-        margin-top:10px;
+        height:110px;
+        margin-top:12px;
       ">
-        ${vals
+        ${rows
           .map(
             (x) =>
               `<div title="${x.date}"
@@ -364,76 +388,100 @@ function trend(d) {
   `;
 }
 
-function poVisual(d) {
+function poMix(d) {
+  const a =
+    d.ppmpPct;
+  const b =
+    d.sjitPct;
+
   return `
     <div class="panel-card">
       <h3 class="panel-title">
-        🍩 PO Mix Visual
+        🍩 PO Mix
       </h3>
 
       <div style="
-        margin-top:14px;
-        display:grid;
-        gap:10px;
-      ">
-        ${bar(
-          "PPMP",
-          d.ppmpPct,
-          "#9333ea"
-        )}
-        ${bar(
-          "SJIT",
-          d.sjitPct,
-          "#2563eb"
-        )}
-        ${bar(
-          "SOR",
-          d.sorPct,
-          "#16a34a"
-        )}
-      </div>
-    </div>
-  `;
-}
-
-function bar(
-  label,
-  val,
-  color
-) {
-  return `
-    <div>
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        font-size:13px;
-        margin-bottom:5px;
-      ">
-        <span>${label}</span>
-        <b>${pct(
-          val
-        )}</b>
-      </div>
-
-      <div style="
-        height:10px;
-        background:#eef2f7;
-        border-radius:999px;
+        width:160px;
+        height:160px;
+        margin:18px auto;
+        border-radius:50%;
+        background:
+        conic-gradient(
+          #9333ea 0 ${a}%,
+          #2563eb ${a}% ${a +
+    b}%,
+          #16a34a ${a +
+    b}% 100%
+        );
+        position:relative;
       ">
         <div style="
-          height:100%;
-          width:${val}%;
-          background:${color};
-          border-radius:999px;
+          position:absolute;
+          inset:28px;
+          border-radius:50%;
+          background:#fff;
         "></div>
+      </div>
+
+      <div style="
+        display:grid;
+        gap:8px;
+        font-size:13px;
+      ">
+        ${legend(
+          "#9333ea",
+          "PPMP",
+          a
+        )}
+        ${legend(
+          "#2563eb",
+          "SJIT",
+          b
+        )}
+        ${legend(
+          "#16a34a",
+          "SOR",
+          d.sorPct
+        )}
       </div>
     </div>
   `;
 }
 
-/* ========================================== */
+function legend(
+  color,
+  name,
+  val
+) {
+  return `
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    ">
+      <div style="
+        display:flex;
+        gap:8px;
+        align-items:center;
+      ">
+        <span style="
+          width:10px;
+          height:10px;
+          border-radius:50%;
+          background:${color};
+          display:inline-block;
+        "></span>
+        ${name}
+      </div>
 
-function tagSection(
+      <b>${pct(
+        val
+      )}</b>
+    </div>
+  `;
+}
+
+function tags(
   title,
   rows
 ) {
@@ -445,8 +493,8 @@ function tagSection(
 
       <div style="
         display:flex;
-        flex-wrap:wrap;
         gap:10px;
+        flex-wrap:wrap;
         margin-top:10px;
       ">
         ${rows
@@ -466,6 +514,8 @@ function tagSection(
     </div>
   `;
 }
+
+/* ========================================== */
 
 function section(
   title,
@@ -495,8 +545,6 @@ function card(
     </div>
   `;
 }
-
-/* ========================================== */
 
 function bindSearch() {
   const btn =
@@ -559,8 +607,6 @@ function emptyBox(
     </div>
   `;
 }
-
-/* ========================================== */
 
 function safe(v) {
   return String(
