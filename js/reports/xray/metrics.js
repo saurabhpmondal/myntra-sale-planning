@@ -1,9 +1,7 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
-   FULL REPLACE CODE
-   V6.7.1 FIXED
-   Restored local search support
-   Real filtered trend
+   GOLD MASTER SAFE VERSION
+   Full restore + no new risky logic
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
@@ -12,38 +10,32 @@ import { getSorRows } from "../sor/metrics.js";
 import { getDataset } from "../../core/state.js";
 
 export function getXrayData(keyword = "") {
-  const needle = String(keyword || "")
-    .trim()
-    .toLowerCase();
-
+  const needle = String(keyword || "").trim().toLowerCase();
   if (!needle) return null;
 
-  const salesRows =
-    getSalesRows() || [];
+  const sales = getSalesRows() || [];
 
-  const row = salesRows.find((r) =>
-    String(r.styleId || "")
-      .toLowerCase()
-      .includes(needle)
+  const row = sales.find((r) =>
+    String(r.styleId || "").toLowerCase().includes(needle)
   );
 
   if (!row) return null;
 
   const rank =
-    salesRows.findIndex(
+    sales.findIndex(
       (x) =>
         String(x.styleId) ===
         String(row.styleId)
     ) + 1;
 
   const sjit =
-    (getSjitRows() || []).find((r) =>
-      sameStyle(r, row)
+    (getSjitRows() || []).find(
+      (r) => same(r, row)
     ) || {};
 
   const sor =
-    (getSorRows() || []).find((r) =>
-      sameStyle(r, row)
+    (getSorRows() || []).find(
+      (r) => same(r, row)
     ) || {};
 
   const pm =
@@ -55,121 +47,75 @@ export function getXrayData(keyword = "") {
         String(row.styleId).trim()
     ) || {};
 
-  const returns =
-    Math.round(
-      num(row.units) *
-        num(row.returnPct) /
-        100
-    );
+  const returnUnits = Math.round(
+    num(row.units) *
+      num(row.returnPct) /
+      100
+  );
 
-  const net =
-    Math.max(
-      0,
-      num(row.units) - returns
-    );
+  const netUnits = Math.max(
+    0,
+    num(row.units) - returnUnits
+  );
 
   return {
-    styleId:
-      row.styleId || "",
-
+    styleId: row.styleId || "",
     myntraUrl:
       "https://www.myntra.com/" +
       row.styleId,
 
-    erp:
-      row.erp || "",
-
-    brand:
-      row.brand || "",
-
+    erp: row.erp || "",
+    brand: row.brand || "",
     rank,
 
-    gmv:
-      num(row.gmv),
-
-    units:
-      num(row.units),
-
-    returnUnits:
-      returns,
-
-    netUnits:
-      net,
-
-    asp:
-      num(row.asp),
-
-    dw:
-      num(row.sharePct),
-
-    growth:
-      num(row.growthPct),
-
-    returnPct:
-      num(row.returnPct),
+    gmv: num(row.gmv),
+    units: num(row.units),
+    returnUnits,
+    netUnits,
+    asp: num(row.asp),
+    dw: num(row.sharePct),
+    growth: num(row.growthPct),
+    returnPct: num(row.returnPct),
 
     impressions:
       num(row.impressions),
-
     clicks:
       num(row.clicks),
-
-    atc:
-      num(row.atc),
-
-    ctr:
-      num(row.ctrPct),
-
-    cvr:
-      num(row.cvrPct),
+    atc: num(row.atc),
+    ctr: num(row.ctrPct),
+    cvr: num(row.cvrPct),
 
     ppmpPct:
       num(row.ppmpPct),
-
     sjitPct:
       num(row.sjitPct),
-
     sorPct:
       num(row.sorPct),
 
     drr:
-      num(
-        sjit.drr || sor.drr
-      ),
-
+      num(sjit.drr || sor.drr),
     sjitStock:
       num(row.sjitStock),
-
     sorStock:
       num(row.sorStock),
-
     sjitSc:
       num(sjit.sc),
-
     sorSc:
       num(sor.sc),
-
     shipQty:
       num(
         sjit.totalQty ||
         sjit.shipQty
       ),
-
     recallQty:
       num(sor.recallQty),
 
     status:
       pm.status || "",
-
-    mrp:
-      num(pm.mrp),
-
-    tp:
-      num(pm.tp),
-
+    mrp: num(pm.mrp),
+    tp: num(pm.tp),
     launchDate:
       pm.launch_date || "",
-
     liveDate:
       pm.live_date || "",
 
@@ -194,7 +140,7 @@ export function getXrayData(keyword = "") {
   };
 }
 
-/* ========================================== */
+/* ------------------ */
 
 function buildTrend(styleId) {
   const rows =
@@ -211,11 +157,9 @@ function buildTrend(styleId) {
     )
       return;
 
-    const d =
-      String(
-        r.order_date ||
-        ""
-      ).trim();
+    const d = String(
+      r.order_date || ""
+    ).trim();
 
     if (!d) return;
 
@@ -322,7 +266,7 @@ function buildActions(
   return out;
 }
 
-function sameStyle(a, b) {
+function same(a, b) {
   return (
     String(
       a.styleId ||
