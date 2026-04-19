@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/daily-pulse/index.js
    FULL REPLACE CODE
-   FINAL DAILY PULSE UI
+   SAFE UI VERSION
 ========================================== */
 
 import {
@@ -33,7 +33,11 @@ export function renderDailyPulseReport() {
       sortBy,
       order,
       limit
-    );
+    ) || {
+      rows: [],
+      total: 0,
+      dates: []
+    };
 
   root.innerHTML = `
     <div class="panel-card">
@@ -48,7 +52,11 @@ export function renderDailyPulseReport() {
         flex-wrap:wrap;
         margin-top:12px;
       ">
-        <select id="dpSort" style="${sel()}">
+
+        <select
+          id="dpSort"
+          style="${sel()}"
+        >
           <option value="MTD" ${
             sortBy ===
             "MTD"
@@ -64,7 +72,10 @@ export function renderDailyPulseReport() {
           }>DRR</option>
         </select>
 
-        <select id="dpOrder" style="${sel()}">
+        <select
+          id="dpOrder"
+          style="${sel()}"
+        >
           <option value="HIGH" ${
             order ===
             "HIGH"
@@ -94,15 +105,16 @@ export function renderDailyPulseReport() {
           )} /
           ${data.total}
         </div>
+
       </div>
 
     </div>
 
     <div class="panel-card"
       style="
-      overflow:auto;
-      padding:0;
-    ">
+        overflow:auto;
+        padding:0;
+      ">
 
       <table style="
         width:max-content;
@@ -114,41 +126,20 @@ export function renderDailyPulseReport() {
         <thead>
           <tr>
             ${th(
-              "Style ID",
-              0
+              "Style ID"
             )}
-            ${th(
-              "ERP",
-              110
-            )}
+            ${th("ERP")}
             ${th(
               "Brand"
             )}
             ${th(
               "Status"
             )}
-            ${th(
-              "MTD"
-            )}
-            ${th(
-              "DRR"
-            )}
+            ${th("MTD")}
+            ${th("DRR")}
             ${th(
               "Trend"
             )}
-
-            ${data.dates
-              .map(
-                (
-                  d
-                ) =>
-                  th(
-                    dayNo(
-                      d
-                    )
-                  )
-              )
-              .join("")}
           </tr>
         </thead>
 
@@ -156,10 +147,7 @@ export function renderDailyPulseReport() {
           ${data.rows
             .map(
               (r) =>
-                row(
-                  r,
-                  data.dates
-                )
+                row(r)
             )
             .join("")}
         </tbody>
@@ -198,23 +186,13 @@ export function renderDailyPulseReport() {
 
 /* ========================================== */
 
-function row(
-  r,
-  dates
-) {
-  let prev =
-    null;
-
+function row(r) {
   return `
     <tr>
       ${td(
-        r.styleId,
-        0
+        r.styleId
       )}
-      ${td(
-        r.erp,
-        110
-      )}
+      ${td(r.erp)}
       ${td(
         r.brand
       )}
@@ -232,118 +210,33 @@ function row(
           r.trend
         )
       )}
-
-      ${dates
-        .map((d) => {
-          const v =
-            r.days[d] ||
-            0;
-
-          let bg =
-            "#fff";
-
-          if (
-            prev !==
-            null
-          ) {
-            if (
-              v > prev
-            )
-              bg =
-                "#dcfce7";
-
-            else if (
-              v < prev
-            )
-              bg =
-                "#fee2e2";
-
-            else if (
-              v === 0
-            )
-              bg =
-                "#f8fafc";
-          }
-
-          prev = v;
-
-          return `
-            <td style="
-              padding:8px 10px;
-              text-align:center;
-              border-bottom:1px solid #eef2f7;
-              background:${bg};
-              font-weight:600;
-            ">
-              ${fmt(v)}
-            </td>
-          `;
-        })
-        .join("")}
-
     </tr>
   `;
 }
 
-/* ========================================== */
-
-function th(
-  txt,
-  left = null
-) {
+function th(t) {
   return `
     <th style="
       padding:10px;
       background:#f8fafc;
       border-bottom:1px solid #e5e7eb;
       white-space:nowrap;
-      ${
-        left !==
-        null
-          ? sticky(
-              left
-            )
-          : ""
-      }
-      z-index:2;
+      text-align:left;
     ">
-      ${txt}
+      ${t}
     </th>
   `;
 }
 
-function td(
-  txt,
-  left = null
-) {
+function td(t) {
   return `
     <td style="
-      padding:8px 10px;
+      padding:10px;
       border-bottom:1px solid #eef2f7;
       white-space:nowrap;
-      background:#fff;
-      ${
-        left !==
-        null
-          ? sticky(
-              left
-            )
-          : ""
-      }
     ">
-      ${txt || ""}
+      ${t || ""}
     </td>
-  `;
-}
-
-function sticky(
-  left
-) {
-  return `
-    position:sticky;
-    left:${left}px;
-    background:#fff;
-    z-index:1;
   `;
 }
 
@@ -400,12 +293,6 @@ function trend(t) {
     return `<span style="color:#dc2626;">↘</span>`;
 
   return `<span style="color:#64748b;">→</span>`;
-}
-
-function dayNo(d) {
-  return String(
-    d
-  ).slice(-2);
 }
 
 function fmt(v) {
