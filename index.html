@@ -27,6 +27,7 @@
 
 <body>
 
+<!-- HEADER -->
 <header class="app-header">
 
   <div class="header-center">
@@ -79,79 +80,161 @@
 
 </header>
 
+<!-- NAV -->
 <nav class="tab-nav">
 
-  <button
-    class="tab-btn active"
-    data-tab="dashboard"
-  >
+  <button class="tab-btn active" data-tab="dashboard">
     📊 Dashboard
   </button>
 
-  <button
-    class="tab-btn"
-    data-tab="sales"
-  >
+  <button class="tab-btn" data-tab="sales">
     💰 Sales
   </button>
 
-  <button
-    class="tab-btn"
-    data-tab="sjit"
-  >
+  <button class="tab-btn" data-tab="sjit">
     🚚 SJIT Planning
   </button>
 
-  <button
-    class="tab-btn"
-    data-tab="sor"
-  >
+  <button class="tab-btn" data-tab="sor">
     🏬 SOR Planning
   </button>
 
-  <button
-    class="tab-btn"
-    data-tab="xray"
-  >
+  <button class="tab-btn" data-tab="xray">
     🔍 Style X-Ray
   </button>
 
-  <button
-    class="tab-btn"
-    data-tab="export"
-  >
+  <button class="tab-btn" data-tab="export">
     ⬇ Export Center
   </button>
 
 </nav>
 
+<!-- MAIN -->
 <main class="app-main">
 
+  <!-- DASHBOARD -->
   <section
     id="dashboard"
     class="tab-panel active"
-  ></section>
+  >
 
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <span>Revenue</span>
+        <strong id="kpiRevenue">-</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Units</span>
+        <strong id="kpiUnits">-</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Return%</span>
+        <strong id="kpiReturn">-</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>SJIT Stock</span>
+        <strong id="kpiSjit">-</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>SOR Stock</span>
+        <strong id="kpiSor">-</strong>
+      </div>
+
+      <div class="kpi-card">
+        <span>Growth</span>
+        <strong id="kpiGrowth">-</strong>
+      </div>
+
+    </div>
+
+    <div
+      id="dashboardDailyChart"
+      class="panel-card"
+    ></div>
+
+    <div class="two-col-grid">
+
+      <div class="panel-card">
+        <h3 class="panel-title">
+          Brand Performance
+        </h3>
+        <div id="dashboardBrandSummary"></div>
+      </div>
+
+      <div class="panel-card">
+        <h3 class="panel-title">
+          PO Type Analysis
+        </h3>
+        <div id="dashboardPoSummary"></div>
+      </div>
+
+    </div>
+
+    <div class="two-col-grid">
+
+      <div class="panel-card">
+        <h3 class="panel-title">
+          Price Range Analysis
+        </h3>
+        <div id="dashboardPriceRange"></div>
+      </div>
+
+      <div class="panel-card">
+        <h3 class="panel-title">
+          ERP Status Analysis
+        </h3>
+        <div id="dashboardErpStatus"></div>
+      </div>
+
+    </div>
+
+    <div class="panel-card">
+      <h3 class="panel-title">
+        Stock Cover Analysis
+      </h3>
+      <div id="dashboardStockCover"></div>
+    </div>
+
+  </section>
+
+  <!-- SALES -->
   <section
     id="sales"
     class="tab-panel"
-  ></section>
+  >
+    <div class="panel-card">
+      <h3 class="panel-title">
+        Sales Master Report
+      </h3>
 
+      <div id="salesReportRoot"></div>
+    </div>
+  </section>
+
+  <!-- SJIT -->
   <section
     id="sjit"
     class="tab-panel"
   ></section>
 
+  <!-- SOR -->
   <section
     id="sor"
     class="tab-panel"
   ></section>
 
+  <!-- XRAY -->
   <section
     id="xray"
     class="tab-panel"
   ></section>
 
+  <!-- EXPORT -->
   <section
     id="export"
     class="tab-panel"
