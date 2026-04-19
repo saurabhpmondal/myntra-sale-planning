@@ -1,8 +1,8 @@
 /* ==========================================
    File: js/reports/daily-pulse/metrics.js
    FULL REPLACE CODE
-   SAFE USING EXISTING SALES ENGINE
-   No raw schema assumptions
+   FINAL SAFE VERSION
+   Uses trusted Sales Engine
 ========================================== */
 
 import { getSalesRows } from "../sales/metrics.js";
@@ -12,39 +12,50 @@ export function getDailyPulseRows(
   order = "HIGH",
   limit = 50
 ) {
-  const rows =
+  const base =
     getSalesRows() || [];
 
-  const safe =
-    rows.map((r) => ({
-      styleId:
-        r.styleId || "",
-      erp:
-        r.erp || "",
-      brand:
-        r.brand || "",
-      mtd:
-        num(r.units),
-      drr:
-        num(r.units) / 30,
-      trend: "→",
-      days: {}
-    }));
+  const rows =
+    base.map((r) => {
+      const units =
+        num(r.units);
+
+      const drr =
+        units / 30;
+
+      return {
+        styleId:
+          r.styleId || "",
+        erp:
+          r.erp || "",
+        brand:
+          r.brand || "",
+        status:
+          r.status || "",
+        mtd: units,
+        drr,
+        trend:
+          trendFromGrowth(
+            r.growthPct
+          ),
+        days: {}
+      };
+    });
 
   sortRows(
-    safe,
+    rows,
     sortBy,
     order
   );
 
   return {
     rows:
-      safe.slice(
+      rows.slice(
         0,
         limit
       ),
     total:
-      safe.length,
+      rows.length,
     dates: []
   };
 }
@@ -74,6 +85,21 @@ function sortRows(
   ) {
     rows.reverse();
   }
+}
+
+function trendFromGrowth(
+  v
+) {
+  const n =
+    num(v);
+
+  if (n > 0)
+    return "↗";
+
+  if (n < 0)
+    return "↘";
+
+  return "→";
 }
 
 function num(v) {
