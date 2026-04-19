@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/core/router.js
    FULL REPLACE CODE
-   Added Daily Pulse Tab
-   SAFE VERSION
+   FINAL DAILY PULSE ENABLED
 ========================================== */
 
 import { renderDashboard } from "../reports/dashboard/index.js";
@@ -47,29 +46,23 @@ export async function navigate(
 ========================================== */
 
 function setActiveTab(tab) {
-  const buttons =
-    document.querySelectorAll(
-      ".tab-btn"
-    );
+  document
+    .querySelectorAll(".tab-btn")
+    .forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.tab === tab
+      );
+    });
 
-  const panels =
-    document.querySelectorAll(
-      ".tab-panel"
-    );
-
-  buttons.forEach((btn) => {
-    btn.classList.toggle(
-      "active",
-      btn.dataset.tab === tab
-    );
-  });
-
-  panels.forEach((panel) => {
-    panel.classList.toggle(
-      "active",
-      panel.id === tab
-    );
-  });
+  document
+    .querySelectorAll(".tab-panel")
+    .forEach((panel) => {
+      panel.classList.toggle(
+        "active",
+        panel.id === tab
+      );
+    });
 }
 
 /* ==========================================
@@ -83,9 +76,8 @@ async function renderTab(tab) {
       break;
 
     case "daily-pulse":
-  document.getElementById("daily-pulse").innerHTML =
-    '<div class="panel-card"><h3 class="panel-title">Daily Pulse Live</h3></div>';
-  break;
+      renderDailyPulseReport();
+      break;
 
     case "sales":
       await ensureTraffic();
@@ -119,14 +111,12 @@ async function renderTab(tab) {
 }
 
 /* ==========================================
-   TRAFFIC LAZY LOAD
+   TRAFFIC LOAD
 ========================================== */
 
 async function ensureTraffic() {
   const rows =
-    getDataset(
-      "traffic"
-    );
+    getDataset("traffic");
 
   if (
     rows &&
