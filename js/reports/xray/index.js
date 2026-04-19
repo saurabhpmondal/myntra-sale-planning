@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/index.js
    FULL REPLACE CODE
-   V6.7 POLISH UI
+   V6.7.1 FIXED UI
 ========================================== */
 
 import { getXrayData } from "./metrics.js";
@@ -15,7 +15,7 @@ export function renderXrayReport() {
   if (!root) return;
 
   const keyword =
-    getSearch();
+    getLocalSearch();
 
   const data =
     keyword
@@ -25,23 +25,64 @@ export function renderXrayReport() {
       : null;
 
   root.innerHTML = `
+    <div class="panel-card">
+      <h3 class="panel-title">
+        🔍 Style X-Ray
+      </h3>
+
+      <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        margin-top:12px;
+      ">
+        <input
+          id="xraySearch"
+          value="${safe(
+            keyword
+          )}"
+          placeholder="Search Style ID"
+          style="
+            flex:1;
+            min-width:220px;
+            padding:10px 12px;
+            border:1px solid #ddd;
+            border-radius:12px;
+          "
+        />
+
+        <button
+          id="xrayBtn"
+          style="
+            padding:10px 16px;
+            border:none;
+            border-radius:12px;
+            background:#0f172a;
+            color:#fff;
+            font-weight:700;
+            cursor:pointer;
+          "
+        >
+          Analyze
+        </button>
+      </div>
+    </div>
+
     ${
       data
         ? renderData(
             data
           )
         : emptyBox(
-            keyword
-              ? "No style found"
-              : "Search style to begin"
+            "Search style to begin"
           )
     }
   `;
+
+  bindSearch();
 }
 
-/* ==========================================
-   MAIN VIEW
-========================================== */
+/* ========================================== */
 
 function renderData(d) {
   return `
@@ -49,11 +90,19 @@ function renderData(d) {
 
     ${section(
       "🏷 Product Info",
-      tint("slate"),
       [
-        card("Status", d.status),
-        card("MRP", money(d.mrp)),
-        card("TP", money(d.tp)),
+        card(
+          "Status",
+          d.status
+        ),
+        card(
+          "MRP",
+          money(d.mrp)
+        ),
+        card(
+          "TP",
+          money(d.tp)
+        ),
         card(
           "Launch",
           d.launchDate
@@ -69,7 +118,6 @@ function renderData(d) {
 
     ${section(
       "📊 Sales",
-      tint("green"),
       [
         card(
           "GMV",
@@ -78,6 +126,18 @@ function renderData(d) {
         card(
           "Units",
           fmt(d.units)
+        ),
+        card(
+          "Return",
+          fmt(
+            d.returnUnits
+          )
+        ),
+        card(
+          "Net",
+          fmt(
+            d.netUnits
+          )
         ),
         card(
           "ASP",
@@ -92,19 +152,12 @@ function renderData(d) {
           pct(
             d.growth
           )
-        ),
-        card(
-          "Return%",
-          pct(
-            d.returnPct
-          )
         )
       ]
     )}
 
     ${section(
-      "📦 Stock & Planning",
-      tint("amber"),
+      "📦 Stock",
       [
         card(
           "DRR",
@@ -123,18 +176,6 @@ function renderData(d) {
           )
         ),
         card(
-          "SJIT SC",
-          num1(
-            d.sjitSc
-          )
-        ),
-        card(
-          "SOR SC",
-          num1(
-            d.sorSc
-          )
-        ),
-        card(
           "Ship",
           fmt(
             d.shipQty
@@ -150,41 +191,7 @@ function renderData(d) {
     )}
 
     ${section(
-      "🚦 Funnel",
-      tint("blue"),
-      [
-        card(
-          "Impr.",
-          fmt(
-            d.impressions
-          )
-        ),
-        card(
-          "Clicks",
-          fmt(
-            d.clicks
-          )
-        ),
-        card(
-          "ATC",
-          fmt(d.atc)
-        ),
-        card(
-          "CTR",
-          pct(d.ctr)
-        ),
-        card(
-          "CVR",
-          pct(d.cvr)
-        )
-      ]
-    )}
-
-    ${donut(d)}
-
-    ${section(
-      "🏭 PO Mix",
-      tint("purple"),
+      "🍩 PO Mix",
       [
         card(
           "PPMP",
@@ -206,12 +213,22 @@ function renderData(d) {
         )
       ]
     )}
+
+    ${poVisual(d)}
+
+    ${tagSection(
+      "⚠ Risks",
+      d.risks
+    )}
+
+    ${tagSection(
+      "✅ Actions",
+      d.actions
+    )}
   `;
 }
 
-/* ==========================================
-   HERO
-========================================== */
+/* ========================================== */
 
 function hero(d) {
   return `
@@ -224,11 +241,8 @@ function hero(d) {
       linear-gradient(
         135deg,
         #0f172a,
-        #1e3a8a,
-        #0f172a
+        #1e3a8a
       );
-      box-shadow:
-      0 12px 30px rgba(15,23,42,.18);
       display:grid;
       grid-template-columns:1fr auto;
       gap:14px;
@@ -245,22 +259,20 @@ function hero(d) {
           "
         >
           <div style="
-            font-size:36px;
+            font-size:34px;
             font-weight:900;
-            line-height:1;
           ">
-            ${safe(
-              d.styleId
-            )} ↗
+            ${d.styleId} ↗
           </div>
         </a>
 
         <div style="
-          margin-top:12px;
+          margin-top:10px;
           display:inline-block;
-          background:rgba(255,255,255,.14);
           padding:7px 12px;
           border-radius:999px;
+          background:
+          rgba(255,255,255,.14);
           font-size:13px;
           font-weight:700;
         ">
@@ -284,10 +296,11 @@ function hero(d) {
 
         <div style="
           margin-top:6px;
-          opacity:.9;
           font-size:14px;
+          opacity:.9;
         ">
-          ERP: ${safe(
+          ERP:
+          ${safe(
             d.erp
           )}
         </div>
@@ -296,48 +309,53 @@ function hero(d) {
   `;
 }
 
-/* ==========================================
-   TREND
-========================================== */
+/* ========================================== */
 
 function trend(d) {
+  const vals =
+    d.trend || [];
+
   const max =
     Math.max(
-      ...(d.trend || [1])
+      ...vals.map(
+        (x) =>
+          x.value
+      ),
+      1
     );
 
   return `
     <div class="panel-card">
       <h3 class="panel-title">
-        📈 Real Trend
+        📈 Trend
       </h3>
 
       <div style="
         height:110px;
         display:flex;
-        gap:7px;
+        gap:6px;
         align-items:flex-end;
         margin-top:10px;
       ">
-        ${(d.trend || [])
+        ${vals
           .map(
-            (v) =>
-              `<div style="
+            (x) =>
+              `<div title="${x.date}"
+                style="
                 flex:1;
-                border-radius:12px 12px 0 0;
+                height:${Math.max(
+                  10,
+                  (x.value /
+                    max) *
+                    100
+                )}%;
+                border-radius:10px 10px 0 0;
                 background:
                 linear-gradient(
                   180deg,
                   #60a5fa,
                   #2563eb
                 );
-                box-shadow:
-                0 6px 14px rgba(37,99,235,.25);
-                height:${Math.max(
-                  10,
-                  (v / max) *
-                    100
-                )}%;
               "></div>`
           )
           .join("")}
@@ -346,16 +364,7 @@ function trend(d) {
   `;
 }
 
-/* ==========================================
-   DONUT
-========================================== */
-
-function donut(d) {
-  const a =
-    d.ppmpPct;
-  const b =
-    d.sjitPct;
-
+function poVisual(d) {
   return `
     <div class="panel-card">
       <h3 class="panel-title">
@@ -363,44 +372,107 @@ function donut(d) {
       </h3>
 
       <div style="
-        width:160px;
-        height:160px;
-        margin:18px auto;
-        border-radius:50%;
-        background:
-        conic-gradient(
-          #9333ea 0 ${a}%,
-          #2563eb ${a}% ${a +
-    b}%,
-          #84cc16 ${a +
-    b}% 100%
-        );
-        position:relative;
-        box-shadow:
-        0 10px 24px rgba(0,0,0,.08);
+        margin-top:14px;
+        display:grid;
+        gap:10px;
+      ">
+        ${bar(
+          "PPMP",
+          d.ppmpPct,
+          "#9333ea"
+        )}
+        ${bar(
+          "SJIT",
+          d.sjitPct,
+          "#2563eb"
+        )}
+        ${bar(
+          "SOR",
+          d.sorPct,
+          "#16a34a"
+        )}
+      </div>
+    </div>
+  `;
+}
+
+function bar(
+  label,
+  val,
+  color
+) {
+  return `
+    <div>
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        font-size:13px;
+        margin-bottom:5px;
+      ">
+        <span>${label}</span>
+        <b>${pct(
+          val
+        )}</b>
+      </div>
+
+      <div style="
+        height:10px;
+        background:#eef2f7;
+        border-radius:999px;
       ">
         <div style="
-          position:absolute;
-          inset:26px;
-          background:#fff;
-          border-radius:50%;
+          height:100%;
+          width:${val}%;
+          background:${color};
+          border-radius:999px;
         "></div>
       </div>
     </div>
   `;
 }
 
-/* ==========================================
-   COMMON
-========================================== */
+/* ========================================== */
+
+function tagSection(
+  title,
+  rows
+) {
+  return `
+    <div class="panel-card">
+      <h3 class="panel-title">
+        ${title}
+      </h3>
+
+      <div style="
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:10px;
+      ">
+        ${rows
+          .map(
+            (x) =>
+              `<div style="
+                padding:8px 12px;
+                border-radius:999px;
+                background:#f8fafc;
+                border:1px solid #e5e7eb;
+                font-size:13px;
+                font-weight:600;
+              ">${x}</div>`
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
 
 function section(
   title,
-  bg,
   cards
 ) {
   return `
-    <div class="panel-card" style="${bg}">
+    <div class="panel-card">
       <h3 class="panel-title">
         ${title}
       </h3>
@@ -412,33 +484,68 @@ function section(
   `;
 }
 
-function tint(type) {
-  if (type === "green")
-    return "background:linear-gradient(180deg,#ffffff,#f0fdf4);";
-  if (type === "amber")
-    return "background:linear-gradient(180deg,#ffffff,#fffbeb);";
-  if (type === "blue")
-    return "background:linear-gradient(180deg,#ffffff,#eff6ff);";
-  if (type === "purple")
-    return "background:linear-gradient(180deg,#ffffff,#faf5ff);";
-
-  return "background:linear-gradient(180deg,#ffffff,#f8fafc);";
-}
-
 function card(
   label,
   value
 ) {
   return `
-    <div class="kpi-card" style="
-      border-radius:16px;
-      box-shadow:
-      0 8px 18px rgba(15,23,42,.05);
-    ">
+    <div class="kpi-card">
       <span>${label}</span>
       <strong>${value}</strong>
     </div>
   `;
+}
+
+/* ========================================== */
+
+function bindSearch() {
+  const btn =
+    document.getElementById(
+      "xrayBtn"
+    );
+
+  const input =
+    document.getElementById(
+      "xraySearch"
+    );
+
+  if (
+    btn &&
+    input
+  ) {
+    btn.onclick =
+      runSearch;
+
+    input.onkeydown =
+      (e) => {
+        if (
+          e.key ===
+          "Enter"
+        )
+          runSearch();
+      };
+  }
+}
+
+function runSearch() {
+  const input =
+    document.getElementById(
+      "xraySearch"
+    );
+
+  window.__xraySearch =
+    input
+      ? input.value.trim()
+      : "";
+
+  renderXrayReport();
+}
+
+function getLocalSearch() {
+  return (
+    window.__xraySearch ||
+    ""
+  );
 }
 
 function emptyBox(
@@ -453,16 +560,7 @@ function emptyBox(
   `;
 }
 
-function getSearch() {
-  const el =
-    document.getElementById(
-      "globalSearch"
-    );
-
-  return el
-    ? el.value.trim()
-    : "";
-}
+/* ========================================== */
 
 function safe(v) {
   return String(
