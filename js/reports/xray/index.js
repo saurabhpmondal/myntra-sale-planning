@@ -1,7 +1,7 @@
 /* ==========================================
    File: js/reports/xray/index.js
    FULL REPLACE CODE
-   Added More KPIs + Better Hero
+   SAFE RENDER + INTERNAL SEARCH BOX
 ========================================== */
 
 import {
@@ -24,41 +24,97 @@ export function renderXrayReport() {
   const keyword =
     getSearch();
 
-  if (!keyword) {
-    root.innerHTML = emptyBox(
-      "Search Style ID above to begin analysis"
-    );
-    return;
-  }
-
   const data =
-    getXrayData(
-      keyword
-    );
-
-  if (!data) {
-    root.innerHTML =
-      emptyBox(
-        "No style found"
-      );
-    return;
-  }
+    keyword
+      ? getXrayData(
+          keyword
+        )
+      : null;
 
   root.innerHTML = `
+    <div class="panel-card">
+
+      <h3 class="panel-title">
+        🔍 Style X-Ray
+      </h3>
+
+      <div style="
+        display:flex;
+        gap:10px;
+        margin-top:12px;
+        flex-wrap:wrap;
+      ">
+        <input
+          id="xraySearch"
+          type="text"
+          placeholder="Search Style ID"
+          value="${keyword}"
+          style="
+            flex:1;
+            min-width:220px;
+            padding:10px 12px;
+            border:1px solid #ddd;
+            border-radius:10px;
+          "
+        />
+
+        <button
+          id="xrayBtn"
+          style="
+            padding:10px 16px;
+            border:none;
+            border-radius:10px;
+            cursor:pointer;
+          "
+        >
+          Analyze
+        </button>
+      </div>
+
+    </div>
+
+    ${
+      data
+        ? renderData(
+            data
+          )
+        : emptyBox(
+            keyword
+              ? "No style found"
+              : "Search any style to begin"
+          )
+    }
+  `;
+
+  bindSearch();
+}
+
+/* ==========================================
+   DATA VIEW
+========================================== */
+
+function renderData(
+  data
+) {
+  return `
     <div class="xray-hero">
 
       <div class="xray-title">
-        ${data.styleId}
+        ${safe(
+          data.styleId
+        )}
       </div>
 
       <div class="xray-sub">
-        ${data.erp}
-        •
-        ${data.brand}
+        ${safe(
+          data.erp
+        )} • ${safe(
+    data.brand
+  )}
       </div>
 
       <div class="xray-rank">
-        🏆 BESTSELLER #${fmt(
+        🏆 Rank #${fmt(
           data.rank
         )}
       </div>
@@ -67,18 +123,89 @@ export function renderXrayReport() {
 
     <div class="kpi-grid">
 
-      ${card("💰 GMV", money(data.gmv))}
-      ${card("📦 Units", fmt(data.units))}
-      ${card("🏷 ASP", money(data.asp))}
-      ${card("🎯 DW", pct(data.dw))}
-      ${card("📈 Growth", pct(data.growth))}
-      ${card("↩ Return%", pct(data.returnPct))}
-      ${card("🔥 DRR", num2(data.drr))}
-      ${card("🚚 SJIT", fmt(data.sjitStock))}
-      ${card("🏬 SOR", fmt(data.sorStock))}
-      ${card("⏳ SJIT SC", num1(data.sjitSc))}
-      ${card("⏳ SOR SC", num1(data.sorSc))}
-      ${card("⚡ Ship", fmt(data.shipQty))}
+      ${card(
+        "💰 GMV",
+        money(
+          data.gmv
+        )
+      )}
+
+      ${card(
+        "📦 Units",
+        fmt(
+          data.units
+        )
+      )}
+
+      ${card(
+        "🏷 ASP",
+        money(
+          data.asp
+        )
+      )}
+
+      ${card(
+        "🎯 DW",
+        pct(
+          data.dw
+        )
+      )}
+
+      ${card(
+        "📈 Growth",
+        pct(
+          data.growth
+        )
+      )}
+
+      ${card(
+        "↩ Return%",
+        pct(
+          data.returnPct
+        )
+      )}
+
+      ${card(
+        "🔥 DRR",
+        num2(
+          data.drr
+        )
+      )}
+
+      ${card(
+        "🚚 SJIT",
+        fmt(
+          data.sjitStock
+        )
+      )}
+
+      ${card(
+        "🏬 SOR",
+        fmt(
+          data.sorStock
+        )
+      )}
+
+      ${card(
+        "⏳ SJIT SC",
+        num1(
+          data.sjitSc
+        )
+      )}
+
+      ${card(
+        "⏳ SOR SC",
+        num1(
+          data.sorSc
+        )
+      )}
+
+      ${card(
+        "⚡ Ship",
+        fmt(
+          data.shipQty
+        )
+      )}
 
     </div>
 
@@ -88,15 +215,78 @@ export function renderXrayReport() {
       </h3>
 
       <div class="xray-actions">
-        ${data.actions
+        ${(
+          data.actions ||
+          []
+        )
           .map(
             (x) =>
-              `<div class="xray-action">${x}</div>`
+              `<div class="xray-action">${safe(
+                x
+              )}</div>`
           )
           .join("")}
       </div>
     </div>
   `;
+}
+
+/* ==========================================
+   SEARCH
+========================================== */
+
+function bindSearch() {
+  const btn =
+    document.getElementById(
+      "xrayBtn"
+    );
+
+  const input =
+    document.getElementById(
+      "xraySearch"
+    );
+
+  if (
+    btn &&
+    input
+  ) {
+    btn.onclick =
+      runSearch;
+
+    input.onkeydown =
+      (e) => {
+        if (
+          e.key ===
+          "Enter"
+        ) {
+          runSearch();
+        }
+      };
+  }
+}
+
+function runSearch() {
+  const input =
+    document.getElementById(
+      "xraySearch"
+    );
+
+  const global =
+    document.getElementById(
+      "globalSearch"
+    );
+
+  const val =
+    input
+      ? input.value.trim()
+      : "";
+
+  if (global) {
+    global.value =
+      val;
+  }
+
+  renderXrayReport();
 }
 
 /* ==========================================
@@ -114,13 +304,11 @@ function getSearch() {
     : "";
 }
 
-function emptyBox(text) {
+function emptyBox(
+  text
+) {
   return `
     <div class="panel-card">
-      <h3 class="panel-title">
-        🔍 Style X-Ray
-      </h3>
-
       <div class="placeholder-box large">
         ${text}
       </div>
@@ -140,6 +328,12 @@ function card(
   `;
 }
 
+function safe(v) {
+  return String(
+    v || ""
+  );
+}
+
 function fmt(v) {
   return Number(
     v || 0
@@ -150,7 +344,9 @@ function fmt(v) {
 
 function money(v) {
   return `₹${fmt(
-    Math.round(v || 0)
+    Math.round(
+      v || 0
+    )
   )}`;
 }
 
