@@ -1,8 +1,7 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
-   NEW FILE
-   Style X-Ray Metrics Engine
-   Reuses Existing Engines
+   FULL REPLACE CODE
+   FIXED DW (Demand Weight)
 ========================================== */
 
 import {
@@ -40,12 +39,8 @@ export function getXrayData(
   const ranked =
     [...sales].sort(
       (a, b) =>
-        num(
-          b.units
-        ) -
-        num(
-          a.units
-        )
+        num(b.units) -
+        num(a.units)
     );
 
   const row =
@@ -115,10 +110,41 @@ export function getXrayData(
         units
       : 0;
 
+  /* ======================================
+     DW FIX
+     style units / brand units
+  ====================================== */
+
+  const brand =
+    row.brand || "";
+
+  const brandUnits =
+    sales
+      .filter(
+        (x) =>
+          String(
+            x.brand ||
+            ""
+          ) ===
+          String(
+            brand
+          )
+      )
+      .reduce(
+        (sum, x) =>
+          sum +
+          num(
+            x.units
+          ),
+        0
+      );
+
   const dw =
-    num(
-      row.dw
-    );
+    brandUnits > 0
+      ? (units /
+          brandUnits) *
+        100
+      : 0;
 
   return {
     styleId:
@@ -131,9 +157,7 @@ export function getXrayData(
       row.erp_sku ||
       "",
 
-    brand:
-      row.brand ||
-      "",
+    brand,
 
     rank,
 
