@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/xray/metrics.js
    FULL REPLACE CODE
-   Added Growth / Returns / DRR / SC / Ship
+   FIXED APP BREAK ISSUE
+   Removed circular dependency with SJIT/SOR metrics
 ========================================== */
 
 import {
@@ -9,12 +10,8 @@ import {
 } from "../sales/metrics.js";
 
 import {
-  getSjitRows
-} from "../sjit/metrics.js";
-
-import {
-  getSorRows
-} from "../sor/metrics.js";
+  getDataset
+} from "../../core/state.js";
 
 /* ==========================================
    PUBLIC
@@ -60,38 +57,20 @@ export function getXrayData(
   if (!row)
     return null;
 
+  const styleId =
+    row.styleId ||
+    row.style_id ||
+    "";
+
   const rank =
     ranked.findIndex(
       (r) =>
-        sameStyle(
-          r,
-          row
-        )
+        String(
+          r.styleId ||
+          r.style_id ||
+          ""
+        ) === styleId
     ) + 1;
-
-  const sjit =
-    (
-      getSjitRows() ||
-      []
-    ).find(
-      (r) =>
-        sameStyle(
-          r,
-          row
-        )
-    ) || {};
-
-  const sor =
-    (
-      getSorRows() ||
-      []
-    ).find(
-      (r) =>
-        sameStyle(
-          r,
-          row
-        )
-    ) || {};
 
   const units =
     num(row.units);
@@ -107,9 +86,9 @@ export function getXrayData(
       ? gmv / units
       : 0;
 
-  const returns =
+  const growth =
     num(
-      row.returns
+      row.growth
     );
 
   const returnPct =
@@ -122,11 +101,6 @@ export function getXrayData(
       row.drr
     ) ||
     units / 30;
-
-  const growth =
-    num(
-      row.growth
-    );
 
   const brand =
     row.brand || "";
@@ -155,57 +129,66 @@ export function getXrayData(
         100
       : 0;
 
+  /* SAFE RAW DATA LOOKUP */
+  const sjitRows =
+    getDataset(
+      "sjitStock"
+    ) || [];
+
+  const sorRows =
+    getDataset(
+      "sorStock"
+    ) || [];
+
   const sjitStock =
-    num(
-      sjit.stock
+    sumByStyle(
+      sjitRows,
+      styleId
     );
 
   const sorStock =
-    num(
-      sor.stock
+    sumByStyle(
+      sorRows,
+      styleId
     );
 
   const sjitSc =
     drr > 0
-      ? sjitStock /
-        drr
+      ? sjitStock / drr
       : 0;
 
   const sorSc =
     drr > 0
-      ? sorStock /
-        drr
+      ? sorStock / drr
       : 0;
 
   const shipQty =
-    num(
-      sjit.totalQty
-    );
+    sjitSc < 45
+      ? Math.max(
+          0,
+          Math.round(
+            drr * 45 -
+              sjitStock
+          )
+        )
+      : 0;
 
   return {
-    styleId:
-      row.styleId ||
-      row.style_id ||
-      "",
-
+    styleId,
     erp:
       row.erp ||
       row.erp_sku ||
       "",
-
     brand,
-
     rank,
 
     units,
     gmv,
     asp,
     dw,
-
-    returns,
+    growth,
     returnPct,
     drr,
-    growth,
 
     sjitStock,
     sorStock,
@@ -215,9 +198,8 @@ export function getXrayData(
 
     actions:
       buildActions(
-        row,
-        sjit,
-        sor
+        shipQty,
+        returnPct
       )
   };
 }
@@ -227,41 +209,24 @@ export function getXrayData(
 ========================================== */
 
 function buildActions(
-  sales,
-  sjit,
-  sor
+  shipQty,
+  returnPct
 ) {
   const out =
     [];
 
   if (
-    num(
-      sjit.totalQty
-    ) > 0
+    shipQty > 0
   ) {
     out.push(
       `⚡ Ship ${fmt(
-        sjit.totalQty
+        shipQty
       )} units`
     );
   }
 
   if (
-    num(
-      sor.recallQty
-    ) > 0
-  ) {
-    out.push(
-      `⚠ Recall ${fmt(
-        sor.recallQty
-      )} units`
-    );
-  }
-
-  if (
-    num(
-      sales.returnPct
-    ) > 20
+    returnPct > 20
   ) {
     out.push(
       "↩ High returns risk"
@@ -274,32 +239,37 @@ function buildActions(
     );
   }
 
-  return out.slice(
-    0,
-    3
-  );
+  return out;
 }
 
 /* ==========================================
    HELPERS
 ========================================== */
 
-function sameStyle(
-  a,
-  b
+function sumByStyle(
+  rows,
+  styleId
 ) {
-  return (
-    String(
-      a.styleId ||
-      a.style_id ||
-      ""
-    ) ===
-    String(
-      b.styleId ||
-      b.style_id ||
-      ""
+  return rows
+    .filter(
+      (r) =>
+        String(
+          r.style_id ||
+          r.styleId ||
+          ""
+        ) ===
+        String(styleId)
     )
-  );
+    .reduce(
+      (sum, r) =>
+        sum +
+        num(
+          r.stock ||
+          r.qty ||
+          r.quantity
+        ),
+      0
+    );
 }
 
 function num(v) {
