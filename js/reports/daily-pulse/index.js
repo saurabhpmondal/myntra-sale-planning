@@ -1,7 +1,8 @@
 /* ==========================================
    File: js/reports/daily-pulse/index.js
    FULL REPLACE CODE
-   DATE COLUMN UI VERSION
+   PHASE 1 SAFE FIX
+   Restores date columns without touching metrics
 ========================================== */
 
 import {
@@ -35,8 +36,8 @@ export function renderDailyPulseReport() {
       limit
     ) || {
       rows: [],
-      total: 0,
-      dates: []
+      dates: [],
+      total: 0
     };
 
   root.innerHTML = `
@@ -51,52 +52,64 @@ export function renderDailyPulseReport() {
         gap:10px;
         flex-wrap:wrap;
         margin-top:12px;
+        align-items:center;
       ">
 
-        <select id="dpSort" style="${sel()}">
-          <option value="MTD" ${
-            sortBy ===
-            "MTD"
-              ? "selected"
-              : ""
-          }>MTD</option>
+        <select id="dpSort">
+          <option value="MTD"
+            ${
+              sortBy ===
+              "MTD"
+                ? "selected"
+                : ""
+            }>
+            MTD
+          </option>
 
-          <option value="DRR" ${
-            sortBy ===
-            "DRR"
-              ? "selected"
-              : ""
-          }>DRR</option>
+          <option value="DRR"
+            ${
+              sortBy ===
+              "DRR"
+                ? "selected"
+                : ""
+            }>
+            DRR
+          </option>
         </select>
 
-        <select id="dpOrder" style="${sel()}">
-          <option value="HIGH" ${
-            order ===
-            "HIGH"
-              ? "selected"
-              : ""
-          }>HIGH</option>
+        <select id="dpOrder">
+          <option value="HIGH"
+            ${
+              order ===
+              "HIGH"
+                ? "selected"
+                : ""
+            }>
+            HIGH
+          </option>
 
-          <option value="LOW" ${
-            order ===
-            "LOW"
-              ? "selected"
-              : ""
-          }>LOW</option>
+          <option value="LOW"
+            ${
+              order ===
+              "LOW"
+                ? "selected"
+                : ""
+            }>
+            LOW
+          </option>
         </select>
 
         <div style="
           margin-left:auto;
           font-size:12px;
           color:#64748b;
-          display:flex;
-          align-items:center;
         ">
           Showing
           ${Math.min(
             limit,
             data.total
-          )} /
+          )}
+          /
           ${data.total}
         </div>
 
@@ -104,67 +117,7 @@ export function renderDailyPulseReport() {
 
     </div>
 
-    <div class="panel-card"
-      style="
-        overflow:auto;
-        padding:0;
-      ">
-
-      <table style="
-        width:max-content;
-        min-width:100%;
-        border-collapse:collapse;
-        font-size:13px;
-      ">
-
-        <thead>
-          <tr>
-            ${th(
-              "Style ID"
-            )}
-            ${th("ERP")}
-            ${th(
-              "Brand"
-            )}
-            ${th(
-              "Status"
-            )}
-            ${th("MTD")}
-            ${th("DRR")}
-            ${th(
-              "Trend"
-            )}
-
-            ${data.dates
-              .map(
-                (
-                  d
-                ) =>
-                  th(
-                    dayNo(
-                      d
-                    )
-                  )
-              )
-              .join("")}
-          </tr>
-        </thead>
-
-        <tbody>
-          ${data.rows
-            .map(
-              (r) =>
-                row(
-                  r,
-                  data.dates
-                )
-            )
-            .join("")}
-        </tbody>
-
-      </table>
-
-    </div>
+    ${table(data)}
 
     ${
       limit <
@@ -194,92 +147,145 @@ export function renderDailyPulseReport() {
   bind();
 }
 
-/* ========================================== */
+/* ==========================================
+   TABLE
+========================================== */
+
+function table(
+  data
+) {
+  return `
+    <div class="panel-card"
+      style="
+        overflow:auto;
+        padding:0;
+      ">
+
+      <table style="
+        width:max-content;
+        min-width:100%;
+        border-collapse:collapse;
+        font-size:13px;
+      ">
+
+        <thead>
+          <tr>
+
+            ${th("Style ID")}
+            ${th("ERP")}
+            ${th("Brand")}
+            ${th("Status")}
+            ${th("MTD")}
+            ${th("DRR")}
+            ${th("Trend")}
+
+            ${
+              data.dates
+                .map(
+                  (
+                    d
+                  ) =>
+                    th(
+                      dayNo(
+                        d
+                      )
+                    )
+                )
+                .join("")
+            }
+
+          </tr>
+        </thead>
+
+        <tbody>
+          ${
+            data.rows
+              .map(
+                (
+                  r
+                ) =>
+                  row(
+                    r,
+                    data.dates
+                  )
+              )
+              .join("")
+          }
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
 
 function row(
   r,
   dates
 ) {
-  let prev =
-    null;
-
   return `
     <tr>
+
       ${td(
         r.styleId
       )}
-      ${td(r.erp)}
+
+      ${td(
+        r.erp
+      )}
+
       ${td(
         r.brand
       )}
+
       ${td(
         r.status
       )}
+
       ${td(
-        fmt(r.mtd)
-      )}
-      ${td(
-        one(r.drr)
-      )}
-      ${td(
-        trend(
-          r.trend
+        fmt(
+          r.mtd
         )
       )}
 
-      ${dates
-        .map((d) => {
-          const v =
-            r.days[d] ||
-            0;
+      ${td(
+        one(
+          r.drr
+        )
+      )}
 
-          let bg =
-            "#fff";
+      ${td(
+        r.trend
+      )}
 
-          if (
-            prev !==
-            null
-          ) {
-            if (
-              v > prev
-            )
-              bg =
-                "#dcfce7";
-
-            else if (
-              v < prev
-            )
-              bg =
-                "#fee2e2";
-
-            else
-              bg =
-                "#f8fafc";
-          }
-
-          prev = v;
-
-          return `
-            <td style="
-              padding:8px 10px;
-              border-bottom:1px solid #eef2f7;
-              text-align:center;
-              background:${bg};
-              font-weight:600;
-            ">
-              ${fmt(v)}
-            </td>
-          `;
-        })
-        .join("")}
+      ${
+        dates
+          .map(
+            (
+              d
+            ) =>
+              td(
+                fmt(
+                  r.days?.[
+                    d
+                  ] || 0
+                )
+              )
+          )
+          .join("")
+      }
 
     </tr>
   `;
 }
 
-/* ========================================== */
+/* ==========================================
+   CELLS
+========================================== */
 
-function th(t) {
+function th(
+  text
+) {
   return `
     <th style="
       padding:10px;
@@ -287,25 +293,30 @@ function th(t) {
       border-bottom:1px solid #e5e7eb;
       white-space:nowrap;
       text-align:left;
+      font-weight:700;
     ">
-      ${t}
+      ${text}
     </th>
   `;
 }
 
-function td(t) {
+function td(
+  text
+) {
   return `
     <td style="
-      padding:10px;
+      padding:8px 10px;
       border-bottom:1px solid #eef2f7;
       white-space:nowrap;
     ">
-      ${t || ""}
+      ${text}
     </td>
   `;
 }
 
-/* ========================================== */
+/* ==========================================
+   EVENTS
+========================================== */
 
 function bind() {
   const s =
@@ -323,42 +334,37 @@ function bind() {
       "dpMore"
     );
 
-  if (s)
+  if (s) {
     s.onchange =
       () => {
         sortBy =
           s.value;
         renderDailyPulseReport();
       };
+  }
 
-  if (o)
+  if (o) {
     o.onchange =
       () => {
         order =
           o.value;
         renderDailyPulseReport();
       };
+  }
 
-  if (m)
+  if (m) {
     m.onclick =
       () => {
         limit +=
           50;
         renderDailyPulseReport();
       };
+  }
 }
 
-/* ========================================== */
-
-function trend(t) {
-  if (t === "↗")
-    return `<span style="color:#16a34a;">↗</span>`;
-
-  if (t === "↘")
-    return `<span style="color:#dc2626;">↘</span>`;
-
-  return `<span style="color:#64748b;">→</span>`;
-}
+/* ==========================================
+   HELPERS
+========================================== */
 
 function dayNo(d) {
   return String(
@@ -378,13 +384,4 @@ function one(v) {
   return Number(
     v || 0
   ).toFixed(1);
-}
-
-function sel() {
-  return `
-    padding:10px 12px;
-    border:1px solid #dbe3ee;
-    border-radius:12px;
-    background:#fff;
-  `;
 }
